@@ -36,6 +36,8 @@ pub(crate) struct TransactionState {
     #[serde(default)]
     pub transaction_id: String,
     #[serde(default)]
+    pub job_id: Option<u64>,
+    #[serde(default)]
     pub updated_at: String,
     #[serde(default)]
     pub status: String,
@@ -57,6 +59,8 @@ pub(crate) struct TransactionState {
     pub partition_steps: Vec<Value>,
     #[serde(default)]
     pub message: String,
+    #[serde(default)]
+    pub recovery_required: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -91,8 +95,7 @@ fn sync_directory(path: &Path) -> Result<(), String> {
         .map_err(|error| format!("could not sync transaction directory: {error}"))
 }
 
-pub(crate) fn write_request(input: TransactionWriteInput) -> Result<(), String> {
-    let path = safe_transaction_path(&input.path)?;
+fn write_json(path: &Path, value: &Value) -> Result<(), String> {
     let parent = path
         .parent()
         .ok_or_else(|| "transaction path has no parent directory".to_string())?;
@@ -105,7 +108,7 @@ pub(crate) fn write_request(input: TransactionWriteInput) -> Result<(), String> 
     }
     fs::set_permissions(parent, fs::Permissions::from_mode(0o700))
         .map_err(|error| format!("could not secure transaction directory: {error}"))?;
-    if let Ok(metadata) = fs::symlink_metadata(&path) {
+    if let Ok(metadata) = fs::symlink_metadata(path) {
         if metadata.file_type().is_symlink() || !metadata.is_file() {
             return Err("transaction path must be a regular file".to_string());
         }
@@ -126,7 +129,7 @@ pub(crate) fn write_request(input: TransactionWriteInput) -> Result<(), String> 
     let mut file = file
         .open(&temporary)
         .map_err(|error| format!("could not open temporary transaction state: {error}"))?;
-    serde_json::to_writer_pretty(&mut file, &input.state)
+    serde_json::to_writer_pretty(&mut file, value)
         .map_err(|error| format!("could not encode transaction state: {error}"))?;
     file.write_all(b"\n")
         .map_err(|error| format!("could not finish transaction state: {error}"))?;
@@ -136,9 +139,36 @@ pub(crate) fn write_request(input: TransactionWriteInput) -> Result<(), String> 
         .map_err(|error| format!("could not sync transaction state: {error}"))?;
     fs::set_permissions(&temporary, fs::Permissions::from_mode(0o600))
         .map_err(|error| format!("could not secure transaction state: {error}"))?;
-    fs::rename(&temporary, &path)
+    fs::rename(&temporary, path)
         .map_err(|error| format!("could not replace transaction state: {error}"))?;
     sync_directory(parent)
+}
+
+pub(crate) fn write_request(input: TransactionWriteInput) -> Result<(), String> {
+    let path = safe_transaction_path(&input.path)?;
+    let value = serde_json::to_value(input.state)
+        .map_err(|error| format!("could not encode transaction state: {error}"))?;
+    write_json(&path, &value)
+}
+
+/// Persist a support-safe failure marker using the same durable atomic writer
+/// as the transaction itself. The failure file contains no credentials.
+pub(crate) fn write_failure_summary(
+    path: &str,
+    state: &TransactionState,
+    message: &str,
+) -> Result<(), String> {
+    let path = safe_transaction_path(path)?;
+    let mut value = serde_json::to_value(state)
+        .map_err(|error| format!("could not encode failure summary: {error}"))?;
+    let object = value
+        .as_object_mut()
+        .ok_or_else(|| "failure summary state is not an object".to_string())?;
+    object.insert("status".to_string(), Value::String("failed".to_string()));
+    object.insert("lifecycle".to_string(), Value::String("failed".to_string()));
+    object.insert("message".to_string(), Value::String(message.to_string()));
+    object.insert("recovery_required".to_string(), Value::Bool(true));
+    write_json(&path, &value)
 }
 
 pub(crate) fn decode(input: &str) -> Result<DecodedTransaction, String> {
@@ -229,6 +259,31 @@ mod tests {
             .expect("written state should decode");
         assert_eq!(decoded.state.status, "partitioning");
         assert_eq!(decoded.state.disk, "/dev/sda");
+    }
+
+    #[test]
+    fn writes_failure_summary_with_recovery_marker_and_history() {
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let path = directory.path().join("failure.json");
+        let state: TransactionState = serde_json::from_value(serde_json::json!({
+            "transaction_id": "native-test",
+            "job_id": 7,
+            "status": "storage_complete",
+            "phase": "image",
+            "lifecycle": "installing",
+            "checks": [{"name": "power", "status": "pass"}],
+            "partition_steps": [{"kind": "format_filesystem", "status": "completed"}]
+        }))
+        .expect("transaction state");
+        write_failure_summary(path.to_str().unwrap(), &state, "native storage failed")
+            .expect("failure summary should be durable");
+        let value: Value = serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap();
+        assert_eq!(value["status"], "failed");
+        assert_eq!(value["recovery_required"], true);
+        assert_eq!(value["job_id"], 7);
+        assert_eq!(value["checks"][0]["name"], "power");
+        assert_eq!(value["partition_steps"][0]["status"], "completed");
+        assert!(!value.to_string().contains("password"));
     }
 
     #[test]

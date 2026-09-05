@@ -57,6 +57,13 @@ impl CancellationToken {
 pub(crate) trait PhaseExecutor: Send + Sync + 'static {
     fn execute_phase(&self, phase: Phase, cancellation: &CancellationToken) -> Result<(), String>;
 
+    /// Give an executor the supervisor-owned correlation ID before its worker
+    /// thread starts. Durable transaction records can therefore be joined to
+    /// `/api/report` and the SSE terminal event without a race.
+    fn record_job_started(&self, _job_id: u64) -> Result<(), String> {
+        Ok(())
+    }
+
     fn record_cancelled(&self, _phase: Option<Phase>) {}
 
     fn record_failed(&self, _phase: Phase, _message: &str) {}
@@ -199,6 +206,23 @@ impl<E: PhaseExecutor> JobSupervisor<E> {
             (job_id, state.next_event_id.saturating_add(1))
         };
         self.shared.changed.notify_all();
+
+        if let Err(error) = self.shared.executor.record_job_started(job_id) {
+            let mut state = self
+                .shared
+                .state
+                .lock()
+                .map_err(|_| "installer job state is unavailable".to_string())?;
+            state.worker_active = false;
+            state.worker_id = None;
+            state.cancellation = None;
+            state.runtime.lifecycle = Lifecycle::Failed;
+            state.runtime.cancel_requested = false;
+            self.shared.changed.notify_all();
+            return Err(format!(
+                "could not persist installer job correlation: {error}"
+            ));
+        }
 
         let shared = Arc::clone(&self.shared);
         let spawn_result = thread::Builder::new()

@@ -234,6 +234,7 @@ pub(crate) struct NativePhaseExecutor {
     secure_boot_password: String,
     transaction_id: String,
     transaction_path: String,
+    transaction: Mutex<crate::installer_transaction::TransactionState>,
     mounts: Mutex<crate::installer_mount::MountRegistry>,
 }
 
@@ -249,6 +250,13 @@ impl NativePhaseExecutor {
         let transaction_path = request.transaction_path;
         let storage_plan = installer_plan::build_plan(request.storage)?;
         let execution_plan = installer_executor::build_plan(request.execution)?;
+        let transaction_id = Self::new_transaction_id();
+        let transaction = Self::initial_transaction(
+            &storage_plan,
+            &source_imgref,
+            &target_imgref,
+            transaction_id.clone(),
+        );
         Ok(Self {
             storage_plan,
             execution_plan,
@@ -259,15 +267,9 @@ impl NativePhaseExecutor {
             secure_boot_kernel,
             secure_boot_force_stage,
             secure_boot_password,
-            transaction_id: format!(
-                "native-{}-{}",
-                std::process::id(),
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|duration| duration.as_nanos())
-                    .unwrap_or_default()
-            ),
+            transaction_id: transaction_id.clone(),
             transaction_path,
+            transaction: Mutex::new(transaction),
             mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
         })
     }
@@ -276,6 +278,8 @@ impl NativePhaseExecutor {
         storage_plan: InstallerPlan,
         execution_plan: InstallerExecutionPlan,
     ) -> Self {
+        let transaction_id = Self::new_transaction_id();
+        let transaction = Self::initial_transaction(&storage_plan, "", "", transaction_id.clone());
         Self {
             storage_plan,
             execution_plan,
@@ -286,16 +290,64 @@ impl NativePhaseExecutor {
             secure_boot_kernel: "fedora".to_string(),
             secure_boot_force_stage: false,
             secure_boot_password: String::new(),
-            transaction_id: format!(
-                "native-{}-{}",
-                std::process::id(),
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|duration| duration.as_nanos())
-                    .unwrap_or_default()
-            ),
+            transaction_id: transaction_id.clone(),
             transaction_path: "/run/kyth-installer/transaction.json".to_string(),
+            transaction: Mutex::new(transaction),
             mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
+        }
+    }
+
+    fn new_transaction_id() -> String {
+        format!(
+            "native-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|duration| duration.as_nanos())
+                .unwrap_or_default()
+        )
+    }
+
+    fn initial_transaction(
+        storage_plan: &InstallerPlan,
+        source_imgref: &str,
+        target_imgref: &str,
+        transaction_id: String,
+    ) -> crate::installer_transaction::TransactionState {
+        let source_kind = if source_imgref.starts_with("docker://") {
+            "network"
+        } else if source_imgref.starts_with("oci:") {
+            "embedded"
+        } else if source_imgref.is_empty() {
+            "unresolved"
+        } else {
+            "local"
+        };
+        crate::installer_transaction::TransactionState {
+            schema_version: 1,
+            transaction_id,
+            job_id: None,
+            updated_at: String::new(),
+            status: String::new(),
+            phase: "prepare".to_string(),
+            lifecycle: "idle".to_string(),
+            install_mode: storage_plan.mode.clone(),
+            disk: storage_plan.disk.clone(),
+            target_partition: storage_plan
+                .target_partition
+                .clone()
+                .or_else(|| storage_plan.resize_partition.clone())
+                .unwrap_or_default(),
+            source: crate::installer_transaction::TransactionSource {
+                kind: source_kind.to_string(),
+                digest: std::env::var("KYTH_SOURCE_DIGEST").unwrap_or_default(),
+                verified: false,
+                target_ref: target_imgref.to_string(),
+            },
+            checks: Vec::new(),
+            partition_steps: Vec::new(),
+            message: String::new(),
+            recovery_required: false,
         }
     }
 
@@ -347,10 +399,27 @@ impl NativePhaseExecutor {
         }
 
         let result = match phase {
-            // Request and execution plans were already validated before the
-            // worker was claimed.  Preparation therefore has no live side
-            // effects and is safe to execute in fixture and production paths.
-            Phase::Prepare => Ok(()),
+            Phase::Prepare => {
+                let power = crate::installer_orchestration::power_check();
+                self.append_check(serde_json::json!({
+                    "name": "power",
+                    "status": power.status.clone(),
+                    "detail": power.detail.clone()
+                }))?;
+                if power.status == "fail" {
+                    Err(NativePhaseError::Execution {
+                        phase,
+                        message: power.detail.clone(),
+                    })
+                } else {
+                    self.append_check(serde_json::json!({
+                        "name": "native_plan",
+                        "status": "pass",
+                        "detail": "Typed Rust installer plan validated"
+                    }))?;
+                    Ok(())
+                }
+            }
             Phase::Storage => self.execute_storage(phase, cancellation),
             Phase::Image => self.execute_image(phase, cancellation),
             Phase::Configure => {
@@ -401,36 +470,25 @@ impl NativePhaseExecutor {
             .map_err(|error| format!("could not determine transaction timestamp: {error}"))?
             .as_secs()
             .to_string();
-        let state = crate::installer_transaction::TransactionState {
-            transaction_id: self.transaction_id.clone(),
-            updated_at,
-            status: status.to_string(),
-            phase: serde_json::to_value(phase)
+        let state = {
+            let mut state = self
+                .transaction
+                .lock()
+                .map_err(|_| "native transaction state is unavailable".to_string())?;
+            if status == "started" {
+                state.checks.clear();
+                state.partition_steps.clear();
+            }
+            state.updated_at = updated_at;
+            state.status = status.to_string();
+            state.phase = serde_json::to_value(phase)
                 .ok()
                 .and_then(|value| value.as_str().map(str::to_string))
-                .unwrap_or_else(|| "unknown".to_string()),
-            lifecycle: lifecycle.to_string(),
-            install_mode: self.storage_plan.mode.clone(),
-            disk: self.storage_plan.disk.clone(),
-            target_partition: self
-                .storage_plan
-                .target_partition
-                .clone()
-                .or_else(|| self.storage_plan.resize_partition.clone())
-                .unwrap_or_default(),
-            source: crate::installer_transaction::TransactionSource {
-                kind: if self.source_imgref.starts_with("docker://") {
-                    "container".to_string()
-                } else {
-                    "oci".to_string()
-                },
-                target_ref: self.target_imgref.clone(),
-                ..Default::default()
-            },
-            checks: Vec::new(),
-            partition_steps: Vec::new(),
-            message: message.to_string(),
-            schema_version: 1,
+                .unwrap_or_else(|| "unknown".to_string());
+            state.lifecycle = lifecycle.to_string();
+            state.message = message.to_string();
+            state.recovery_required = status == "failed";
+            state.clone()
         };
         crate::installer_transaction::write_request(
             crate::installer_transaction::TransactionWriteInput {
@@ -438,6 +496,73 @@ impl NativePhaseExecutor {
                 state,
             },
         )
+    }
+
+    fn append_check(&self, check: serde_json::Value) -> Result<(), NativePhaseError> {
+        let state = {
+            let mut state = self
+                .transaction
+                .lock()
+                .map_err(|_| NativePhaseError::Execution {
+                    phase: Phase::Prepare,
+                    message: "native transaction state is unavailable".to_string(),
+                })?;
+            state.checks.push(check);
+            state.clone()
+        };
+        crate::installer_transaction::write_request(
+            crate::installer_transaction::TransactionWriteInput {
+                path: self.transaction_path.clone(),
+                state,
+            },
+        )
+        .map_err(|message| NativePhaseError::Execution {
+            phase: Phase::Prepare,
+            message,
+        })
+    }
+
+    fn append_partition_step(
+        &self,
+        kind: &str,
+        status: &str,
+        target: &str,
+        phase: Phase,
+    ) -> Result<(), NativePhaseError> {
+        let state = {
+            let mut state = self
+                .transaction
+                .lock()
+                .map_err(|_| NativePhaseError::Execution {
+                    phase,
+                    message: "native transaction state is unavailable".to_string(),
+                })?;
+            let index = state.partition_steps.len();
+            state.partition_steps.push(serde_json::json!({
+                "index": index.to_string(),
+                "kind": kind,
+                "status": status,
+                "target": target
+            }));
+            state.clone()
+        };
+        crate::installer_transaction::write_request(
+            crate::installer_transaction::TransactionWriteInput {
+                path: self.transaction_path.clone(),
+                state,
+            },
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })
+    }
+
+    fn persist_failure_summary(&self, message: &str) {
+        if let Ok(state) = self.transaction.lock().map(|state| state.clone()) {
+            let _ = crate::installer_transaction::write_failure_summary(
+                "/run/kyth-installer/failure.json",
+                &state,
+                message,
+            );
+        }
     }
 
     fn register_mount(&self, path: &str) -> Result<(), NativePhaseError> {
@@ -520,6 +645,34 @@ impl NativePhaseExecutor {
         cancellation: &CancellationToken,
         operation: &serde_json::Value,
     ) -> Result<(), NativePhaseError> {
+        let step_kind = operation
+            .get("operation")
+            .and_then(serde_json::Value::as_str)
+            .filter(|kind| {
+                matches!(
+                    *kind,
+                    "create_label"
+                        | "create_partition"
+                        | "create_unformatted_partition"
+                        | "delete_partition"
+                        | "resize_partition"
+                        | "format_filesystem"
+                        | "set_partition_flag"
+                        | "filesystem_resize"
+                        | "btrfs_subvolume_create"
+                        | "btrfs_subvolume_set_default"
+                )
+            });
+        let step_target = operation
+            .get("partition")
+            .or_else(|| operation.get("device"))
+            .or_else(|| operation.get("disk"))
+            .or_else(|| operation.get("mountpoint"))
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_default();
+        if let Some(kind) = step_kind {
+            self.append_partition_step(kind, "started", step_target, phase)?;
+        }
         let input = serde_json::to_vec(operation).map_err(|error| NativePhaseError::Execution {
             phase,
             message: format!("could not encode disk operation: {error}"),
@@ -531,8 +684,14 @@ impl NativePhaseExecutor {
         })
         .map_err(|message| NativePhaseError::Execution { phase, message })?;
         if status.success() {
+            if let Some(kind) = step_kind {
+                self.append_partition_step(kind, "completed", step_target, phase)?;
+            }
             Ok(())
         } else {
+            if let Some(kind) = step_kind {
+                let _ = self.append_partition_step(kind, "failed", step_target, phase);
+            }
             Err(NativePhaseError::Execution {
                 phase,
                 message: format!("disk helper exited with status {status}"),
@@ -625,6 +784,17 @@ impl NativePhaseExecutor {
         cancellation: &CancellationToken,
         operation: serde_json::Value,
     ) -> Result<(), NativePhaseError> {
+        let step_kind = operation
+            .get("operation")
+            .and_then(serde_json::Value::as_str)
+            .filter(|kind| *kind == "filesystem_resize");
+        let step_target = operation
+            .get("device")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_default();
+        if let Some(kind) = step_kind {
+            self.append_partition_step(kind, "started", step_target, phase)?;
+        }
         let input = serde_json::to_vec(&serde_json::json!({
             "kind": "disk",
             "request": operation,
@@ -640,8 +810,14 @@ impl NativePhaseExecutor {
         })
         .map_err(|message| NativePhaseError::Execution { phase, message })?;
         if status.success() {
+            if let Some(kind) = step_kind {
+                self.append_partition_step(kind, "completed", step_target, phase)?;
+            }
             Ok(())
         } else {
+            if let Some(kind) = step_kind {
+                let _ = self.append_partition_step(kind, "failed", step_target, phase);
+            }
             Err(NativePhaseError::Execution {
                 phase,
                 message: format!("streaming disk helper exited with status {status}"),
@@ -1107,14 +1283,25 @@ impl PhaseExecutor for NativePhaseExecutor {
             .map_err(|error| error.to_string())
     }
 
+    fn record_job_started(&self, job_id: u64) -> Result<(), String> {
+        self.transaction
+            .lock()
+            .map_err(|_| "native transaction state is unavailable".to_string())?
+            .job_id = Some(job_id);
+        Ok(())
+    }
+
     fn record_cancelled(&self, phase: Option<Phase>) {
         let _ = self.cleanup_mounts(phase.unwrap_or(Phase::Prepare));
-        self.write_terminal_transaction(phase, super::installer_job::CANCELLATION_MESSAGE);
+        let message = super::installer_job::CANCELLATION_MESSAGE;
+        self.write_terminal_transaction(phase, message);
+        self.persist_failure_summary(message);
     }
 
     fn record_failed(&self, phase: Phase, message: &str) {
         let _ = self.cleanup_mounts(phase);
         self.write_terminal_transaction(Some(phase), message);
+        self.persist_failure_summary(message);
     }
 }
 
@@ -1265,6 +1452,8 @@ mod tests {
             .into_owned();
         let executor = NativePhaseExecutor::from_request(request)
             .expect("typed native install request should validate");
+        <NativePhaseExecutor as PhaseExecutor>::record_job_started(&executor, 42)
+            .expect("job correlation should be accepted");
         executor
             .execute_phase_typed(Phase::Prepare, &CancellationToken::default())
             .expect("native preparation should persist transaction");
@@ -1279,6 +1468,10 @@ mod tests {
         assert!(transaction["transaction_id"]
             .as_str()
             .is_some_and(|id| { id.starts_with("native-") }));
+        assert_eq!(transaction["job_id"], 42);
+        assert_eq!(transaction["checks"].as_array().unwrap().len(), 2);
+        assert_eq!(transaction["checks"][0]["name"], "power");
+        assert_eq!(transaction["checks"][1]["name"], "native_plan");
     }
 
     #[test]

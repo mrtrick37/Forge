@@ -10,6 +10,7 @@ mod installer_job_executor;
 mod installer_journal;
 mod installer_manual;
 mod installer_mount;
+mod installer_orchestration;
 mod installer_plan;
 mod installer_probe;
 mod installer_readonly;
