@@ -27,6 +27,7 @@ pub(crate) struct NativeInstallRequest {
     pub execution: InstallerExecutionInput,
     pub manual_mounts: Option<crate::installer_manual::ManualMountsInput>,
     pub secure_boot_password: String,
+    pub transaction_path: String,
 }
 
 impl NativeInstallRequest {
@@ -131,6 +132,7 @@ impl NativeInstallRequest {
             },
             manual_mounts,
             secure_boot_password: text("mok_password", ""),
+            transaction_path: text("transaction_path", "/run/kyth-installer/transaction.json"),
         })
     }
 }
@@ -212,6 +214,7 @@ pub(crate) struct NativePhaseExecutor {
     secure_boot_kernel: String,
     secure_boot_force_stage: bool,
     secure_boot_password: String,
+    transaction_path: String,
 }
 
 impl NativePhaseExecutor {
@@ -221,6 +224,7 @@ impl NativePhaseExecutor {
         let secure_boot_kernel = request.execution.secure_boot.kernel.clone();
         let secure_boot_force_stage = request.execution.secure_boot.force_stage;
         let secure_boot_password = request.secure_boot_password;
+        let transaction_path = request.transaction_path;
         let storage_plan = installer_plan::build_plan(request.storage)?;
         let execution_plan = installer_executor::build_plan(request.execution)?;
         Ok(Self {
@@ -231,6 +235,7 @@ impl NativePhaseExecutor {
             secure_boot_kernel,
             secure_boot_force_stage,
             secure_boot_password,
+            transaction_path,
         })
     }
 
@@ -246,6 +251,7 @@ impl NativePhaseExecutor {
             secure_boot_kernel: "fedora".to_string(),
             secure_boot_force_stage: false,
             secure_boot_password: String::new(),
+            transaction_path: "/run/kyth-installer/transaction.json".to_string(),
         }
     }
 
@@ -308,10 +314,7 @@ impl NativePhaseExecutor {
                 Ok(())
             }
             Phase::SecureBoot => self.execute_secure_boot(phase),
-            Phase::Complete => Err(NativePhaseError::NotImplemented {
-                phase,
-                operation: NativeOperation::CompletionCommit,
-            }),
+            Phase::Complete => self.execute_complete(phase),
         }
     }
 
@@ -443,6 +446,47 @@ impl NativePhaseExecutor {
         .map_err(|message| NativePhaseError::Execution { phase, message })
     }
 
+    fn execute_complete(&self, phase: Phase) -> Result<(), NativePhaseError> {
+        let updated_at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(|error| NativePhaseError::Execution {
+                phase,
+                message: format!("could not determine transaction timestamp: {error}"),
+            })?
+            .as_secs()
+            .to_string();
+        let state = crate::installer_transaction::TransactionState {
+            transaction_id: format!("native-{updated_at}"),
+            updated_at,
+            status: "complete".to_string(),
+            phase: "complete".to_string(),
+            lifecycle: "done".to_string(),
+            install_mode: self.storage_plan.mode.clone(),
+            disk: self.storage_plan.disk.clone(),
+            target_partition: self
+                .storage_plan
+                .target_partition
+                .clone()
+                .unwrap_or_default(),
+            source: crate::installer_transaction::TransactionSource {
+                kind: "bootc".to_string(),
+                target_ref: self.execution_plan.bootc.target.clone(),
+                ..Default::default()
+            },
+            checks: Vec::new(),
+            partition_steps: Vec::new(),
+            message: "Native installer completed successfully".to_string(),
+            schema_version: 1,
+        };
+        crate::installer_transaction::write_request(
+            crate::installer_transaction::TransactionWriteInput {
+                path: self.transaction_path.clone(),
+                state,
+            },
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })
+    }
+
     /// Build a native supervisor without starting a Python compatibility
     /// worker.  The caller supplies this supervisor to the daemon's native
     /// route integration once request decoding is connected.
@@ -513,6 +557,7 @@ mod tests {
             },
             manual_mounts: None,
             secure_boot_password: String::new(),
+            transaction_path: "/tmp/kyth-transaction.json".into(),
         }
     }
 
@@ -565,6 +610,26 @@ mod tests {
         );
         let plan = serde_json::to_string(executor.execution_plan()).unwrap();
         assert!(!plan.contains("mok-secret-must-not-leak"));
+    }
+
+    #[test]
+    fn completion_writes_a_secret_free_native_transaction() {
+        let directory = tempfile::tempdir().expect("temporary transaction directory");
+        let mut request = request(false);
+        request.transaction_path = directory
+            .path()
+            .join("transaction.json")
+            .to_string_lossy()
+            .into_owned();
+        let executor = NativePhaseExecutor::from_request(request)
+            .expect("typed native install request should validate");
+        executor
+            .execute_phase_typed(Phase::Complete, &CancellationToken::default())
+            .expect("native completion should persist transaction");
+        let transaction = std::fs::read_to_string(directory.path().join("transaction.json"))
+            .expect("native transaction should exist");
+        assert!(transaction.contains("Native installer completed successfully"));
+        assert!(!transaction.contains("secret"));
     }
 
     #[test]
