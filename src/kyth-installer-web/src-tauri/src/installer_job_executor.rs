@@ -711,8 +711,12 @@ impl NativePhaseExecutor {
         installer_configuration::apply_plan(config.clone())
             .map_err(|message| NativePhaseError::Execution { phase, message })?;
         if let Some(account) = &self.account {
-            crate::installer_accounts::apply(account.clone())
-                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+            let request =
+                serde_json::to_value(account).map_err(|error| NativePhaseError::Execution {
+                    phase,
+                    message: format!("could not encode create-user request: {error}"),
+                })?;
+            self.execute_fixed_helper(phase, cancellation, "create-user", &request)?;
         }
         Ok(())
     }
