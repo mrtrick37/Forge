@@ -952,6 +952,45 @@ impl NativePhaseExecutor {
             }),
         )?;
         self.register_mount("/var/tmp/kyth-alongside-target")?;
+
+        self.mount_efi(phase, cancellation)?;
+        Ok(())
+    }
+
+    fn mount_efi(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
+        let snapshot = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+        let Some(efi) = crate::installer_storage::efi_partition_from_snapshot(
+            &snapshot,
+            &self.storage_plan.disk,
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?
+        else {
+            return Ok(());
+        };
+        let mountpoint = "/var/tmp/kyth-alongside-target/boot/efi";
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
+                "operation": "ensure_directory",
+                "path": mountpoint
+            }),
+        )?;
+        let mut operation = serde_json::json!({
+            "operation": "mount_filesystem",
+            "device": efi.name,
+            "mountpoint": mountpoint
+        });
+        if let Some(source) = efi.mounted_at {
+            operation["device"] = serde_json::Value::String(source);
+            operation["options"] = serde_json::json!(["bind"]);
+        }
+        self.execute_disk_helper(phase, cancellation, &operation)?;
+        self.register_mount(mountpoint)?;
         Ok(())
     }
 

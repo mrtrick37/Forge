@@ -92,6 +92,14 @@ pub(crate) struct PartitionProbe {
     pub read_only: bool,
 }
 
+/// The ESP selected from a fresh snapshot, including a safe live-session
+/// mountpoint when one is already available for bind mounting.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct EfiPartition {
+    pub name: String,
+    pub mounted_at: Option<String>,
+}
+
 fn normalize_device_path(raw: &str) -> Option<String> {
     let value = raw.trim();
     if value.is_empty() {
@@ -441,6 +449,38 @@ pub(crate) fn root_partition_from_snapshot(input: &str, disk: &str) -> Result<St
     })
 }
 
+/// Find the EFI System Partition on the selected disk without trusting a
+/// caller-supplied partition number. The snapshot is expected to come from
+/// `lsblk ... <disk>`, but the name prefix check also keeps an accidentally
+/// broad snapshot from selecting another disk's ESP.
+pub(crate) fn efi_partition_from_snapshot(
+    input: &str,
+    disk: &str,
+) -> Result<Option<EfiPartition>, String> {
+    let disk = normalize_device_path(disk)
+        .ok_or_else(|| "EFI partition query has an invalid disk".to_string())?;
+    let mut candidates = parse_partitions(input)?
+        .into_iter()
+        .filter(|part| {
+            part.efi
+                && part.name.strip_prefix(&disk).is_some_and(|suffix| {
+                    suffix
+                        .strip_prefix('p')
+                        .unwrap_or(suffix)
+                        .bytes()
+                        .all(|byte| byte.is_ascii_digit())
+                        && !suffix.is_empty()
+                })
+        })
+        .map(|part| EfiPartition {
+            name: part.name,
+            mounted_at: part.mountpoints.into_iter().find(|mount| {
+                mount.starts_with('/') && !mount.contains("..") && !mount.contains("//")
+            }),
+        });
+    Ok(candidates.next())
+}
+
 /// Revalidate one partition as a member of the selected disk.
 ///
 /// The returned geometry is intentionally sourced from the same fresh tree
@@ -594,6 +634,24 @@ mod tests {
             .mountpoints
             .iter()
             .any(|mount| mount == "/mnt"));
+    }
+
+    #[test]
+    fn selects_efi_partition_and_reuses_only_safe_existing_mounts() {
+        let efi = efi_partition_from_snapshot(SNAPSHOT, "/dev/sda")
+            .expect("EFI query should parse")
+            .expect("fixture has an ESP");
+        assert_eq!(efi.name, "/dev/sda1");
+        assert_eq!(efi.mounted_at.as_deref(), Some("/boot/efi"));
+        assert!(efi_partition_from_snapshot(SNAPSHOT, "/dev/sdb")
+            .unwrap()
+            .is_none());
+
+        let unsafe_mount = SNAPSHOT.replace("/boot/efi", "/run/../etc");
+        let efi = efi_partition_from_snapshot(&unsafe_mount, "/dev/sda")
+            .unwrap()
+            .expect("ESP remains discoverable");
+        assert!(efi.mounted_at.is_none());
     }
 
     #[test]
