@@ -621,6 +621,10 @@ impl NativePhaseExecutor {
         phase: Phase,
         cancellation: &CancellationToken,
     ) -> Result<(), NativePhaseError> {
+        if self.storage_plan.mode == "wipe" {
+            crate::installer_guard::validate_target_disk(&self.storage_plan.disk)
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        }
         let mut command = Command::new("/usr/bin/bootc");
         command.args(self.execution_plan.bootc.argv.iter().skip(1));
         let status =
@@ -1175,6 +1179,10 @@ impl NativePhaseExecutor {
         phase: Phase,
         cancellation: &CancellationToken,
     ) -> Result<(), NativePhaseError> {
+        if self.storage_plan.mode != "wipe" {
+            crate::installer_guard::validate_target_disk(&self.storage_plan.disk)
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        }
         let target = match self.storage_plan.mode.as_str() {
             "wipe" => {
                 // bootc to-disk owns the complete wipe layout and is run in
