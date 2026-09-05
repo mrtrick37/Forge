@@ -366,7 +366,7 @@ impl NativePhaseExecutor {
                 }
                 Ok(())
             }
-            Phase::SecureBoot => self.execute_secure_boot(phase),
+            Phase::SecureBoot => self.execute_secure_boot(phase, cancellation),
             Phase::Complete => self.execute_complete(phase),
         };
         result?;
@@ -1016,17 +1016,30 @@ impl NativePhaseExecutor {
         self.prepare_btrfs_target(phase, cancellation, &target)
     }
 
-    fn execute_secure_boot(&self, phase: Phase) -> Result<(), NativePhaseError> {
+    fn execute_secure_boot(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
         if self.execution_plan.secure_boot.action == "none" {
             return Ok(());
         }
-        crate::installer_secure_boot::stage(crate::installer_secure_boot::SecureBootStageInput {
-            kernel: self.secure_boot_kernel.clone(),
-            force_stage: self.secure_boot_force_stage,
-            password: self.secure_boot_password.clone(),
-        })
-        .map(|_| ())
-        .map_err(|message| NativePhaseError::Execution { phase, message })
+        let plan = crate::installer_secure_boot::stage_with_cancellation(
+            crate::installer_secure_boot::SecureBootStageInput {
+                kernel: self.secure_boot_kernel.clone(),
+                force_stage: self.secure_boot_force_stage,
+                password: self.secure_boot_password.clone(),
+            },
+            || cancellation.is_cancelled(),
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if plan.state == "failed" {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: plan.message,
+            });
+        }
+        Ok(())
     }
 
     fn execute_complete(&self, phase: Phase) -> Result<(), NativePhaseError> {

@@ -174,7 +174,10 @@ fn secure_boot_state() -> &'static str {
     }
 }
 
-fn stage_certificate(password: &str) -> Result<&'static str, String> {
+fn stage_certificate(
+    password: &str,
+    cancel_requested: impl Fn() -> bool,
+) -> Result<&'static str, String> {
     let mut child = Command::new(MOKUTIL)
         .args(["--import", CERTIFICATE, "--stdin-passwd"])
         .stdin(Stdio::piped())
@@ -194,6 +197,14 @@ fn stage_certificate(password: &str) -> Result<&'static str, String> {
 
     let deadline = Instant::now() + MOK_TIMEOUT;
     loop {
+        if cancel_requested() {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(
+                "Installation cancelled by user. Disk changes may have already started."
+                    .to_string(),
+            );
+        }
         match child.try_wait() {
             Ok(Some(status)) => return Ok(classify_import(status.code().unwrap_or(1))),
             Ok(None) if Instant::now() < deadline => std::thread::sleep(Duration::from_millis(25)),
@@ -215,6 +226,20 @@ fn stage_certificate(password: &str) -> Result<&'static str, String> {
 
 /// Probe firmware state and, when required, stage the fixed KythOS MOK.
 pub(crate) fn stage(input: SecureBootStageInput) -> Result<SecureBootPlan, String> {
+    stage_with_cancellation(input, || false)
+}
+
+/// Probe firmware state and stage the fixed KythOS MOK while honoring job
+/// cancellation during the bounded `mokutil` wait.
+pub(crate) fn stage_with_cancellation(
+    input: SecureBootStageInput,
+    cancel_requested: impl Fn() -> bool,
+) -> Result<SecureBootPlan, String> {
+    if cancel_requested() {
+        return Err(
+            "Installation cancelled by user. Disk changes may have already started.".to_string(),
+        );
+    }
     if input.password.len() > MAX_MOK_PASSWORD_BYTES || input.password.contains(['\0', '\n', '\r'])
     {
         return Err("Secure Boot password is empty or contains unsupported characters".to_string());
@@ -244,7 +269,7 @@ pub(crate) fn stage(input: SecureBootStageInput) -> Result<SecureBootPlan, Strin
     if plan.action != "import-certificate" {
         return Ok(plan);
     }
-    match stage_certificate(&input.password)? {
+    match stage_certificate(&input.password, cancel_requested)? {
         "staged" => Ok(SecureBootPlan {
             state: "staged".to_string(),
             action: "import-certificate".to_string(),
@@ -344,5 +369,20 @@ mod tests {
             assert_eq!(plan.state, case.expected.state);
             assert_eq!(plan.action, case.expected.action);
         }
+    }
+
+    #[test]
+    fn cancellation_is_checked_before_firmware_access() {
+        let error = stage_with_cancellation(
+            SecureBootStageInput {
+                kernel: "cachy".into(),
+                force_stage: true,
+                password: "secret".into(),
+            },
+            || true,
+        )
+        .expect_err("cancelled Secure Boot work must not probe firmware");
+        assert!(error.contains("cancelled"));
+        assert!(!error.contains("secret"));
     }
 }
