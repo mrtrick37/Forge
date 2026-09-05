@@ -260,6 +260,7 @@ impl NativePhaseExecutor {
             // worker was claimed.  Preparation therefore has no live side
             // effects and is safe to execute in fixture and production paths.
             Phase::Prepare => Ok(()),
+            Phase::Storage if self.storage_plan.mode == "wipe" => Ok(()),
             Phase::Storage => Err(NativePhaseError::NotImplemented {
                 phase,
                 operation: NativeOperation::StorageMutation,
@@ -437,14 +438,19 @@ mod tests {
     }
 
     #[test]
-    fn safe_prepare_executes_and_live_mutations_fail_explicitly() {
+    fn wipe_storage_is_owned_by_bootc_and_non_wipe_storage_is_explicitly_blocked() {
         let executor = NativePhaseExecutor::from_request(request(false))
             .expect("typed native install request should validate");
         let cancellation = CancellationToken::default();
         assert_eq!(
-            executor.execute_phase_typed(Phase::Prepare, &cancellation),
+            executor.execute_phase_typed(Phase::Storage, &cancellation),
             Ok(())
         );
+        let mut alongside = request(false);
+        alongside.storage.install_mode = "alongside".into();
+        alongside.storage.target_partition = "sda2".into();
+        let executor =
+            NativePhaseExecutor::from_request(alongside).expect("alongside plan should validate");
         assert_eq!(
             executor.execute_phase_typed(Phase::Storage, &cancellation),
             Err(NativePhaseError::NotImplemented {
