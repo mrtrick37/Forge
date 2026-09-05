@@ -1,8 +1,9 @@
-//! Pure installed-system configuration planning.
+//! Installed-system configuration planning and durable writes.
 //!
 //! Passwords and account creation intentionally do not cross this model. The
-//! privileged Python service continues to own account databases; this module
-//! validates and applies the non-secret configuration contract.
+//! native daemon validates and applies the non-secret configuration contract,
+//! while the typed helper performs the same writes when called from a
+//! compatibility boundary.
 
 use serde::{Deserialize, Serialize};
 use std::fs::{self, OpenOptions};
@@ -42,6 +43,15 @@ pub(crate) struct ConfigurationPlan {
 pub(crate) struct FstabAppendInput {
     pub path: String,
     pub line: String,
+}
+
+/// A support-safe snapshot used to roll back fstab changes made by storage
+/// helpers when a later configuration operation fails.
+#[derive(Debug)]
+pub(crate) struct FstabSnapshot {
+    path: String,
+    content: Option<Vec<u8>>,
+    mode: u32,
 }
 
 fn default_locale() -> String {
@@ -93,6 +103,77 @@ fn safe_absolute_path(raw: &str, label: &str) -> Result<String, String> {
         return Err(format!("{label} must be an absolute safe path."));
     }
     Ok(value.to_string())
+}
+
+pub(crate) fn snapshot_fstab(raw: &str) -> Result<FstabSnapshot, String> {
+    let path = safe_absolute_path(raw, "fstab path")?;
+    match fs::symlink_metadata(&path) {
+        Ok(metadata) if metadata.file_type().is_symlink() => {
+            Err("fstab path must not be a symlink".to_string())
+        }
+        Ok(metadata) if !metadata.is_file() => Err("fstab path must be a regular file".to_string()),
+        Ok(metadata) => Ok(FstabSnapshot {
+            content: Some(
+                fs::read(&path).map_err(|error| format!("could not snapshot fstab: {error}"))?,
+            ),
+            path,
+            mode: metadata.permissions().mode() & 0o777,
+        }),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(FstabSnapshot {
+            path,
+            content: None,
+            mode: 0o644,
+        }),
+        Err(error) => Err(format!("could not inspect fstab: {error}")),
+    }
+}
+
+pub(crate) fn restore_fstab(snapshot: FstabSnapshot) -> Result<(), String> {
+    let path = Path::new(&snapshot.path);
+    let parent = path
+        .parent()
+        .ok_or_else(|| "fstab path has no parent directory".to_string())?;
+    let parent_metadata = fs::symlink_metadata(parent)
+        .map_err(|error| format!("could not inspect fstab directory: {error}"))?;
+    if parent_metadata.file_type().is_symlink() || !parent_metadata.is_dir() {
+        return Err("fstab parent must be a real directory".to_string());
+    }
+
+    if let Ok(metadata) = fs::symlink_metadata(path) {
+        if metadata.is_dir() {
+            return Err("cannot roll back fstab over a directory".to_string());
+        }
+        fs::remove_file(path)
+            .map_err(|error| format!("could not remove changed fstab: {error}"))?;
+    }
+
+    if let Some(content) = snapshot.content {
+        let temporary = path.with_extension("kyth-rollback.tmp");
+        let mut file = OpenOptions::new();
+        file.write(true)
+            .create_new(true)
+            .mode(snapshot.mode)
+            .custom_flags(libc::O_NOFOLLOW);
+        let mut file = file
+            .open(&temporary)
+            .map_err(|error| format!("could not create fstab rollback: {error}"))?;
+        file.write_all(&content)
+            .map_err(|error| format!("could not write fstab rollback: {error}"))?;
+        file.flush()
+            .map_err(|error| format!("could not flush fstab rollback: {error}"))?;
+        file.sync_all()
+            .map_err(|error| format!("could not sync fstab rollback: {error}"))?;
+        fs::set_permissions(&temporary, fs::Permissions::from_mode(snapshot.mode))
+            .map_err(|error| format!("could not secure fstab rollback: {error}"))?;
+        fs::rename(&temporary, path)
+            .map_err(|error| format!("could not install fstab rollback: {error}"))?;
+    }
+    OpenOptions::new()
+        .read(true)
+        .open(parent)
+        .map_err(|error| format!("could not open fstab directory: {error}"))?
+        .sync_all()
+        .map_err(|error| format!("could not sync fstab directory: {error}"))
 }
 
 pub(crate) fn build_plan(input: ConfigurationInput) -> Result<ConfigurationPlan, String> {
@@ -318,5 +399,33 @@ mod tests {
             line: "UUID=ABCD /data ext4 defaults 0 2\n".into(),
         })
         .is_err());
+    }
+
+    #[test]
+    fn snapshots_and_restores_existing_fstab_atomically() {
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let etc = directory.path().join("etc");
+        std::fs::create_dir(&etc).expect("etc directory");
+        let path = etc.join("fstab");
+        std::fs::write(&path, b"old fstab\n").expect("initial fstab");
+        let snapshot = snapshot_fstab(&path.to_string_lossy()).expect("fstab should snapshot");
+        std::fs::write(&path, b"partially changed\n").expect("changed fstab");
+        restore_fstab(snapshot).expect("fstab should restore");
+        assert_eq!(std::fs::read(&path).unwrap(), b"old fstab\n");
+    }
+
+    #[test]
+    fn restoring_absent_fstab_removes_changes_and_rejects_symlinks() {
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let etc = directory.path().join("etc");
+        std::fs::create_dir(&etc).expect("etc directory");
+        let path = etc.join("fstab");
+        let snapshot = snapshot_fstab(&path.to_string_lossy()).expect("absence should snapshot");
+        std::fs::write(&path, b"created by failed phase\n").expect("changed fstab");
+        restore_fstab(snapshot).expect("new fstab should be removed");
+        assert!(!path.exists());
+
+        std::os::unix::fs::symlink("/etc/passwd", &path).expect("symlink");
+        assert!(snapshot_fstab(&path.to_string_lossy()).is_err());
     }
 }

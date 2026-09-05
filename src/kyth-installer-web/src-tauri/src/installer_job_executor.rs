@@ -672,51 +672,68 @@ impl NativePhaseExecutor {
             })?
             .clone();
         let config = &self.execution_plan.configuration;
-        match self.storage_plan.mode.as_str() {
-            "alongside" => {
-                let target_device = target
-                    .or_else(|| self.storage_plan.target_partition.clone())
-                    .ok_or_else(|| NativePhaseError::Execution {
-                        phase,
-                        message: "alongside install has no configured target partition".to_string(),
-                    })?;
-                self.execute_fixed_helper(
-                    phase,
-                    cancellation,
-                    "alongside-home",
-                    &serde_json::json!({
-                        "config_root": config.target_root,
-                        "target_device": target_device,
-                        "fstab_path": format!("{}/etc/fstab", config.target_root),
-                    }),
-                )?;
-            }
-            "manual" => {
-                if let Some(mounts) = &self.manual_mounts {
+        let fstab =
+            installer_configuration::snapshot_fstab(&format!("{}/etc/fstab", config.target_root))
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        let result = (|| {
+            match self.storage_plan.mode.as_str() {
+                "alongside" => {
+                    let target_device = target
+                        .or_else(|| self.storage_plan.target_partition.clone())
+                        .ok_or_else(|| NativePhaseError::Execution {
+                            phase,
+                            message: "alongside install has no configured target partition"
+                                .to_string(),
+                        })?;
                     self.execute_fixed_helper(
                         phase,
                         cancellation,
-                        "manual-mounts",
-                        &serde_json::to_value(mounts).map_err(|error| {
-                            NativePhaseError::Execution {
-                                phase,
-                                message: format!("could not encode manual mounts: {error}"),
-                            }
-                        })?,
+                        "alongside-home",
+                        &serde_json::json!({
+                            "config_root": config.target_root,
+                            "target_device": target_device,
+                            "fstab_path": format!("{}/etc/fstab", config.target_root),
+                        }),
                     )?;
                 }
+                "manual" => {
+                    if let Some(mounts) = &self.manual_mounts {
+                        self.execute_fixed_helper(
+                            phase,
+                            cancellation,
+                            "manual-mounts",
+                            &serde_json::to_value(mounts).map_err(|error| {
+                                NativePhaseError::Execution {
+                                    phase,
+                                    message: format!("could not encode manual mounts: {error}"),
+                                }
+                            })?,
+                        )?;
+                    }
+                }
+                _ => {}
             }
-            _ => {}
-        }
-        installer_configuration::apply_plan(config.clone())
-            .map_err(|message| NativePhaseError::Execution { phase, message })?;
-        if let Some(account) = &self.account {
-            let request =
-                serde_json::to_value(account).map_err(|error| NativePhaseError::Execution {
+            installer_configuration::apply_plan(config.clone())
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+            if let Some(account) = &self.account {
+                let request =
+                    serde_json::to_value(account).map_err(|error| NativePhaseError::Execution {
+                        phase,
+                        message: format!("could not encode create-user request: {error}"),
+                    })?;
+                self.execute_fixed_helper(phase, cancellation, "create-user", &request)?;
+            }
+            Ok(())
+        })();
+        if let Err(error) = result {
+            let rollback = installer_configuration::restore_fstab(fstab);
+            if let Err(rollback_error) = rollback {
+                return Err(NativePhaseError::Execution {
                     phase,
-                    message: format!("could not encode create-user request: {error}"),
-                })?;
-            self.execute_fixed_helper(phase, cancellation, "create-user", &request)?;
+                    message: format!("{error}; fstab rollback failed: {rollback_error}"),
+                });
+            }
+            return Err(error);
         }
         Ok(())
     }
