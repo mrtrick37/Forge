@@ -846,6 +846,35 @@ fn run_native_helper(
         .map_err(|error| format!("native helper returned malformed JSON: {error}"))
 }
 
+fn run_native_action(operation: &str, value: &serde_json::Value) -> Result<(), String> {
+    let input = serde_json::to_vec(value)
+        .map_err(|error| format!("could not encode native {operation} request: {error}"))?;
+    let mut child = Command::new("/usr/bin/kyth-installer-exec")
+        .args(["--operation", operation])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error| format!("could not start native {operation}: {error}"))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin
+            .write_all(&input)
+            .map_err(|error| format!("could not provide native {operation} input: {error}"))?;
+    }
+    let output = child
+        .wait_with_output()
+        .map_err(|error| format!("could not wait for native {operation}: {error}"))?;
+    if output.status.success() {
+        return Ok(());
+    }
+    let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    Err(if detail.is_empty() {
+        format!("native {operation} exited with status {}", output.status)
+    } else {
+        detail
+    })
+}
+
 fn first_usb_mount() -> Option<String> {
     let output = command_output(
         "/usr/bin/findmnt",
@@ -1517,6 +1546,31 @@ fn handle(
                 &mut client,
                 "500 Internal Server Error",
                 &serde_json::json!({"ok": false, "message": error}),
+            ),
+        }
+        return Ok(());
+    }
+    if method == "POST" && route == "/api/reboot" {
+        if native_registry
+            .snapshot()?
+            .is_some_and(|snapshot| snapshot.worker_active)
+        {
+            json_response(
+                &mut client,
+                "409 Conflict",
+                &serde_json::json!({
+                    "ok": false,
+                    "error": "Cannot reboot while installation is running."
+                }),
+            );
+            return Ok(());
+        }
+        match run_native_action("reboot", &serde_json::json!({})) {
+            Ok(()) => json_response(&mut client, "200 OK", &serde_json::json!({"ok": true})),
+            Err(error) => json_response(
+                &mut client,
+                "500 Internal Server Error",
+                &serde_json::json!({"ok": false, "error": error}),
             ),
         }
         return Ok(());
