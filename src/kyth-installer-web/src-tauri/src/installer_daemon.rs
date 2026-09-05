@@ -18,8 +18,8 @@ use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use super::installer_plan::{build_plan, InstallerPlanInput};
 use super::installer_job_executor::{NativeInstallRequest, NativePhaseExecutor};
+use super::installer_plan::{build_plan, InstallerPlanInput};
 use super::installer_runtime::RuntimeCoordinator;
 use super::installer_storage;
 
@@ -419,10 +419,9 @@ fn read_only_storage_route(
     }
     let path = target.split('?').next().unwrap_or(target);
     match path {
-        "/api/runtime" => Ok(Some(
-            serde_json::to_value(runtime.snapshot()?)
-                .map_err(|error| format!("could not serialize installer runtime: {error}"))?,
-        )),
+        "/api/runtime" => Ok(Some(serde_json::to_value(runtime.snapshot()?).map_err(
+            |error| format!("could not serialize installer runtime: {error}"),
+        )?)),
         "/api/disks" => {
             let disk_snapshot = command_output(
                 "/usr/bin/lsblk",
@@ -862,7 +861,10 @@ pub fn run(args: &[String]) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{native_executor_from_start, normalize_start_request, options, read_session_token, route_allowed};
+    use super::{
+        native_executor_from_start, normalize_start_request, options, read_session_token,
+        route_allowed,
+    };
     use serde_json::Value;
     use std::fs;
     use std::os::unix::fs::PermissionsExt;

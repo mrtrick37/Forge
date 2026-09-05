@@ -6,8 +6,8 @@
 // command bridge.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod installer_bootc;
 mod installer_accounts;
+mod installer_bootc;
 mod installer_configuration;
 #[allow(dead_code)]
 mod installer_disk;

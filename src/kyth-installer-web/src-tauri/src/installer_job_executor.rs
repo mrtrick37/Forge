@@ -11,11 +11,11 @@
 use std::fmt;
 use std::process::Command;
 
-use crate::installer_configuration;
 use super::installer_executor::{self, InstallerExecutionInput, InstallerExecutionPlan};
 use super::installer_job::{CancellationToken, JobSupervisor, PhaseExecutor};
 use super::installer_plan::{self, InstallerPlan, InstallerPlanInput};
 use super::installer_runtime::Phase;
+use crate::installer_configuration;
 
 /// The complete typed request accepted by the native phase adapter.
 ///
@@ -25,6 +25,7 @@ use super::installer_runtime::Phase;
 pub(crate) struct NativeInstallRequest {
     pub storage: InstallerPlanInput,
     pub execution: InstallerExecutionInput,
+    pub secure_boot_password: String,
 }
 
 impl NativeInstallRequest {
@@ -41,31 +42,67 @@ impl NativeInstallRequest {
                 .unwrap_or(default)
                 .to_string()
         };
-        let number = |name: &str| object.get(name).and_then(serde_json::Value::as_i64).unwrap_or(0);
-        let flag = |name: &str, default: bool| object.get(name).and_then(serde_json::Value::as_bool).unwrap_or(default);
+        let number = |name: &str| {
+            object
+                .get(name)
+                .and_then(serde_json::Value::as_i64)
+                .unwrap_or(0)
+        };
+        let flag = |name: &str, default: bool| {
+            object
+                .get(name)
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(default)
+        };
         let username = text("username", "");
         let password_hash = text("password_hash", "");
-        let account = (!username.is_empty()).then_some(crate::installer_accounts::CreateUserInput {
-            deploy_root: text("deploy_root", "/mnt/deploy"),
-            target_root: text("target_root", "/mnt/target"),
-            username,
-            password_hash,
-        });
+        let account =
+            (!username.is_empty()).then_some(crate::installer_accounts::CreateUserInput {
+                deploy_root: text("deploy_root", "/mnt/deploy"),
+                target_root: text("target_root", "/mnt/target"),
+                username,
+                password_hash,
+            });
         Ok(Self {
             storage: InstallerPlanInput {
-                disk: text("disk", ""), install_mode: text("install_mode", "wipe"),
-                target_partition: text("target_partition", ""), resize_partition: text("resize_partition", ""),
-                resize_gib: number("resize_gib"), free_region_start: number("free_region_start"), free_region_end: number("free_region_end"),
+                disk: text("disk", ""),
+                install_mode: text("install_mode", "wipe"),
+                target_partition: text("target_partition", ""),
+                resize_partition: text("resize_partition", ""),
+                resize_gib: number("resize_gib"),
+                free_region_start: number("free_region_start"),
+                free_region_end: number("free_region_end"),
             },
             execution: InstallerExecutionInput {
                 bootc: crate::installer_bootc::BootcInstallInput {
-                    subcommand: text("subcommand", "to-disk"), source_imgref: text("source_imgref", ""), target_imgref: text("target_imgref", ""), target: text("disk", ""),
-                    skip_fetch_check: flag("skip_fetch_check", true), skip_finalize: flag("skip_finalize", false), root_subvolume: flag("root_subvolume", false), wipe: flag("wipe", false),
+                    subcommand: text("subcommand", "to-disk"),
+                    source_imgref: text("source_imgref", "oci:/usr/share/kyth/image:latest"),
+                    target_imgref: text("target_imgref", "ghcr.io/kyth-os/kyth:latest"),
+                    target: text("disk", ""),
+                    skip_fetch_check: flag("skip_fetch_check", true),
+                    skip_finalize: flag("skip_finalize", false),
+                    root_subvolume: flag("root_subvolume", false),
+                    wipe: flag("wipe", false),
                 },
-                configuration: crate::installer_configuration::ConfigurationInput { target_root: text("target_root", "/mnt/target"), hostname: text("hostname", "kyth"), timezone: text("timezone", "UTC"), locale: text("locale", "en_US.UTF-8"), keymap: text("keymap", "us") },
+                configuration: crate::installer_configuration::ConfigurationInput {
+                    target_root: text("target_root", "/mnt/target"),
+                    hostname: text("hostname", "kyth"),
+                    timezone: text("timezone", "UTC"),
+                    locale: text("locale", "en_US.UTF-8"),
+                    keymap: text("keymap", "us"),
+                },
                 account,
-                secure_boot: crate::installer_secure_boot::SecureBootInput { kernel: text("kernel", "fedora"), force_stage: flag("force_stage", false), certificate_present: flag("certificate_present", false), mokutil_present: flag("mokutil_present", false), secure_boot: text("secure_boot", "unknown"), enrolled: text("enrolled", "unknown"), pending: text("pending", "unknown") },
+                secure_boot: crate::installer_secure_boot::SecureBootInput {
+                    kernel: text("kernel", "fedora"),
+                    force_stage: flag("force_stage", false),
+                    certificate_present: flag("certificate_present", false),
+                    mokutil_present: flag("mokutil_present", false),
+                    secure_boot: text("secure_boot", "unknown"),
+                    enrolled: text("enrolled", "unknown"),
+                    pending: text("pending", "unknown"),
+                },
             },
+            secure_boot_password: text("mok_password", ""),
         })
     }
 }
@@ -100,12 +137,17 @@ impl fmt::Display for NativeOperation {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum NativePhaseError {
-    Cancelled { phase: Phase },
+    Cancelled {
+        phase: Phase,
+    },
     NotImplemented {
         phase: Phase,
         operation: NativeOperation,
     },
-    Execution { phase: Phase, message: String },
+    Execution {
+        phase: Phase,
+        message: String,
+    },
 }
 
 impl fmt::Display for NativePhaseError {
@@ -120,7 +162,10 @@ impl fmt::Display for NativePhaseError {
                 "native installer operation {operation} for phase {phase:?} is not implemented"
             ),
             Self::Execution { phase, message } => {
-                write!(formatter, "native installer phase {phase:?} failed: {message}")
+                write!(
+                    formatter,
+                    "native installer phase {phase:?} failed: {message}"
+                )
             }
         }
     }
@@ -134,15 +179,27 @@ impl fmt::Display for NativePhaseError {
 pub(crate) struct NativePhaseExecutor {
     storage_plan: InstallerPlan,
     execution_plan: InstallerExecutionPlan,
+    account: Option<crate::installer_accounts::CreateUserInput>,
+    secure_boot_kernel: String,
+    secure_boot_force_stage: bool,
+    secure_boot_password: String,
 }
 
 impl NativePhaseExecutor {
     pub(crate) fn from_request(request: NativeInstallRequest) -> Result<Self, String> {
+        let account = request.execution.account.clone();
+        let secure_boot_kernel = request.execution.secure_boot.kernel.clone();
+        let secure_boot_force_stage = request.execution.secure_boot.force_stage;
+        let secure_boot_password = request.secure_boot_password;
         let storage_plan = installer_plan::build_plan(request.storage)?;
         let execution_plan = installer_executor::build_plan(request.execution)?;
         Ok(Self {
             storage_plan,
             execution_plan,
+            account,
+            secure_boot_kernel,
+            secure_boot_force_stage,
+            secure_boot_password,
         })
     }
 
@@ -153,6 +210,10 @@ impl NativePhaseExecutor {
         Self {
             storage_plan,
             execution_plan,
+            account: None,
+            secure_boot_kernel: "fedora".to_string(),
+            secure_boot_force_stage: false,
+            secure_boot_password: String::new(),
         }
     }
 
@@ -204,14 +265,16 @@ impl NativePhaseExecutor {
                 operation: NativeOperation::StorageMutation,
             }),
             Phase::Image => self.execute_image(phase),
-            Phase::Configure => installer_configuration::apply_plan(
-                self.execution_plan.configuration.clone(),
-            )
-            .map_err(|message| NativePhaseError::Execution { phase, message }),
-            Phase::SecureBoot => Err(NativePhaseError::NotImplemented {
-                phase,
-                operation: NativeOperation::SecureBootInteraction,
-            }),
+            Phase::Configure => {
+                installer_configuration::apply_plan(self.execution_plan.configuration.clone())
+                    .map_err(|message| NativePhaseError::Execution { phase, message })?;
+                if let Some(account) = &self.account {
+                    crate::installer_accounts::apply(account.clone())
+                        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+                }
+                Ok(())
+            }
+            Phase::SecureBoot => self.execute_secure_boot(phase),
             Phase::Complete => Err(NativePhaseError::NotImplemented {
                 phase,
                 operation: NativeOperation::CompletionCommit,
@@ -235,6 +298,19 @@ impl NativePhaseExecutor {
                 message: format!("bootc exited with status {}", status),
             })
         }
+    }
+
+    fn execute_secure_boot(&self, phase: Phase) -> Result<(), NativePhaseError> {
+        if self.execution_plan.secure_boot.action == "none" {
+            return Ok(());
+        }
+        crate::installer_secure_boot::stage(crate::installer_secure_boot::SecureBootStageInput {
+            kernel: self.secure_boot_kernel.clone(),
+            force_stage: self.secure_boot_force_stage,
+            password: self.secure_boot_password.clone(),
+        })
+        .map(|_| ())
+        .map_err(|message| NativePhaseError::Execution { phase, message })
     }
 
     /// Build a native supervisor without starting a Python compatibility
@@ -305,6 +381,7 @@ mod tests {
                     pending: "unknown".into(),
                 },
             },
+            secure_boot_password: String::new(),
         }
     }
 
@@ -342,6 +419,21 @@ mod tests {
             .join(",");
         assert!(!plan.contains("secret-must-not-leak"));
         assert!(!operations.contains("secret-must-not-leak"));
+    }
+
+    #[test]
+    fn skipped_secure_boot_does_not_spawn_or_retain_secret_in_plan() {
+        let mut request = request(false);
+        request.secure_boot_password = "mok-secret-must-not-leak".into();
+        let executor = NativePhaseExecutor::from_request(request)
+            .expect("typed native install request should validate");
+        let cancellation = CancellationToken::default();
+        assert_eq!(
+            executor.execute_phase_typed(Phase::SecureBoot, &cancellation),
+            Ok(())
+        );
+        let plan = serde_json::to_string(executor.execution_plan()).unwrap();
+        assert!(!plan.contains("mok-secret-must-not-leak"));
     }
 
     #[test]
