@@ -27,6 +27,7 @@ use super::installer_storage;
 
 const MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
 const BACKEND_SOCKET_SUFFIX: &str = ".backend";
+const TRANSACTION_PATH: &str = "/run/kyth-installer/transaction.json";
 
 type NativeSupervisor = JobSupervisor<NativePhaseExecutor>;
 
@@ -686,6 +687,17 @@ fn native_executor_from_start(request: &[u8]) -> Result<NativePhaseExecutor, Str
     NativePhaseExecutor::from_request(NativeInstallRequest::from_http(value)?)
 }
 
+fn native_request_from_start(request: &[u8]) -> Result<NativeInstallRequest, String> {
+    let (method, target, _headers) = request_parts(request)?;
+    if method != "POST" || target.split('?').next().unwrap_or(target) != "/api/start" {
+        return Err("native request requires POST /api/start".to_string());
+    }
+    let end = header_end(request)?;
+    let value: serde_json::Value = serde_json::from_slice(&request[end..])
+        .map_err(|error| format!("Invalid installer request JSON: {error}"))?;
+    NativeInstallRequest::from_http(value)
+}
+
 fn response_status(response: &[u8]) -> Option<u16> {
     let header_end = response
         .windows(4)
@@ -705,6 +717,32 @@ fn response_body(response: &[u8]) -> Option<&[u8]> {
         .windows(4)
         .position(|window| window == b"\r\n\r\n")?;
     Some(&response[header_end + 4..])
+}
+
+fn native_report(snapshot: &JobSnapshot) -> Result<serde_json::Value, String> {
+    let mut value = serde_json::json!({
+        "job_id": snapshot.job_id,
+        "lifecycle": snapshot.runtime.lifecycle,
+        "phase": snapshot.runtime.phase,
+        "cancel_requested": snapshot.runtime.cancel_requested,
+        "worker_active": snapshot.worker_active,
+        "terminal_event_id": snapshot.terminal_event_id,
+        "status": match snapshot.runtime.lifecycle {
+            super::installer_runtime::Lifecycle::Done => "complete",
+            super::installer_runtime::Lifecycle::Failed => "failed",
+            super::installer_runtime::Lifecycle::Idle => "idle",
+            _ => "installing",
+        },
+        "message": "Native installer job state",
+    });
+    if let Ok(contents) = fs::read_to_string(TRANSACTION_PATH) {
+        if let Ok(transaction) = serde_json::from_str::<serde_json::Value>(&contents) {
+            if transaction.is_object() {
+                value = transaction;
+            }
+        }
+    }
+    Ok(value)
 }
 
 fn forward_buffered(mut backend: UnixStream, mut client: UnixStream) -> Result<Vec<u8>, String> {
@@ -753,13 +791,17 @@ fn forward_stream(
     }
 }
 
-fn native_stream(mut client: UnixStream, registry: &NativeJobRegistry) -> Result<(), String> {
+fn native_stream(
+    mut client: UnixStream,
+    registry: &NativeJobRegistry,
+    last_event_id: u64,
+) -> Result<(), String> {
     client
         .write_all(
             b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-cache\r\nX-Accel-Buffering: no\r\nConnection: close\r\n\r\n",
         )
         .map_err(|error| format!("could not write native stream headers: {error}"))?;
-    let mut sent = 0_u64;
+    let mut sent = last_event_id.saturating_add(1);
     loop {
         let replay = registry
             .replay(sent.saturating_sub(1))?
@@ -873,27 +915,93 @@ fn handle(
         }
     };
     let route = target.split('?').next().unwrap_or(target);
-    if method == "GET" && route == "/api/stream" && native_registry.snapshot()?.is_some() {
-        return native_stream(client, &native_registry);
+    if method == "GET" && route == "/api/report" {
+        if let Some(snapshot) = native_registry.snapshot()? {
+            let value = native_report(&snapshot)?;
+            json_response(&mut client, "200 OK", &value);
+            return Ok(());
+        }
+        let value = match fs::read_to_string(TRANSACTION_PATH) {
+            Ok(contents) => serde_json::from_str(&contents)
+                .map_err(|error| format!("could not decode installer transaction: {error}"))?,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => serde_json::json!({}),
+            Err(error) => return Err(format!("could not read installer transaction: {error}")),
+        };
+        json_response(&mut client, "200 OK", &value);
+        return Ok(());
     }
     if method == "POST" && route == "/api/start" {
-        if let Err(error) = runtime.claim_start() {
+        let native_request = match native_request_from_start(&request) {
+            Ok(request) => request,
+            Err(error) => {
+                bad_start_request(&mut client, &error);
+                return Ok(());
+            }
+        };
+        match native_registry.start(native_request) {
+            Ok(receipt) => {
+                json_response(
+                    &mut client,
+                    "200 OK",
+                    &serde_json::json!({
+                        "started": true,
+                        "job_id": receipt.job_id,
+                        "first_event_id": receipt.first_event_id,
+                    }),
+                );
+            }
+            Err(error) if error.contains("already running") => {
+                json_response(
+                    &mut client,
+                    "409 Conflict",
+                    &serde_json::json!({"started": false, "message": error}),
+                );
+            }
+            Err(error) => {
+                json_response(
+                    &mut client,
+                    "400 Bad Request",
+                    &serde_json::json!({"started": false, "message": error}),
+                );
+            }
+        }
+        return Ok(());
+    }
+    if method == "POST" && route == "/api/cancel" {
+        if native_registry.snapshot()?.is_none() {
             json_response(
                 &mut client,
                 "409 Conflict",
-                &serde_json::json!({"started": false, "message": error}),
+                &serde_json::json!({
+                    "ok": false,
+                    "message": "No installation is running to cancel."
+                }),
             );
             return Ok(());
         }
-    }
-    if method == "POST" && route == "/api/cancel" {
-        if let Err(error) = runtime.claim_cancel() {
-            json_response(
+        match native_registry.cancel() {
+            Ok(()) => json_response(
+                &mut client,
+                "200 OK",
+                &serde_json::json!({
+                    "ok": true,
+                    "message": "Cancellation requested."
+                }),
+            ),
+            Err(error) => json_response(
                 &mut client,
                 "409 Conflict",
                 &serde_json::json!({"ok": false, "message": error}),
-            );
-            return Ok(());
+            ),
+        }
+        return Ok(());
+    }
+    if method == "GET" && route == "/api/stream" {
+        if native_registry.snapshot()?.is_some() {
+            let last_event_id = header_value(headers, "Last-Event-ID")
+                .and_then(|value| value.parse::<u64>().ok())
+                .unwrap_or(0);
+            return native_stream(client, &native_registry, last_event_id);
         }
     }
     let mut backend = UnixStream::connect(backend_path).map_err(|error| {
@@ -1024,8 +1132,8 @@ pub fn run(args: &[String]) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        native_executor_from_start, normalize_start_request, options, read_session_token,
-        route_allowed,
+        native_executor_from_start, native_request_from_start, normalize_start_request, options,
+        read_session_token, route_allowed,
     };
     use serde_json::Value;
     use std::fs;
@@ -1120,6 +1228,16 @@ mod tests {
         let executor = native_executor_from_start(&request).expect("native plan should validate");
         assert_eq!(executor.storage_plan().disk, "/dev/sda");
         assert_eq!(executor.execution_plan().bootc.target, "/dev/sda");
+    }
+
+    #[test]
+    fn native_start_boundary_keeps_start_route_native() {
+        let request = start_request(
+            r#"{"disk":"sda","install_mode":"wipe","username":"alice","password_hash":"$6$hash"}"#,
+        );
+        let native = native_request_from_start(&request).expect("native request should decode");
+        assert_eq!(native.storage.disk, "sda");
+        assert_eq!(native.execution.account.unwrap().username, "alice");
     }
 
     #[test]
