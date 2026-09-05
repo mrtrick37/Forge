@@ -237,6 +237,7 @@ pub(crate) struct NativePhaseExecutor {
     transaction_path: String,
     transaction: Mutex<crate::installer_transaction::TransactionState>,
     mounts: Mutex<crate::installer_mount::MountRegistry>,
+    storage_target: Mutex<Option<String>>,
 }
 
 impl NativePhaseExecutor {
@@ -274,6 +275,7 @@ impl NativePhaseExecutor {
             transaction_path,
             transaction: Mutex::new(transaction),
             mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
+            storage_target: Mutex::new(None),
         })
     }
 
@@ -307,6 +309,7 @@ impl NativePhaseExecutor {
             transaction_path: "/run/kyth-installer/transaction.json".to_string(),
             transaction: Mutex::new(transaction),
             mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
+            storage_target: Mutex::new(None),
         }
     }
 
@@ -449,19 +452,7 @@ impl NativePhaseExecutor {
             }
             Phase::Storage => self.execute_storage(phase, cancellation),
             Phase::Image => self.execute_image(phase, cancellation),
-            Phase::Configure => {
-                installer_configuration::apply_plan(self.execution_plan.configuration.clone())
-                    .map_err(|message| NativePhaseError::Execution { phase, message })?;
-                if let Some(account) = &self.account {
-                    crate::installer_accounts::apply(account.clone())
-                        .map_err(|message| NativePhaseError::Execution { phase, message })?;
-                }
-                if let Some(mounts) = &self.manual_mounts {
-                    crate::installer_manual::apply(mounts.clone())
-                        .map_err(|message| NativePhaseError::Execution { phase, message })?;
-                }
-                Ok(())
-            }
+            Phase::Configure => self.execute_configuration(phase, cancellation),
             Phase::SecureBoot => self.execute_secure_boot(phase, cancellation),
             Phase::Complete => self.execute_complete(phase),
         };
@@ -634,6 +625,92 @@ impl NativePhaseExecutor {
             }
         }
         first_error.map_or(Ok(()), Err)
+    }
+
+    fn execute_fixed_helper(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+        operation: &str,
+        request: &serde_json::Value,
+    ) -> Result<(), NativePhaseError> {
+        let input = serde_json::to_vec(request).map_err(|error| NativePhaseError::Execution {
+            phase,
+            message: format!("could not encode {operation} request: {error}"),
+        })?;
+        let mut command = Command::new("/usr/bin/kyth-installer-exec");
+        command.args(["--operation", operation]);
+        let status = super::installer_stream::run_command_with_input(&mut command, &input, || {
+            cancellation.is_cancelled()
+        })
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if status.success() {
+            Ok(())
+        } else {
+            Err(NativePhaseError::Execution {
+                phase,
+                message: format!("{operation} helper exited with status {status}"),
+            })
+        }
+    }
+
+    fn execute_configuration(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
+        let target = self
+            .storage_target
+            .lock()
+            .map_err(|_| NativePhaseError::Execution {
+                phase,
+                message: "native storage target state is unavailable".to_string(),
+            })?
+            .clone();
+        let config = &self.execution_plan.configuration;
+        match self.storage_plan.mode.as_str() {
+            "alongside" => {
+                let target_device = target
+                    .or_else(|| self.storage_plan.target_partition.clone())
+                    .ok_or_else(|| NativePhaseError::Execution {
+                        phase,
+                        message: "alongside install has no configured target partition".to_string(),
+                    })?;
+                self.execute_fixed_helper(
+                    phase,
+                    cancellation,
+                    "alongside-home",
+                    &serde_json::json!({
+                        "config_root": config.target_root,
+                        "target_device": target_device,
+                        "fstab_path": format!("{}/etc/fstab", config.target_root),
+                    }),
+                )?;
+            }
+            "manual" => {
+                if let Some(mounts) = &self.manual_mounts {
+                    self.execute_fixed_helper(
+                        phase,
+                        cancellation,
+                        "manual-mounts",
+                        &serde_json::to_value(mounts).map_err(|error| {
+                            NativePhaseError::Execution {
+                                phase,
+                                message: format!("could not encode manual mounts: {error}"),
+                            }
+                        })?,
+                    )?;
+                }
+            }
+            _ => {}
+        }
+        installer_configuration::apply_plan(config.clone())
+            .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if let Some(account) = &self.account {
+            crate::installer_accounts::apply(account.clone())
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        }
+        Ok(())
     }
 
     fn write_terminal_transaction(&self, phase: Option<Phase>, message: &str) {
@@ -1271,7 +1348,15 @@ impl NativePhaseExecutor {
                 });
             }
         };
-        self.prepare_btrfs_target(phase, cancellation, &target)
+        self.prepare_btrfs_target(phase, cancellation, &target)?;
+        *self
+            .storage_target
+            .lock()
+            .map_err(|_| NativePhaseError::Execution {
+                phase,
+                message: "native storage target state is unavailable".to_string(),
+            })? = Some(target);
+        Ok(())
     }
 
     fn execute_secure_boot(

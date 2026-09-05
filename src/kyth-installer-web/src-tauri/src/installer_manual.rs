@@ -5,18 +5,19 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize)]
 pub(crate) struct ManualMountsInput {
     pub config_root: String,
     pub fstab_path: String,
     pub mounts: Vec<ManualMountInput>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, serde::Serialize)]
 pub(crate) struct ManualMountInput {
     pub partition: String,
     pub mountpoint: String,
     pub fstype: String,
+    #[serde(default)]
     pub uuid: String,
 }
 
@@ -93,7 +94,13 @@ pub(crate) fn apply(input: ManualMountsInput) -> Result<ManualMountsResult, Stri
     let mut skipped = 0;
     for mount in input.mounts {
         let device = safe_device(&mount.partition)?;
-        let uuid = safe_uuid(&mount.uuid)?;
+        let uuid = if mount.uuid.trim().is_empty() {
+            crate::installer_probe::lookup_uuid(crate::installer_probe::UuidInput {
+                device: device.clone(),
+            })?
+        } else {
+            safe_uuid(&mount.uuid)?
+        };
         let fs = normalized_fs(&mount.fstype)?;
         let mountpoint = safe_path(&mount.mountpoint, "manual mount point")?;
         if mountpoint == "/" || mountpoint == "/boot/efi" {

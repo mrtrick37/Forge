@@ -5,7 +5,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, serde::Serialize)]
 pub(crate) struct AlongsideHomeInput {
     pub config_root: String,
     pub target_device: String,
