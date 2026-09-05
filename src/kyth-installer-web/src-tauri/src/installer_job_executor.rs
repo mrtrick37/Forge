@@ -59,7 +59,10 @@ impl NativeInstallRequest {
         let username = text("username", "");
         let password_hash = text("password_hash", "");
         let install_mode = text("install_mode", "wipe").to_ascii_lowercase();
-        let filesystem_install = matches!(install_mode.as_str(), "alongside" | "manual");
+        let filesystem_install = matches!(
+            install_mode.as_str(),
+            "alongside" | "manual" | "free_space" | "resize_ntfs"
+        );
         let target_root = if filesystem_install {
             "/var/tmp/kyth-alongside-target".to_string()
         } else {
@@ -114,7 +117,7 @@ impl NativeInstallRequest {
                     },
                     skip_fetch_check: flag("skip_fetch_check", true),
                     skip_finalize: flag("skip_finalize", false),
-                    root_subvolume: flag("root_subvolume", false),
+                    root_subvolume: flag("root_subvolume", filesystem_install),
                     wipe: flag("wipe", false),
                 },
                 configuration: crate::installer_configuration::ConfigurationInput {
@@ -531,30 +534,282 @@ impl NativePhaseExecutor {
         Ok(())
     }
 
-    fn execute_storage(
+    fn disk_snapshot(&self, phase: Phase, disk: &str) -> Result<String, NativePhaseError> {
+        let output = Command::new("/usr/bin/lsblk")
+            .args([
+                "--json",
+                "--bytes",
+                "--paths",
+                "--output",
+                "NAME,SIZE,TYPE,FSTYPE,PARTTYPE,PARTN,LABEL,MOUNTPOINT,MOUNTPOINTS,START,RO,PKNAME,PTTYPE",
+                disk,
+            ])
+            .output()
+            .map_err(|error| NativePhaseError::Execution {
+                phase,
+                message: format!("could not probe target disk: {error}"),
+            })?;
+        if !output.status.success() {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "target disk probe failed".to_string(),
+            });
+        }
+        String::from_utf8(output.stdout).map_err(|_| NativePhaseError::Execution {
+            phase,
+            message: "target disk probe was not UTF-8".to_string(),
+        })
+    }
+
+    fn execute_stream_helper(
         &self,
         phase: Phase,
         cancellation: &CancellationToken,
+        operation: serde_json::Value,
     ) -> Result<(), NativePhaseError> {
-        if self.storage_plan.mode == "wipe" {
-            // bootc to-disk owns the complete wipe layout and is run in the
-            // image phase; there is no separate storage mutation here.
-            return Ok(());
-        }
-        if !matches!(self.storage_plan.mode.as_str(), "alongside" | "manual") {
-            return Err(NativePhaseError::NotImplemented {
+        let input = serde_json::to_vec(&serde_json::json!({
+            "kind": "disk",
+            "request": operation,
+        }))
+        .map_err(|error| NativePhaseError::Execution {
+            phase,
+            message: format!("could not encode streaming disk operation: {error}"),
+        })?;
+        let mut command = Command::new("/usr/bin/kyth-installer-exec");
+        command.args(["--operation", "stream"]);
+        let status = super::installer_stream::run_command_with_input(&mut command, &input, || {
+            cancellation.is_cancelled()
+        })
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if status.success() {
+            Ok(())
+        } else {
+            Err(NativePhaseError::Execution {
                 phase,
-                operation: NativeOperation::StorageMutation,
+                message: format!("streaming disk helper exited with status {status}"),
+            })
+        }
+    }
+
+    fn create_target_partition(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+        start: u64,
+        end: u64,
+    ) -> Result<String, NativePhaseError> {
+        const BIOS_BOOT_BYTES: u64 = 1024 * 1024;
+        const SECTOR_SIZE: u64 = 512;
+        if end <= start {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "free-space target has invalid geometry".to_string(),
             });
         }
-        let target = self
+        let mut before = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+        let mut target_start = start;
+        if !crate::installer_storage::has_bios_boot_partition(&before)
+            .map_err(|message| NativePhaseError::Execution { phase, message })?
+        {
+            if end - start < BIOS_BOOT_BYTES + SECTOR_SIZE {
+                return Err(NativePhaseError::Execution {
+                    phase,
+                    message: "free-space target cannot fit a BIOS boot partition".to_string(),
+                });
+            }
+            self.execute_disk_helper(
+                phase,
+                cancellation,
+                &serde_json::json!({
+                    "operation": "create_unformatted_partition",
+                    "disk": &self.storage_plan.disk,
+                    "start": start,
+                    "size": BIOS_BOOT_BYTES,
+                    "label": "biosboot",
+                    "sector_size": SECTOR_SIZE
+                }),
+            )?;
+            let after = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+            let bios = crate::installer_storage::new_partition_from_snapshots(
+                &before,
+                &after,
+                start,
+                BIOS_BOOT_BYTES,
+            )
+            .map_err(|message| NativePhaseError::Execution { phase, message })?;
+            let bios_probe = crate::installer_storage::partition_probe_from_snapshot(
+                &after,
+                &self.storage_plan.disk,
+                &bios,
+            )
+            .map_err(|message| NativePhaseError::Execution { phase, message })?;
+            self.execute_disk_helper(
+                phase,
+                cancellation,
+                &serde_json::json!({
+                    "operation": "set_partition_flag",
+                    "disk": &self.storage_plan.disk,
+                    "part_num": bios_probe.number,
+                    "flag": "bios_grub",
+                    "enabled": true
+                }),
+            )?;
+            before = after;
+            target_start = target_start.saturating_add(BIOS_BOOT_BYTES);
+        }
+        let target_size =
+            end.checked_sub(target_start)
+                .ok_or_else(|| NativePhaseError::Execution {
+                    phase,
+                    message: "free-space target has invalid post-boot geometry".to_string(),
+                })?;
+        if target_size < 32 * 1024 * 1024 * 1024 {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "free-space target is smaller than the KythOS minimum".to_string(),
+            });
+        }
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
+                "operation": "create_partition",
+                "disk": &self.storage_plan.disk,
+                "start": target_start,
+                "size": target_size,
+                "fs": "btrfs",
+                "label": "KythOS",
+                "sector_size": SECTOR_SIZE
+            }),
+        )?;
+        let after = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+        let target = crate::installer_storage::new_partition_from_snapshots(
+            &before,
+            &after,
+            target_start,
+            target_size,
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        crate::installer_storage::partition_probe_from_snapshot(
+            &after,
+            &self.storage_plan.disk,
+            &target,
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        Ok(target)
+    }
+
+    fn resize_ntfs_target(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<String, NativePhaseError> {
+        const SECTOR_SIZE: u64 = 512;
+        const MIN_WINDOWS_BYTES: u64 = 64 * 1024 * 1024 * 1024;
+        let partition = self
             .storage_plan
-            .target_partition
+            .resize_partition
             .as_deref()
             .ok_or_else(|| NativePhaseError::Execution {
                 phase,
-                message: "alongside storage has no target partition".to_string(),
+                message: "NTFS resize has no selected partition".to_string(),
             })?;
+        let before = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+        let probe = crate::installer_storage::partition_probe_from_snapshot(
+            &before,
+            &self.storage_plan.disk,
+            partition,
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if !matches!(probe.fstype.as_str(), "ntfs" | "ntfs3") {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "Only NTFS partitions can be resized by this installer path".to_string(),
+            });
+        }
+        if probe.efi || probe.current || probe.in_use || probe.read_only {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "The selected NTFS partition is mounted, read-only, or reserved"
+                    .to_string(),
+            });
+        }
+        let new_size = probe
+            .size_bytes
+            .checked_sub(self.storage_plan.resize_bytes)
+            .ok_or_else(|| NativePhaseError::Execution {
+                phase,
+                message: "NTFS shrink exceeds the selected partition size".to_string(),
+            })?;
+        if new_size < MIN_WINDOWS_BYTES || new_size % SECTOR_SIZE != 0 {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "NTFS shrink would leave an unsafe or unaligned Windows partition"
+                    .to_string(),
+            });
+        }
+        for stage in ["check", "info", "dry_run", "resize"] {
+            self.execute_stream_helper(
+                phase,
+                cancellation,
+                serde_json::json!({
+                    "operation": "filesystem_resize",
+                    "device": partition,
+                    "fs": "ntfs",
+                    "new_size_bytes": new_size,
+                    "stage": stage
+                }),
+            )?;
+        }
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
+                "operation": "resize_partition",
+                "disk": &self.storage_plan.disk,
+                "part_num": probe.number,
+                "start": probe.start_bytes,
+                "new_size": new_size,
+                "sector_size": SECTOR_SIZE
+            }),
+        )?;
+        let after = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+        let resized = crate::installer_storage::partition_probe_from_snapshot(
+            &after,
+            &self.storage_plan.disk,
+            partition,
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if resized.size_bytes.abs_diff(new_size) > SECTOR_SIZE {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "NTFS partition boundary did not match the requested size".to_string(),
+            });
+        }
+        let old_end = probe
+            .start_bytes
+            .checked_add(probe.size_bytes)
+            .ok_or_else(|| NativePhaseError::Execution {
+                phase,
+                message: "NTFS partition geometry overflowed".to_string(),
+            })?;
+        let new_end =
+            probe
+                .start_bytes
+                .checked_add(new_size)
+                .ok_or_else(|| NativePhaseError::Execution {
+                    phase,
+                    message: "NTFS target geometry overflowed".to_string(),
+                })?;
+        self.create_target_partition(phase, cancellation, new_end, old_end)
+    }
+
+    fn prepare_btrfs_target(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+        target: &str,
+    ) -> Result<(), NativePhaseError> {
         let operations = [
             serde_json::json!({
                 "operation": "format_filesystem",
@@ -604,26 +859,70 @@ impl NativePhaseExecutor {
             }),
         ];
         for operation in operations {
-            let input =
-                serde_json::to_vec(&operation).map_err(|error| NativePhaseError::Execution {
-                    phase,
-                    message: format!("could not encode storage operation: {error}"),
-                })?;
-            let mut command = Command::new("/usr/bin/kyth-installer-exec");
-            command.args(["--operation", "disk"]);
-            let status =
-                super::installer_stream::run_command_with_input(&mut command, &input, || {
-                    cancellation.is_cancelled()
-                })
-                .map_err(|message| NativePhaseError::Execution { phase, message })?;
-            if !status.success() {
-                return Err(NativePhaseError::Execution {
-                    phase,
-                    message: format!("storage helper exited with status {status}"),
-                });
-            }
+            self.execute_disk_helper(phase, cancellation, &operation)?;
         }
         Ok(())
+    }
+
+    fn execute_storage(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
+        let target = match self.storage_plan.mode.as_str() {
+            "wipe" => {
+                // bootc to-disk owns the complete wipe layout and is run in
+                // the image phase; there is no separate storage mutation.
+                return Ok(());
+            }
+            "alongside" | "manual" => self
+                .storage_plan
+                .target_partition
+                .as_deref()
+                .ok_or_else(|| NativePhaseError::Execution {
+                    phase,
+                    message: "filesystem install has no target partition".to_string(),
+                })?
+                .to_string(),
+            "free_space" => {
+                let start = self.storage_plan.free_region_start.ok_or_else(|| {
+                    NativePhaseError::Execution {
+                        phase,
+                        message: "free-space install has no selected region".to_string(),
+                    }
+                })?;
+                let end = self.storage_plan.free_region_end.ok_or_else(|| {
+                    NativePhaseError::Execution {
+                        phase,
+                        message: "free-space install has no selected region end".to_string(),
+                    }
+                })?;
+                let snapshot = self.disk_snapshot(phase, &self.storage_plan.disk)?;
+                if !crate::installer_storage::contains_free_region(
+                    &snapshot,
+                    &self.storage_plan.disk,
+                    start,
+                    end,
+                    512,
+                )
+                .map_err(|message| NativePhaseError::Execution { phase, message })?
+                {
+                    return Err(NativePhaseError::Execution {
+                        phase,
+                        message: "selected free space is no longer available".to_string(),
+                    });
+                }
+                self.create_target_partition(phase, cancellation, start, end)?
+            }
+            "resize_ntfs" => self.resize_ntfs_target(phase, cancellation)?,
+            _ => {
+                return Err(NativePhaseError::NotImplemented {
+                    phase,
+                    operation: NativeOperation::StorageMutation,
+                });
+            }
+        };
+        self.prepare_btrfs_target(phase, cancellation, &target)
     }
 
     fn execute_secure_boot(&self, phase: Phase) -> Result<(), NativePhaseError> {
@@ -855,7 +1154,7 @@ mod tests {
     }
 
     #[test]
-    fn wipe_storage_is_owned_by_bootc_and_non_wipe_storage_is_explicitly_blocked() {
+    fn wipe_storage_is_owned_by_bootc_and_resize_has_a_native_path() {
         let executor = NativePhaseExecutor::from_request(request(false))
             .expect("typed native install request should validate");
         let cancellation = CancellationToken::default();
@@ -869,13 +1168,13 @@ mod tests {
         resize.storage.resize_gib = 40;
         let executor =
             NativePhaseExecutor::from_request(resize).expect("resize plan should validate");
-        assert_eq!(
+        assert!(matches!(
             executor.execute_phase_typed(Phase::Storage, &cancellation),
-            Err(NativePhaseError::NotImplemented {
+            Err(NativePhaseError::Execution {
                 phase: Phase::Storage,
-                operation: NativeOperation::StorageMutation,
+                ..
             })
-        );
+        ));
     }
 
     #[test]

@@ -487,7 +487,7 @@ fn storage_lsblk_args(disk: Option<&str>) -> Vec<String> {
         "--bytes".to_string(),
         "--paths".to_string(),
         "--output".to_string(),
-        "NAME,SIZE,TYPE,FSTYPE,PARTTYPE,LABEL,MOUNTPOINT,MOUNTPOINTS,START,RO,MODEL,TRAN,ROTA,RM,PTTYPE,PKNAME".to_string(),
+        "NAME,SIZE,TYPE,FSTYPE,PARTTYPE,PARTN,LABEL,MOUNTPOINT,MOUNTPOINTS,START,RO,MODEL,TRAN,ROTA,RM,PTTYPE,PKNAME".to_string(),
     ];
     if let Some(disk) = disk {
         args.push(disk.to_string());

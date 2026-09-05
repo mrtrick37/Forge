@@ -22,6 +22,7 @@ struct LsblkSnapshot {
 #[derive(Debug, Deserialize)]
 struct LsblkDevice {
     name: Option<String>,
+    partn: Option<u32>,
     size: Option<u64>,
     #[serde(rename = "type")]
     device_type: Option<String>,
@@ -76,6 +77,19 @@ pub(crate) struct FreeRegionRecord {
     pub start_bytes: u64,
     pub end_bytes: u64,
     pub size_bytes: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct PartitionProbe {
+    pub name: String,
+    pub number: u32,
+    pub size_bytes: u64,
+    pub start_bytes: u64,
+    pub fstype: String,
+    pub efi: bool,
+    pub current: bool,
+    pub in_use: bool,
+    pub read_only: bool,
 }
 
 fn normalize_device_path(raw: &str) -> Option<String> {
@@ -427,6 +441,130 @@ pub(crate) fn root_partition_from_snapshot(input: &str, disk: &str) -> Result<St
     })
 }
 
+/// Revalidate one partition as a member of the selected disk.
+///
+/// The returned geometry is intentionally sourced from the same fresh tree
+/// used to validate the parent relationship. Callers must use it immediately
+/// before a destructive operation; a stale caller-supplied partition number or
+/// size is never trusted.
+pub(crate) fn partition_probe_from_snapshot(
+    input: &str,
+    disk: &str,
+    partition: &str,
+) -> Result<PartitionProbe, String> {
+    let disk = normalize_device_path(disk)
+        .ok_or_else(|| "partition query has an invalid disk".to_string())?;
+    let partition = normalize_device_path(partition)
+        .ok_or_else(|| "partition query has an invalid partition".to_string())?;
+    let snapshot = parse_snapshot(input)?;
+    let root = snapshot
+        .blockdevices
+        .iter()
+        .find(|device| {
+            normalize_device_path(device.name.as_deref().unwrap_or_default()).as_deref()
+                == Some(disk.as_str())
+                && device.device_type.as_deref() == Some("disk")
+        })
+        .ok_or_else(|| "target disk was not present in partition probe".to_string())?;
+
+    fn find_partition(device: &LsblkDevice, wanted: &str) -> Option<PartitionProbe> {
+        if device.device_type.as_deref() == Some("part")
+            && normalize_device_path(device.name.as_deref().unwrap_or_default()).as_deref()
+                == Some(wanted)
+        {
+            let name = device.name.as_deref().and_then(normalize_device_path)?;
+            let number = device.partn?;
+            let fstype = device
+                .fstype
+                .as_deref()
+                .unwrap_or_default()
+                .to_ascii_lowercase();
+            let mounts = mountpoints(device);
+            let efi = device
+                .parttype
+                .as_deref()
+                .is_some_and(|parttype| parttype.eq_ignore_ascii_case(EFI_PART_GUID))
+                || (fstype == "vfat" && mounts.iter().any(|mount| mount == "/boot/efi"));
+            return Some(PartitionProbe {
+                name,
+                number,
+                size_bytes: device.size.unwrap_or(0),
+                start_bytes: device.start.unwrap_or(0).saturating_mul(512),
+                fstype,
+                efi,
+                current: !mounts.is_empty(),
+                in_use: !device.children.is_empty(),
+                read_only: device.ro.unwrap_or(false),
+            });
+        }
+        device
+            .children
+            .iter()
+            .find_map(|child| find_partition(child, wanted))
+    }
+
+    find_partition(root, &partition)
+        .ok_or_else(|| "selected partition was not present on the target disk".to_string())
+}
+
+/// Confirm that a selected free-space interval is still one of the safe
+/// regions in a fresh disk snapshot.
+pub(crate) fn contains_free_region(
+    input: &str,
+    disk: &str,
+    start: u64,
+    end: u64,
+    sector_size: u64,
+) -> Result<bool, String> {
+    if end <= start {
+        return Ok(false);
+    }
+    Ok(free_regions(input, disk, sector_size)?
+        .iter()
+        .any(|region| start >= region.start_bytes && end <= region.end_bytes))
+}
+
+/// Identify one newly created partition by its post-mutation geometry.
+///
+/// A name-set difference alone is unsafe when udev exposes stale entries or a
+/// partition operation creates more than one object. Geometry must match
+/// within one MiB and exactly one new candidate must remain.
+pub(crate) fn new_partition_from_snapshots(
+    before: &str,
+    after: &str,
+    start_bytes: u64,
+    size_bytes: u64,
+) -> Result<String, String> {
+    if start_bytes == 0 || size_bytes == 0 {
+        return Err("new partition geometry must be positive".to_string());
+    }
+    let prior = parse_partitions(before)?
+        .into_iter()
+        .map(|partition| partition.name)
+        .collect::<std::collections::HashSet<_>>();
+    const GEOMETRY_TOLERANCE: u64 = 1024 * 1024;
+    let candidates = parse_partitions(after)?
+        .into_iter()
+        .filter(|partition| !prior.contains(&partition.name))
+        .filter(|partition| {
+            partition.start_bytes.abs_diff(start_bytes) <= GEOMETRY_TOLERANCE
+                && partition.size_bytes.abs_diff(size_bytes) <= GEOMETRY_TOLERANCE
+        })
+        .map(|partition| partition.name)
+        .collect::<Vec<_>>();
+    match candidates.as_slice() {
+        [name] => Ok(name.clone()),
+        [] => Err("new partition was not visible at the requested geometry".to_string()),
+        _ => Err("multiple new partitions matched the requested geometry".to_string()),
+    }
+}
+
+pub(crate) fn has_bios_boot_partition(input: &str) -> Result<bool, String> {
+    Ok(parse_partitions(input)?
+        .into_iter()
+        .any(|partition| partition.parttype.eq_ignore_ascii_case(BIOS_BOOT_GUID)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -554,5 +692,74 @@ mod tests {
         let error = root_partition_from_snapshot(unrelated, "/dev/sda")
             .expect_err("an absent selected disk must fail closed");
         assert!(error.contains("target disk was not present"), "{error}");
+    }
+
+    #[test]
+    fn partition_probe_requires_parent_and_reports_live_safety_fields() {
+        let disk_size = 128 * 1024 * 1024 * 1024_u64;
+        let partition_size = 96 * 1024 * 1024 * 1024_u64;
+        let snapshot = format!(
+            r#"{{"blockdevices":[{{"name":"/dev/sda","size":{disk_size},"type":"disk","pttype":"gpt","children":[{{"name":"/dev/sda1","partn":1,"size":{partition_size},"type":"part","fstype":"ntfs","start":2048,"mountpoints":[null],"ro":false}}]}}]}}"#
+        );
+        let partition = partition_probe_from_snapshot(&snapshot, "/dev/sda", "sda1")
+            .expect("selected partition should be found");
+        assert_eq!(partition.name, "/dev/sda1");
+        assert_eq!(partition.number, 1);
+        assert_eq!(partition.fstype, "ntfs");
+        assert_eq!(partition.start_bytes, 2048 * 512);
+        assert!(!partition.current);
+        assert!(!partition.in_use);
+        assert!(!partition.efi);
+        assert!(!partition.read_only);
+
+        assert!(partition_probe_from_snapshot(&snapshot, "/dev/sdb", "/dev/sda1").is_err());
+    }
+
+    #[test]
+    fn free_region_check_rejects_stale_or_overlapping_selection() {
+        let disk_size = 100 * 1024 * 1024 * 1024_u64;
+        let snapshot = format!(
+            r#"{{"blockdevices":[{{"name":"/dev/sda","size":{disk_size},"type":"disk","pttype":"gpt","children":[]}}]}}"#
+        );
+        let regions = free_regions(&snapshot, "/dev/sda", 512).unwrap();
+        let region = &regions[0];
+        assert!(contains_free_region(
+            &snapshot,
+            "/dev/sda",
+            region.start_bytes,
+            region.end_bytes,
+            512
+        )
+        .unwrap());
+        assert!(!contains_free_region(
+            &snapshot,
+            "/dev/sda",
+            region.start_bytes.saturating_sub(512),
+            region.end_bytes,
+            512
+        )
+        .unwrap());
+    }
+
+    #[test]
+    fn new_partition_selection_requires_unique_geometry_match() {
+        let before = r#"{"blockdevices":[{"name":"/dev/sda","type":"disk","children":[]}] }"#;
+        let after = r#"{"blockdevices":[{"name":"/dev/sda","type":"disk","children":[
+            {"name":"/dev/sda1","type":"part","size":34359738368,"start":4096}
+        ]}] }"#;
+        assert_eq!(
+            new_partition_from_snapshots(before, after, 4096 * 512, 34359738368).unwrap(),
+            "/dev/sda1"
+        );
+        assert!(new_partition_from_snapshots(before, after, 8192 * 512, 34359738368).is_err());
+    }
+
+    #[test]
+    fn detects_bios_boot_partition_by_guid() {
+        let snapshot = format!(
+            r#"{{"blockdevices":[{{"name":"/dev/sda","type":"disk","children":[{{"name":"/dev/sda1","type":"part","parttype":"{}"}}]}}]}}"#,
+            BIOS_BOOT_GUID
+        );
+        assert!(has_bios_boot_partition(&snapshot).unwrap());
     }
 }
