@@ -216,9 +216,12 @@ pub(crate) struct NativePhaseExecutor {
     execution_plan: InstallerExecutionPlan,
     account: Option<crate::installer_accounts::CreateUserInput>,
     manual_mounts: Option<crate::installer_manual::ManualMountsInput>,
+    source_imgref: String,
+    target_imgref: String,
     secure_boot_kernel: String,
     secure_boot_force_stage: bool,
     secure_boot_password: String,
+    transaction_id: String,
     transaction_path: String,
 }
 
@@ -226,6 +229,8 @@ impl NativePhaseExecutor {
     pub(crate) fn from_request(request: NativeInstallRequest) -> Result<Self, String> {
         let account = request.execution.account.clone();
         let manual_mounts = request.manual_mounts;
+        let source_imgref = request.execution.bootc.source_imgref.clone();
+        let target_imgref = request.execution.bootc.target_imgref.clone();
         let secure_boot_kernel = request.execution.secure_boot.kernel.clone();
         let secure_boot_force_stage = request.execution.secure_boot.force_stage;
         let secure_boot_password = request.secure_boot_password;
@@ -237,9 +242,19 @@ impl NativePhaseExecutor {
             execution_plan,
             account,
             manual_mounts,
+            source_imgref,
+            target_imgref,
             secure_boot_kernel,
             secure_boot_force_stage,
             secure_boot_password,
+            transaction_id: format!(
+                "native-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_nanos())
+                    .unwrap_or_default()
+            ),
             transaction_path,
         })
     }
@@ -253,9 +268,19 @@ impl NativePhaseExecutor {
             execution_plan,
             account: None,
             manual_mounts: None,
+            source_imgref: "".to_string(),
+            target_imgref: "".to_string(),
             secure_boot_kernel: "fedora".to_string(),
             secure_boot_force_stage: false,
             secure_boot_password: String::new(),
+            transaction_id: format!(
+                "native-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_nanos())
+                    .unwrap_or_default()
+            ),
             transaction_path: "/run/kyth-installer/transaction.json".to_string(),
         }
     }
@@ -297,8 +322,17 @@ impl NativePhaseExecutor {
         if cancellation.is_cancelled() {
             return Err(NativePhaseError::Cancelled { phase });
         }
+        let start_status = match phase {
+            Phase::Prepare => Some(("started", "Installer started")),
+            Phase::Configure => Some(("configure_started", "Configuring the installed system")),
+            _ => None,
+        };
+        if let Some((status, message)) = start_status {
+            self.write_transaction(status, phase, "installing", message)
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        }
 
-        match phase {
+        let result = match phase {
             // Request and execution plans were already validated before the
             // worker was claimed.  Preparation therefore has no live side
             // effects and is safe to execute in fixture and production paths.
@@ -320,7 +354,81 @@ impl NativePhaseExecutor {
             }
             Phase::SecureBoot => self.execute_secure_boot(phase),
             Phase::Complete => self.execute_complete(phase),
+        };
+        result?;
+
+        let completion = match phase {
+            Phase::Prepare => Some(("prepared", "Install plan prepared")),
+            Phase::Image => Some(("storage_complete", "Operating system image written")),
+            Phase::Configure => Some(("configure_complete", "Installed system configured")),
+            Phase::SecureBoot => Some((
+                "secure_boot_staged",
+                "Secure Boot enrollment state classified",
+            )),
+            Phase::Complete => None,
+            Phase::Storage => None,
+        };
+        if let Some((status, message)) = completion {
+            self.write_transaction(status, phase, "installing", message)
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
         }
+        Ok(())
+    }
+
+    fn write_transaction(
+        &self,
+        status: &str,
+        phase: Phase,
+        lifecycle: &str,
+        message: &str,
+    ) -> Result<(), String> {
+        let updated_at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(|error| format!("could not determine transaction timestamp: {error}"))?
+            .as_secs()
+            .to_string();
+        let state = crate::installer_transaction::TransactionState {
+            transaction_id: self.transaction_id.clone(),
+            updated_at,
+            status: status.to_string(),
+            phase: serde_json::to_value(phase)
+                .ok()
+                .and_then(|value| value.as_str().map(str::to_string))
+                .unwrap_or_else(|| "unknown".to_string()),
+            lifecycle: lifecycle.to_string(),
+            install_mode: self.storage_plan.mode.clone(),
+            disk: self.storage_plan.disk.clone(),
+            target_partition: self
+                .storage_plan
+                .target_partition
+                .clone()
+                .or_else(|| self.storage_plan.resize_partition.clone())
+                .unwrap_or_default(),
+            source: crate::installer_transaction::TransactionSource {
+                kind: if self.source_imgref.starts_with("docker://") {
+                    "container".to_string()
+                } else {
+                    "oci".to_string()
+                },
+                target_ref: self.target_imgref.clone(),
+                ..Default::default()
+            },
+            checks: Vec::new(),
+            partition_steps: Vec::new(),
+            message: message.to_string(),
+            schema_version: 1,
+        };
+        crate::installer_transaction::write_request(
+            crate::installer_transaction::TransactionWriteInput {
+                path: self.transaction_path.clone(),
+                state,
+            },
+        )
+    }
+
+    fn write_terminal_transaction(&self, phase: Option<Phase>, message: &str) {
+        let phase = phase.unwrap_or(Phase::Prepare);
+        let _ = self.write_transaction("failed", phase, "failed", message);
     }
 
     fn execute_image(
@@ -532,42 +640,11 @@ impl NativePhaseExecutor {
     }
 
     fn execute_complete(&self, phase: Phase) -> Result<(), NativePhaseError> {
-        let updated_at = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_err(|error| NativePhaseError::Execution {
-                phase,
-                message: format!("could not determine transaction timestamp: {error}"),
-            })?
-            .as_secs()
-            .to_string();
-        let state = crate::installer_transaction::TransactionState {
-            transaction_id: format!("native-{updated_at}"),
-            updated_at,
-            status: "complete".to_string(),
-            phase: "complete".to_string(),
-            lifecycle: "done".to_string(),
-            install_mode: self.storage_plan.mode.clone(),
-            disk: self.storage_plan.disk.clone(),
-            target_partition: self
-                .storage_plan
-                .target_partition
-                .clone()
-                .unwrap_or_default(),
-            source: crate::installer_transaction::TransactionSource {
-                kind: "bootc".to_string(),
-                target_ref: self.execution_plan.bootc.target.clone(),
-                ..Default::default()
-            },
-            checks: Vec::new(),
-            partition_steps: Vec::new(),
-            message: "Native installer completed successfully".to_string(),
-            schema_version: 1,
-        };
-        crate::installer_transaction::write_request(
-            crate::installer_transaction::TransactionWriteInput {
-                path: self.transaction_path.clone(),
-                state,
-            },
+        self.write_transaction(
+            "complete",
+            phase,
+            "done",
+            "Native installer completed successfully",
         )
         .map_err(|message| NativePhaseError::Execution { phase, message })
     }
@@ -584,6 +661,14 @@ impl PhaseExecutor for NativePhaseExecutor {
     fn execute_phase(&self, phase: Phase, cancellation: &CancellationToken) -> Result<(), String> {
         self.execute_phase_typed(phase, cancellation)
             .map_err(|error| error.to_string())
+    }
+
+    fn record_cancelled(&self, phase: Option<Phase>) {
+        self.write_terminal_transaction(phase, super::installer_job::CANCELLATION_MESSAGE);
+    }
+
+    fn record_failed(&self, phase: Phase, message: &str) {
+        self.write_terminal_transaction(Some(phase), message);
     }
 }
 
@@ -685,6 +770,12 @@ mod tests {
     #[test]
     fn skipped_secure_boot_does_not_spawn_or_retain_secret_in_plan() {
         let mut request = request(false);
+        let directory = tempfile::tempdir().expect("temporary transaction directory");
+        request.transaction_path = directory
+            .path()
+            .join("transaction.json")
+            .to_string_lossy()
+            .into_owned();
         request.secure_boot_password = "mok-secret-must-not-leak".into();
         let executor = NativePhaseExecutor::from_request(request)
             .expect("typed native install request should validate");
@@ -715,6 +806,52 @@ mod tests {
             .expect("native transaction should exist");
         assert!(transaction.contains("Native installer completed successfully"));
         assert!(!transaction.contains("secret"));
+    }
+
+    #[test]
+    fn preparation_persists_a_recoverable_native_transaction() {
+        let directory = tempfile::tempdir().expect("temporary transaction directory");
+        let mut request = request(false);
+        request.transaction_path = directory
+            .path()
+            .join("transaction.json")
+            .to_string_lossy()
+            .into_owned();
+        let executor = NativePhaseExecutor::from_request(request)
+            .expect("typed native install request should validate");
+        executor
+            .execute_phase_typed(Phase::Prepare, &CancellationToken::default())
+            .expect("native preparation should persist transaction");
+        let transaction: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(directory.path().join("transaction.json"))
+                .expect("native preparation transaction should exist"),
+        )
+        .expect("native preparation transaction should be JSON");
+        assert_eq!(transaction["status"], "prepared");
+        assert_eq!(transaction["phase"], "prepare");
+        assert_eq!(transaction["lifecycle"], "installing");
+        assert!(transaction["transaction_id"]
+            .as_str()
+            .is_some_and(|id| { id.starts_with("native-") }));
+    }
+
+    #[test]
+    fn native_failure_hook_persists_support_safe_failure_state() {
+        let directory = tempfile::tempdir().expect("temporary transaction directory");
+        let mut request = request(false);
+        request.transaction_path = directory
+            .path()
+            .join("transaction.json")
+            .to_string_lossy()
+            .into_owned();
+        let executor = NativePhaseExecutor::from_request(request)
+            .expect("typed native install request should validate");
+        executor.record_failed(Phase::Storage, "native failure secret-free");
+        let transaction = std::fs::read_to_string(directory.path().join("transaction.json"))
+            .expect("native failure transaction should exist");
+        assert!(transaction.contains("native failure secret-free"));
+        assert!(!transaction.contains("password_hash"));
+        assert!(!transaction.contains("mok_password"));
     }
 
     #[test]

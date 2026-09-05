@@ -56,6 +56,10 @@ impl CancellationToken {
 /// testable without disks, firmware, or a live image.
 pub(crate) trait PhaseExecutor: Send + Sync + 'static {
     fn execute_phase(&self, phase: Phase, cancellation: &CancellationToken) -> Result<(), String>;
+
+    fn record_cancelled(&self, _phase: Option<Phase>) {}
+
+    fn record_failed(&self, _phase: Phase, _message: &str) {}
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -371,6 +375,7 @@ fn run_worker<E: PhaseExecutor>(shared: Arc<Shared<E>>, job_id: u64) {
 
     for phase in PHASES {
         if token.is_cancelled() {
+            shared.executor.record_cancelled(Some(phase));
             finish_cancelled(&shared, job_id, Some(phase));
             return;
         }
@@ -388,10 +393,12 @@ fn run_worker<E: PhaseExecutor>(shared: Arc<Shared<E>>, job_id: u64) {
 
         let result = shared.executor.execute_phase(phase, &token);
         if token.is_cancelled() {
+            shared.executor.record_cancelled(Some(phase));
             finish_cancelled(&shared, job_id, Some(phase));
             return;
         }
         if let Err(error) = result {
+            shared.executor.record_failed(phase, &error);
             finish_error(&shared, job_id, phase, error);
             return;
         }
@@ -408,6 +415,7 @@ fn run_worker<E: PhaseExecutor>(shared: Arc<Shared<E>>, job_id: u64) {
     // must win instead of being overwritten by `done`.
     if state.runtime.cancel_requested || token.is_cancelled() {
         drop(state);
+        shared.executor.record_cancelled(Some(Phase::Complete));
         finish_cancelled(&shared, job_id, Some(Phase::Complete));
         return;
     }
