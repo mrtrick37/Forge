@@ -26,7 +26,23 @@ use super::installer_runtime::RuntimeCoordinator;
 use super::installer_storage;
 
 const MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
-const TRANSACTION_PATH: &str = "/run/kyth-installer/transaction.json";
+fn transaction_path() -> PathBuf {
+    std::env::var_os("KYTH_INSTALLER_TRANSACTION")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/run/kyth-installer/transaction.json"))
+}
+
+fn failure_summary_path() -> PathBuf {
+    std::env::var_os("KYTH_INSTALLER_FAILURE_SUMMARY")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/run/kyth-installer/failure.json"))
+}
+
+fn installer_log_path() -> PathBuf {
+    std::env::var_os("KYTH_INSTALLER_LOG")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/run/kyth-installer/log"))
+}
 
 type NativeSupervisor = JobSupervisor<NativePhaseExecutor>;
 
@@ -888,7 +904,7 @@ fn first_usb_mount() -> Option<String> {
 }
 
 fn native_rescue_probe() -> serde_json::Value {
-    let transaction = fs::read_to_string(TRANSACTION_PATH)
+    let transaction = fs::read_to_string(transaction_path())
         .ok()
         .and_then(|contents| serde_json::from_str::<serde_json::Value>(&contents).ok())
         .filter(serde_json::Value::is_object)
@@ -904,7 +920,7 @@ fn native_rescue_probe() -> serde_json::Value {
         "bootc_status": "",
         "rescue_guidance": crate::installer_recovery::rescue_guidance(status),
     });
-    if let Ok(contents) = fs::read_to_string("/run/kyth-installer/log") {
+    if let Ok(contents) = fs::read_to_string(installer_log_path()) {
         let lines = contents.lines().collect::<Vec<_>>();
         probe["log_tail"] = serde_json::json!(lines[lines.len().saturating_sub(80)..].join("\n"));
     }
@@ -1205,7 +1221,7 @@ fn native_report(snapshot: &JobSnapshot) -> Result<serde_json::Value, String> {
         },
         "message": "Native installer job state",
     });
-    if let Ok(contents) = fs::read_to_string(TRANSACTION_PATH) {
+    if let Ok(contents) = fs::read_to_string(transaction_path()) {
         if let Ok(transaction) = serde_json::from_str::<serde_json::Value>(&contents) {
             if transaction.is_object() {
                 value = transaction;
@@ -1221,8 +1237,7 @@ fn native_log(mut client: UnixStream) -> Result<(), String> {
             b"HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n",
         )
         .map_err(|error| format!("could not write native log headers: {error}"))?;
-    let path = std::env::var("KYTH_INSTALLER_LOG")
-        .unwrap_or_else(|_| "/run/kyth-installer/log".to_string());
+    let path = installer_log_path();
     let mut file = match OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW)
@@ -1452,7 +1467,7 @@ fn handle(
             json_response(&mut client, "200 OK", &value);
             return Ok(());
         }
-        let value = match fs::read_to_string(TRANSACTION_PATH) {
+        let value = match fs::read_to_string(transaction_path()) {
             Ok(contents) => serde_json::from_str(&contents)
                 .map_err(|error| format!("could not decode installer transaction: {error}"))?,
             Err(error) if error.kind() == io::ErrorKind::NotFound => serde_json::json!({}),
@@ -1508,9 +1523,9 @@ fn handle(
         };
         let export = serde_json::json!({
             "usb_mount": usb_mount,
-            "log_path": "/run/kyth-installer/log",
-            "transaction_path": TRANSACTION_PATH,
-            "failure_summary_path": "/run/kyth-installer/failure.json"
+            "log_path": installer_log_path(),
+            "transaction_path": transaction_path(),
+            "failure_summary_path": failure_summary_path(),
         });
         match run_native_helper("recovery-export", &export) {
             Ok(value) => json_response(&mut client, "200 OK", &value),

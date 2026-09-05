@@ -148,7 +148,11 @@ impl NativeInstallRequest {
             },
             manual_mounts,
             secure_boot_password: text("mok_password", ""),
-            transaction_path: text("transaction_path", "/run/kyth-installer/transaction.json"),
+            transaction_path: text(
+                "transaction_path",
+                &std::env::var("KYTH_INSTALLER_TRANSACTION")
+                    .unwrap_or_else(|_| "/run/kyth-installer/transaction.json".to_string()),
+            ),
         })
     }
 }
