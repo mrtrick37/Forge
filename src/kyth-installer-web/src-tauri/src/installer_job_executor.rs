@@ -190,7 +190,7 @@ pub(crate) enum NativePhaseError {
     Cancelled {
         phase: Phase,
     },
-    NotImplemented {
+    InvalidPlan {
         phase: Phase,
         operation: NativeOperation,
     },
@@ -207,9 +207,9 @@ impl fmt::Display for NativePhaseError {
                 formatter,
                 "native installer phase {phase:?} was cancelled before execution"
             ),
-            Self::NotImplemented { phase, operation } => write!(
+            Self::InvalidPlan { phase, operation } => write!(
                 formatter,
-                "native installer operation {operation} for phase {phase:?} is not implemented"
+                "native installer operation {operation} is unavailable for invalid phase {phase:?}"
             ),
             Self::Execution { phase, message } => {
                 write!(
@@ -1350,7 +1350,7 @@ impl NativePhaseExecutor {
             }
             "resize_ntfs" => self.resize_ntfs_target(phase, cancellation)?,
             _ => {
-                return Err(NativePhaseError::NotImplemented {
+                return Err(NativePhaseError::InvalidPlan {
                     phase,
                     operation: NativeOperation::StorageMutation,
                 });

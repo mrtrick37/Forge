@@ -1642,9 +1642,12 @@ fn handle(
         );
         return Ok(());
     }
-    Err(format!(
-        "native installer route is not implemented: {method} {route}"
-    ))
+    json_response(
+        &mut client,
+        "404 Not Found",
+        &serde_json::json!({"ok": false, "message": "Route not found."}),
+    );
+    Ok(())
 }
 
 pub fn run(args: &[String]) -> Result<(), String> {
