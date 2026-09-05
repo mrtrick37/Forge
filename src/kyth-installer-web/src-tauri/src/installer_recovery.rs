@@ -1,8 +1,8 @@
-//! Pure transaction-status classification for Rescue mode.
+//! Native transaction-status classification and support export for Rescue mode.
 //!
-//! This mirrors Python's `recovery.rescue_guidance`: it classifies the last
-//! durable status only. Reading state, writing reports, rollback, and reboot
-//! remain privileged Python operations.
+//! The daemon owns durable-state reads and read-only diagnostics. The typed
+//! root-only helper owns support-file export. The Python implementation is
+//! retained only as a source compatibility fixture while packaging is retired.
 
 use serde::{Deserialize, Serialize};
 use std::fs::{self, OpenOptions};
@@ -70,6 +70,64 @@ pub(crate) fn rescue_guidance(status: Option<&str>) -> RecoveryGuidance {
         ),
         bootable: false,
     }
+}
+
+/// Extract the small booted/staged summary used by the Rescue UI from the
+/// version-variable bootc status JSON contract.
+pub(crate) fn bootc_status_summary(raw: &str) -> serde_json::Value {
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(raw) else {
+        return serde_json::json!({"booted": "", "staged": ""});
+    };
+    let status = value.get("status").unwrap_or(&value);
+    let mut booted = status
+        .get("booted")
+        .or_else(|| status.get("bootedImage"))
+        .or_else(|| value.get("booted"))
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let mut staged = status
+        .get("staged")
+        .or_else(|| status.get("stagedImage"))
+        .or_else(|| value.get("staged"))
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    if let Some(deployments) = value
+        .get("deployments")
+        .and_then(serde_json::Value::as_array)
+    {
+        for deployment in deployments {
+            let Some(deployment) = deployment.as_object() else {
+                continue;
+            };
+            let image = deployment
+                .get("image")
+                .or_else(|| deployment.get("id"))
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or_default();
+            if booted.is_empty()
+                && deployment
+                    .get("booted")
+                    .and_then(serde_json::Value::as_bool)
+                    == Some(true)
+            {
+                booted = image.to_string();
+            }
+            if staged.is_empty()
+                && deployment
+                    .get("staged")
+                    .and_then(serde_json::Value::as_bool)
+                    == Some(true)
+            {
+                staged = image.to_string();
+            }
+        }
+    }
+    serde_json::json!({
+        "booted": booted.chars().take(256).collect::<String>(),
+        "staged": staged.chars().take(256).collect::<String>(),
+    })
 }
 
 fn safe_absolute_path(raw: &str, label: &str) -> Result<String, String> {
@@ -241,6 +299,19 @@ mod tests {
         let unknown = rescue_guidance(Some("future_status"));
         assert!(!unknown.bootable);
         assert_eq!(unknown.severity, "unknown");
+    }
+
+    #[test]
+    fn bootc_summary_handles_common_and_malformed_status_shapes() {
+        let summary = bootc_status_summary(
+            r#"{"deployments":[{"id":"old","booted":true},{"image":"new","staged":true}]}"#,
+        );
+        assert_eq!(summary["booted"], "old");
+        assert_eq!(summary["staged"], "new");
+        assert_eq!(
+            bootc_status_summary("not-json"),
+            serde_json::json!({"booted": "", "staged": ""})
+        );
     }
 
     #[test]

@@ -937,6 +937,7 @@ fn native_rescue_probe() -> serde_json::Value {
     }
     if let Ok(output) = command_output("/usr/bin/bootc", &["status", "--json"]) {
         probe["bootc_status"] = serde_json::json!(output.chars().take(8000).collect::<String>());
+        probe["bootc_status_summary"] = crate::installer_recovery::bootc_status_summary(&output);
     }
     probe
 }
