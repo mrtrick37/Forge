@@ -12,6 +12,7 @@ mod installer_manual;
 mod installer_mount;
 mod installer_plan;
 mod installer_probe;
+mod installer_readonly;
 mod installer_recovery;
 mod installer_runtime;
 mod installer_secure_boot;

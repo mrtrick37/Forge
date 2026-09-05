@@ -949,6 +949,19 @@ fn read_only_storage_route(
     }
     let path = target.split('?').next().unwrap_or(target);
     match path {
+        "/api/config" => Ok(Some(super::installer_readonly::config())),
+        "/api/timezones" => Ok(Some(
+            serde_json::to_value(super::installer_readonly::timezones())
+                .map_err(|error| format!("could not serialize timezone inventory: {error}"))?,
+        )),
+        "/api/locales" => Ok(Some(
+            serde_json::to_value(super::installer_readonly::locales())
+                .map_err(|error| format!("could not serialize locale inventory: {error}"))?,
+        )),
+        "/api/keymaps" => Ok(Some(
+            serde_json::to_value(super::installer_readonly::keymaps())
+                .map_err(|error| format!("could not serialize keymap inventory: {error}"))?,
+        )),
         "/api/runtime" => Ok(Some(serde_json::to_value(runtime.snapshot()?).map_err(
             |error| format!("could not serialize installer runtime: {error}"),
         )?)),
