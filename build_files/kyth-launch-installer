@@ -1,57 +1,100 @@
 #!/bin/bash
-# kyth-launch-installer — desktop launcher for the KythOS graphical installer.
+# kyth-launch-installer — narrow native installer session launcher.
 #
-# Loads the source image URL baked in at ISO build time, then launches
-# kyth-installer as root. The installer hands GUI apps back to the desktop user
-# when needed, so the live session does not need blanket sudo or Polkit access.
+# This script is only a desktop-session orchestrator. The Rust daemon owns the
+# authenticated API and all installation operations; the unprivileged Rust
+# shell owns the UI. No Python package, Chromium fallback, arbitrary command,
+# or user-supplied launcher argument is accepted here.
 
 set -euo pipefail
 
-LAUNCH_LOG="/tmp/kyth-installer-launch.log"
+if [ "$#" -ne 0 ]; then
+	exit 64
+fi
+
+if [ "$(id -u)" -ne 0 ]; then
+	if /usr/bin/sudo -n -- /usr/bin/kyth-launch-installer; then
+		exit 0
+	fi
+	msg="KythOS installer could not obtain its native root session."
+	command -v kdialog >/dev/null 2>&1 && kdialog --error "${msg}" || true
+	command -v zenity >/dev/null 2>&1 && zenity --error --text "${msg}" || true
+	exit 1
+fi
+
+LAUNCH_DIR="/run/kyth-installer"
+SOCKET_PATH="${LAUNCH_DIR}/api.sock"
+TOKEN_FILE="${LAUNCH_DIR}/session-token"
+LAUNCH_LOG="${LAUNCH_DIR}/launcher.log"
+
+session_user="${SUDO_USER:-}"
+if [ -z "${session_user}" ] || [ "${session_user}" = root ]; then
+	if [ -n "${PKEXEC_UID:-}" ]; then
+		session_user="$(/usr/bin/getent passwd "${PKEXEC_UID}" | /usr/bin/cut -d: -f1)"
+	fi
+fi
+if [ -z "${session_user}" ] || [ "${session_user}" = root ] || ! /usr/bin/id -u "${session_user}" >/dev/null 2>&1; then
+	exit 1
+fi
+
+session_uid="$(/usr/bin/id -u "${session_user}")"
+session_gid="$(/usr/bin/id -g "${session_user}")"
+session_home="$(/usr/bin/getent passwd "${session_user}" | /usr/bin/cut -d: -f6)"
+if [ -z "${session_home}" ] || [ "${session_uid}" -eq 0 ]; then
+	exit 1
+fi
+
+# The image/source values are root-owned build artifacts. The native daemon
+# reads them from its EnvironmentFile; the UI does not get to override them.
+# shellcheck source=/dev/null
+if [ -f /etc/kyth-installer.env ]; then
+	. /etc/kyth-installer.env
+fi
+KYTH_SOURCE_IMAGE="${KYTH_SOURCE_IMAGE:-ghcr.io/kyth-os/kyth:latest}"
+KYTH_TARGET_IMAGE="${KYTH_TARGET_IMAGE:-${KYTH_SOURCE_IMAGE}}"
+KYTH_SOURCE_DIGEST="${KYTH_SOURCE_DIGEST:-}"
+
+umask 077
+/usr/bin/install -d -m 0750 -o root -g liveuser "${LAUNCH_DIR}"
+session_token="$(/usr/bin/openssl rand -hex 32)"
+token_tmp="${TOKEN_FILE}.$$"
+printf '%s' "${session_token}" > "${token_tmp}"
+/usr/bin/chmod 0600 "${token_tmp}"
+/usr/bin/mv -fT -- "${token_tmp}" "${TOKEN_FILE}"
+
+cleanup() {
+	/usr/bin/systemctl stop kyth-installerd.service >/dev/null 2>&1 || true
+	/usr/bin/rm -f -- "${TOKEN_FILE}" "${token_tmp}"
+	unset session_token
+}
+trap cleanup EXIT HUP INT TERM
+
 {
 	echo ""
-	echo "=== $(date -Is) ==="
-	echo "launcher uid=$(id -u) user=$(id -un)"
-	echo "DISPLAY=${DISPLAY:-} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-} XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-}"
+	echo "=== $(/usr/bin/date -Is) ==="
+	echo "native launcher uid=$(id -u) session_user=${session_user}"
 } >> "${LAUNCH_LOG}" 2>&1
 
-# Load the source image env vars written at build time
-# shellcheck source=/dev/null
-[ -f /etc/kyth-installer.env ] && . /etc/kyth-installer.env
+/usr/bin/systemctl start kyth-installerd.service >> "${LAUNCH_LOG}" 2>&1
+/usr/bin/systemctl is-active --quiet kyth-installerd.service
 
-export KYTH_SOURCE_IMAGE="${KYTH_SOURCE_IMAGE:-ghcr.io/kyth-os/kyth:latest}"
-export KYTH_TARGET_IMAGE="${KYTH_TARGET_IMAGE:-${KYTH_SOURCE_IMAGE}}"
-export KYTH_SOURCE_DIGEST="${KYTH_SOURCE_DIGEST:-}"
-export KYTH_INSTALLER_SOCKET="${KYTH_INSTALLER_SOCKET:-}"
-export KYTH_INSTALLER_SOCKET_GROUP="${KYTH_INSTALLER_SOCKET_GROUP:-}"
-export KYTH_INSTALLER_TOKEN_FILE="${KYTH_INSTALLER_TOKEN_FILE:-/run/kyth-installer/session-token}"
-# Live installations always perform the fetch/source preflight. Development
-# tests invoke the Python entry point directly when they need to bypass it.
-export KYTH_INSTALL_SKIP_FETCH_CHECK=0
-
-run_logged() {
-	"$@" >> "${LAUNCH_LOG}" 2>&1
-}
-
-# sudoers preserves the narrow GUI/image environment above. Only the
-# argument-free graphical launch is passwordless; other modes authenticate.
-if run_logged sudo -n /usr/bin/kyth-installer "$@"; then
-	exit 0
-fi
-
-if command -v pkexec >/dev/null 2>&1; then
-	if run_logged pkexec env "SUDO_USER=$(id -un)" /usr/bin/kyth-installer "$@"; then
-		exit 0
-	fi
-fi
-
-if command -v sudo >/dev/null 2>&1; then
-	if run_logged sudo /usr/bin/kyth-installer "$@"; then
-		exit 0
-	fi
-fi
-
-msg="KythOS installer failed to launch. See /tmp/kyth-installer-launch.log"
-command -v kdialog >/dev/null 2>&1 && kdialog --error "${msg}" || true
-command -v zenity  >/dev/null 2>&1 && zenity --error --text "${msg}" || true
-exit 1
+/usr/sbin/runuser -u "${session_user}" -- /usr/bin/env \
+	HOME="${session_home}" \
+	USER="${session_user}" \
+	LOGNAME="${session_user}" \
+	DISPLAY="${DISPLAY:-}" \
+	WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
+	XAUTHORITY="${XAUTHORITY:-}" \
+	XDG_RUNTIME_DIR="/run/user/${session_uid}" \
+	DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/${session_uid}/bus}" \
+	XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-wayland}" \
+	LIBGL_ALWAYS_SOFTWARE="${LIBGL_ALWAYS_SOFTWARE:-}" \
+	GALLIUM_DRIVER="${GALLIUM_DRIVER:-}" \
+	MESA_LOADER_DRIVER_OVERRIDE="${MESA_LOADER_DRIVER_OVERRIDE:-}" \
+	QT_QUICK_BACKEND="${QT_QUICK_BACKEND:-}" \
+	KYTH_SOURCE_IMAGE="${KYTH_SOURCE_IMAGE}" \
+	KYTH_TARGET_IMAGE="${KYTH_TARGET_IMAGE}" \
+	KYTH_SOURCE_DIGEST="${KYTH_SOURCE_DIGEST}" \
+	KYTH_INSTALLER_SOCKET="${SOCKET_PATH}" \
+	KYTH_INSTALLER_SESSION_TOKEN="${session_token}" \
+	/usr/bin/kyth-installer-shell --socket-path "${SOCKET_PATH}" >> "${LAUNCH_LOG}" 2>&1

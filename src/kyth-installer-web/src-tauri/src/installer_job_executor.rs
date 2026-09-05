@@ -116,8 +116,16 @@ impl NativeInstallRequest {
                     } else {
                         text("subcommand", "to-disk")
                     },
-                    source_imgref: text("source_imgref", "oci:/usr/share/kyth/image:latest"),
-                    target_imgref: text("target_imgref", "ghcr.io/kyth-os/kyth:latest"),
+                    source_imgref: text(
+                        "source_imgref",
+                        &std::env::var("KYTH_SOURCE_IMAGE")
+                            .unwrap_or_else(|_| "oci:/usr/share/kyth/image:latest".to_string()),
+                    ),
+                    target_imgref: text(
+                        "target_imgref",
+                        &std::env::var("KYTH_TARGET_IMAGE")
+                            .unwrap_or_else(|_| "ghcr.io/kyth-os/kyth:latest".to_string()),
+                    ),
                     target: if filesystem_install {
                         "/var/tmp/kyth-alongside-target".to_string()
                     } else {

@@ -135,7 +135,9 @@ fn connection_args() -> ConnectionArgs {
     let args = std::env::args().collect::<Vec<_>>();
     ConnectionArgs {
         socket_path: arg_value(&args, "--socket-path"),
-        session_token: arg_value(&args, "--session-token").unwrap_or_default(),
+        session_token: arg_value(&args, "--session-token")
+            .or_else(|| std::env::var("KYTH_INSTALLER_SESSION_TOKEN").ok())
+            .unwrap_or_default(),
     }
 }
 

@@ -7,6 +7,7 @@ ConditionPathExists=/run/kyth-installer/session-token
 [Service]
 Type=simple
 ExecStart=/usr/bin/kyth-installerd --socket-path /run/kyth-installer/api.sock --session-token-file /run/kyth-installer/session-token --socket-group liveuser
+EnvironmentFile=-/etc/kyth-installer.env
 User=root
 Group=root
 RuntimeDirectory=kyth-installer

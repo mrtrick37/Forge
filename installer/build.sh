@@ -23,25 +23,9 @@ INSTALL_SOURCE_IMAGE=${INSTALL_SOURCE_IMAGE:-${BASE_IMAGE}}
 # bwrap tries to write /proc/sys/user/max_user_namespaces which is mounted as ro
 mount -o remount,rw /proc/sys
 
-# ── KythOS installer Python packages ──────────────────────────────────────────
-# The React/Tauri shell is copied by Containerfile from its isolated builder
-# stage. This script still owns the Python compatibility backend and launcher.
-# Install through their package metadata so entry points, dependencies, and
-# package data are verified by the same mechanism used by development builds.
-# /src is a read-only BuildKit bind mount, while setuptools writes build
-# metadata beside local projects. Stage both sources in writable temporary
-# storage before invoking pip.
-installer_package_root="$(mktemp -d /tmp/kyth-installer-packages.XXXXXX)"
-cp -a /src/build_files/kyth_shared "${installer_package_root}/kyth_shared"
-cp -a /src/build_files/kyth-installer "${installer_package_root}/kyth-installer"
-python3 -m pip install \
-	--no-cache-dir \
-	--no-deps \
-	--no-build-isolation \
-	--prefix=/usr \
-	"${installer_package_root}/kyth_shared" \
-	"${installer_package_root}/kyth-installer"
-rm -rf "${installer_package_root}"
+# ── Native installer runtime ──────────────────────────────────────────────────
+# The Containerfile supplies the Rust shell, daemon, and typed execution
+# helper. No Python installer package is installed into the live image.
 install -Dm755 /src/build_files/kyth-launch-installer /usr/bin/kyth-launch-installer
 install -Dm644 /src/build_files/kyth-installerd.service /usr/lib/systemd/system/kyth-installerd.service
 install -Dm755 /src/build_files/scripts/plymouth-branding-guard.sh \
@@ -108,7 +92,6 @@ printf '{"schema_version":1,"digest":"%s","release_digest":"%s","target_image":"
 # repository metadata work happen once. Browsers from the installed image are
 # intentionally deferred to Flatpak first-boot setup.
 dnf install -y \
-	chromium \
 	webkit2gtk4.1 \
 	gtk3 \
 	dracut-live \
@@ -407,10 +390,10 @@ systemctl enable var-tmp.mount
 # The empty sudoers argument string means only an argument-free graphical
 # launch is passwordless. Headless/answer-file invocations require normal sudo
 # authentication. Preserve only the display and image-selection environment
-# needed by the root backend to hand Chromium back to liveuser.
+# needed by the native Rust shell and root-owned daemon.
 install -Dm440 /dev/stdin /etc/sudoers.d/liveuser-live <<'EOF'
-Defaults:liveuser env_keep += "DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS XDG_SESSION_TYPE LIBGL_ALWAYS_SOFTWARE GALLIUM_DRIVER MESA_LOADER_DRIVER_OVERRIDE QT_QUICK_BACKEND KYTH_SOURCE_IMAGE KYTH_TARGET_IMAGE KYTH_SOURCE_DIGEST KYTH_INSTALLER_SOCKET KYTH_INSTALLER_SOCKET_GROUP KYTH_INSTALLER_TOKEN_FILE"
-liveuser ALL=(root) NOPASSWD: /usr/bin/kyth-installer ""
+Defaults:liveuser env_keep += "DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS XDG_SESSION_TYPE LIBGL_ALWAYS_SOFTWARE GALLIUM_DRIVER MESA_LOADER_DRIVER_OVERRIDE QT_QUICK_BACKEND"
+liveuser ALL=(root) NOPASSWD: /usr/bin/kyth-launch-installer ""
 EOF
 # Validate sudoers syntax — fail the ISO build instead of shipping a broken file.
 visudo -c -f /etc/sudoers.d/liveuser-live

@@ -346,7 +346,9 @@ fn main() {
     let tokens = InstallerConnection {
         base_url: BACKEND_URL.to_string(),
         bootstrap_token: arg_value(&argv, "--bootstrap-token").unwrap_or_default(),
-        session_token: arg_value(&argv, "--session-token").unwrap_or_default(),
+        session_token: arg_value(&argv, "--session-token")
+            .or_else(|| std::env::var("KYTH_INSTALLER_SESSION_TOKEN").ok())
+            .unwrap_or_default(),
         socket_path: arg_value(&argv, "--socket-path"),
         transport: if argv.iter().any(|arg| arg == "--socket-path") {
             "unix".to_string()

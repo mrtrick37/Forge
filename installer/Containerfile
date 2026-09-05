@@ -13,9 +13,7 @@ ARG BASE_IMAGE=ghcr.io/kyth-os/kyth:latest
 # ── Rust installer UI builder ────────────────────────────────────────────────
 # Keep Node/Rust/WebKit development dependencies out of the live image. The
 # resulting clients are unprivileged. The native installer daemon owns the
-# root-facing Unix socket and starts the Python backend behind a private local
-# socket while the destructive backend logic completes its Rust parity
-# migration.
+# root-facing Unix socket and all destructive installer operations.
 FROM registry.fedoraproject.org/fedora:44 AS installer-web-builder
 RUN dnf5 install -y --setopt=install_weak_deps=False --skip-unavailable \
         cargo rust nodejs npm gcc gcc-c++ pkgconf-pkg-config \
@@ -59,8 +57,8 @@ COPY --from=installer-web-builder /build/kyth-installerd /usr/bin/kyth-installer
 COPY --from=installer-web-builder /build/kyth-installer-exec /usr/bin/kyth-installer-exec
 
 # Replace inherited repo files with a minimal known-good set. Keep [updates]
-# enabled so live-only packages (notably Chromium, the installer's kiosk
-# browser) install with current security fixes, not the GA release version.
+# enabled so live-only WebKitGTK packages install with current security fixes,
+# not the GA release version.
 RUN mkdir -p /etc/yum.repos.d.bak && \
     mv /etc/yum.repos.d/*.repo /etc/yum.repos.d.bak/ 2>/dev/null || true && \
     printf '%s\n' \
@@ -89,8 +87,6 @@ RUN --mount=type=bind,source=installer/build.sh,target=/src/installer/build.sh \
     --mount=type=bind,source=installer/iso.yaml,target=/src/installer/iso.yaml \
     --mount=type=bind,source=installer/calamares,target=/src/installer/calamares \
     --mount=type=bind,source=build_files/scripts,target=/src/build_files/scripts \
-    --mount=type=bind,source=build_files/kyth-installer,target=/src/build_files/kyth-installer \
-    --mount=type=bind,source=build_files/kyth_shared,target=/src/build_files/kyth_shared \
     --mount=type=bind,source=build_files/kyth-launch-installer,target=/src/build_files/kyth-launch-installer \
     --mount=type=bind,source=build_files/kyth-installerd.service,target=/src/build_files/kyth-installerd.service \
     --mount=type=bind,source=build_files/kyth-vm-acceptance.service,target=/src/build_files/kyth-vm-acceptance.service \
