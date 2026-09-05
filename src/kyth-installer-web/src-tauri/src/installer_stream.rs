@@ -6,7 +6,7 @@
 //! run installer commands.
 
 use std::collections::VecDeque;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::{Duration, Instant};
 
@@ -35,6 +35,33 @@ pub(crate) fn run_command(
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|error| format!("could not spawn streaming command: {error}"))?;
+    let result = run_child(&mut child, cancel_requested);
+    if result.is_err() && child.try_wait().ok().flatten().is_none() {
+        let _ = child.kill();
+    }
+    let _ = child.wait();
+    result
+}
+
+/// Run a fixed helper operation while supplying a bounded JSON request on
+/// stdin. The helper is spawned and reaped through the same cancellation and
+/// output path as streaming commands.
+pub(crate) fn run_command_with_input(
+    command: &mut Command,
+    input: &[u8],
+    cancel_requested: impl Fn() -> bool,
+) -> Result<ExitStatus, String> {
+    let mut child = command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|error| format!("could not spawn helper operation: {error}"))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin
+            .write_all(input)
+            .map_err(|error| format!("could not provide helper operation input: {error}"))?;
+    }
     let result = run_child(&mut child, cancel_requested);
     if result.is_err() && child.try_wait().ok().flatten().is_none() {
         let _ = child.kill();

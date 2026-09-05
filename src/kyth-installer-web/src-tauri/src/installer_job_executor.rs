@@ -56,6 +56,8 @@ impl NativeInstallRequest {
         };
         let username = text("username", "");
         let password_hash = text("password_hash", "");
+        let install_mode = text("install_mode", "wipe").to_ascii_lowercase();
+        let filesystem_install = matches!(install_mode.as_str(), "alongside" | "manual");
         let account =
             (!username.is_empty()).then_some(crate::installer_accounts::CreateUserInput {
                 deploy_root: text("deploy_root", "/mnt/deploy"),
@@ -66,7 +68,7 @@ impl NativeInstallRequest {
         Ok(Self {
             storage: InstallerPlanInput {
                 disk: text("disk", ""),
-                install_mode: text("install_mode", "wipe"),
+                install_mode,
                 target_partition: text("target_partition", ""),
                 resize_partition: text("resize_partition", ""),
                 resize_gib: number("resize_gib"),
@@ -75,10 +77,18 @@ impl NativeInstallRequest {
             },
             execution: InstallerExecutionInput {
                 bootc: crate::installer_bootc::BootcInstallInput {
-                    subcommand: text("subcommand", "to-disk"),
+                    subcommand: if filesystem_install {
+                        "to-filesystem".to_string()
+                    } else {
+                        text("subcommand", "to-disk")
+                    },
                     source_imgref: text("source_imgref", "oci:/usr/share/kyth/image:latest"),
                     target_imgref: text("target_imgref", "ghcr.io/kyth-os/kyth:latest"),
-                    target: text("disk", ""),
+                    target: if filesystem_install {
+                        "/var/tmp/kyth-alongside-target".to_string()
+                    } else {
+                        text("disk", "")
+                    },
                     skip_fetch_check: flag("skip_fetch_check", true),
                     skip_finalize: flag("skip_finalize", false),
                     root_subvolume: flag("root_subvolume", false),
@@ -260,11 +270,7 @@ impl NativePhaseExecutor {
             // worker was claimed.  Preparation therefore has no live side
             // effects and is safe to execute in fixture and production paths.
             Phase::Prepare => Ok(()),
-            Phase::Storage if self.storage_plan.mode == "wipe" => Ok(()),
-            Phase::Storage => Err(NativePhaseError::NotImplemented {
-                phase,
-                operation: NativeOperation::StorageMutation,
-            }),
+            Phase::Storage => self.execute_storage(phase, cancellation),
             Phase::Image => self.execute_image(phase, cancellation),
             Phase::Configure => {
                 installer_configuration::apply_plan(self.execution_plan.configuration.clone())
@@ -301,6 +307,101 @@ impl NativePhaseExecutor {
                 message: format!("bootc exited with status {}", status),
             })
         }
+    }
+
+    fn execute_storage(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
+        if self.storage_plan.mode == "wipe" {
+            // bootc to-disk owns the complete wipe layout and is run in the
+            // image phase; there is no separate storage mutation here.
+            return Ok(());
+        }
+        if self.storage_plan.mode != "alongside" {
+            return Err(NativePhaseError::NotImplemented {
+                phase,
+                operation: NativeOperation::StorageMutation,
+            });
+        }
+        let target = self
+            .storage_plan
+            .target_partition
+            .as_deref()
+            .ok_or_else(|| NativePhaseError::Execution {
+                phase,
+                message: "alongside storage has no target partition".to_string(),
+            })?;
+        let operations = [
+            serde_json::json!({
+                "operation": "format_filesystem",
+                "device": target,
+                "fs": "btrfs",
+                "label": "KythOS"
+            }),
+            serde_json::json!({
+                "operation": "ensure_directory",
+                "path": "/var/tmp/kyth-btrfs-root"
+            }),
+            serde_json::json!({
+                "operation": "mount_filesystem",
+                "device": target,
+                "mountpoint": "/var/tmp/kyth-btrfs-root"
+            }),
+            serde_json::json!({
+                "operation": "btrfs_subvolume_create",
+                "mountpoint": "/var/tmp/kyth-btrfs-root",
+                "name": "@"
+            }),
+            serde_json::json!({
+                "operation": "btrfs_subvolume_create",
+                "mountpoint": "/var/tmp/kyth-btrfs-root",
+                "name": "@home"
+            }),
+            serde_json::json!({
+                "operation": "btrfs_subvolume_set_default",
+                "mountpoint": "/var/tmp/kyth-btrfs-root",
+                "name": "@"
+            }),
+            serde_json::json!({
+                "operation": "unmount_filesystem",
+                "mountpoint": "/var/tmp/kyth-btrfs-root",
+                "recursive": true,
+                "lazy": true
+            }),
+            serde_json::json!({
+                "operation": "ensure_directory",
+                "path": "/var/tmp/kyth-alongside-target"
+            }),
+            serde_json::json!({
+                "operation": "mount_filesystem",
+                "device": target,
+                "mountpoint": "/var/tmp/kyth-alongside-target",
+                "options": ["subvol=@"]
+            }),
+        ];
+        for operation in operations {
+            let input =
+                serde_json::to_vec(&operation).map_err(|error| NativePhaseError::Execution {
+                    phase,
+                    message: format!("could not encode storage operation: {error}"),
+                })?;
+            let mut command = Command::new("/usr/bin/kyth-installer-exec");
+            command.args(["--operation", "disk"]);
+            let status =
+                super::installer_stream::run_command_with_input(&mut command, &input, || {
+                    cancellation.is_cancelled()
+                })
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+            if !status.success() {
+                return Err(NativePhaseError::Execution {
+                    phase,
+                    message: format!("storage helper exited with status {status}"),
+                });
+            }
+        }
+        Ok(())
     }
 
     fn execute_secure_boot(&self, phase: Phase) -> Result<(), NativePhaseError> {
@@ -448,11 +549,12 @@ mod tests {
             executor.execute_phase_typed(Phase::Storage, &cancellation),
             Ok(())
         );
-        let mut alongside = request(false);
-        alongside.storage.install_mode = "alongside".into();
-        alongside.storage.target_partition = "sda2".into();
+        let mut resize = request(false);
+        resize.storage.install_mode = "resize_ntfs".into();
+        resize.storage.resize_partition = "sda2".into();
+        resize.storage.resize_gib = 40;
         let executor =
-            NativePhaseExecutor::from_request(alongside).expect("alongside plan should validate");
+            NativePhaseExecutor::from_request(resize).expect("resize plan should validate");
         assert_eq!(
             executor.execute_phase_typed(Phase::Storage, &cancellation),
             Err(NativePhaseError::NotImplemented {
