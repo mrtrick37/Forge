@@ -7,7 +7,7 @@ use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 const MAX_USERNAME: usize = 32;
 
@@ -17,6 +17,47 @@ pub struct CreateUserInput {
     pub target_root: String,
     pub username: String,
     pub password_hash: String,
+}
+
+/// Hash a frontend password without placing it in argv, logs, or a durable
+/// request object. The native daemon consumes plaintext only long enough to
+/// feed the fixed SHA-512 crypt operation through stdin.
+pub(crate) fn hash_password(password: &str) -> Result<String, String> {
+    if password.is_empty() {
+        return Err(
+            "Password cannot be empty. Return to the Configure step and re-enter it.".into(),
+        );
+    }
+    if password.contains('\0') {
+        return Err("Password contains an unsupported character".into());
+    }
+    let mut child = Command::new("/usr/bin/openssl")
+        .args(["passwd", "-6", "-stdin"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|error| format!("could not hash password: {error}"))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        if let Err(error) = stdin.write_all(password.as_bytes()) {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(format!("could not provide password to hasher: {error}"));
+        }
+    }
+    let output = child
+        .wait_with_output()
+        .map_err(|error| format!("could not wait for password hasher: {error}"))?;
+    if !output.status.success() {
+        return Err("password hashing failed".into());
+    }
+    let hash = String::from_utf8(output.stdout)
+        .map_err(|_| "password hashing returned non-UTF-8 output".to_string())?;
+    let hash = hash.trim();
+    if !hash.starts_with("$6$") || hash.contains(['\n', '\r', '\0']) {
+        return Err("password hashing returned an invalid SHA-512 crypt value".into());
+    }
+    Ok(hash.to_string())
 }
 
 fn absolute_tree(value: &str, label: &str) -> Result<PathBuf, String> {
@@ -186,6 +227,13 @@ mod tests {
     #[test]
     fn validates_bounded_account_request() {
         assert!(validate(&input()).is_ok());
+    }
+
+    #[test]
+    fn hashes_password_through_stdin_only() {
+        let hash = hash_password("native-password").expect("openssl should hash a password");
+        assert!(hash.starts_with("$6$"));
+        assert!(!hash.contains("native-password"));
     }
 
     #[test]

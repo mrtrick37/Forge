@@ -58,7 +58,14 @@ impl NativeInstallRequest {
                 .unwrap_or(default)
         };
         let username = text("username", "");
-        let password_hash = text("password_hash", "");
+        let password_hash = {
+            let supplied_hash = text("password_hash", "");
+            if supplied_hash.is_empty() && !username.is_empty() {
+                crate::installer_accounts::hash_password(&text("password", ""))?
+            } else {
+                supplied_hash
+            }
+        };
         let install_mode = text("install_mode", "wipe").to_ascii_lowercase();
         let filesystem_install = matches!(
             install_mode.as_str(),
