@@ -385,6 +385,48 @@ pub(crate) fn parse_partitions(input: &str) -> Result<Vec<PartitionRecord>, Stri
     Ok(partitions)
 }
 
+/// Select the installed Btrfs root partition from a fresh lsblk tree.
+///
+/// Partition numbers are not guessed: the result must be a child of the
+/// requested disk, must be a partition, and must report Btrfs as its
+/// filesystem. EFI, BIOS-boot, and unrelated filesystems are ignored.
+pub(crate) fn root_partition_from_snapshot(input: &str, disk: &str) -> Result<String, String> {
+    let disk = normalize_device_path(disk)
+        .ok_or_else(|| "root partition query has an invalid disk".to_string())?;
+    let snapshot = parse_snapshot(input)?;
+    let root = snapshot
+        .blockdevices
+        .iter()
+        .find(|device| {
+            normalize_device_path(device.name.as_deref().unwrap_or_default()).as_deref()
+                == Some(disk.as_str())
+                && device.device_type.as_deref() == Some("disk")
+        })
+        .ok_or_else(|| "target disk was not present in root partition probe".to_string())?;
+    let mut candidates = Vec::new();
+    fn collect(device: &LsblkDevice, candidates: &mut Vec<String>) {
+        if device.device_type.as_deref() == Some("part")
+            && device
+                .fstype
+                .as_deref()
+                .map(str::to_ascii_lowercase)
+                .as_deref()
+                == Some("btrfs")
+        {
+            if let Some(name) = device.name.as_deref().and_then(normalize_device_path) {
+                candidates.push(name);
+            }
+        }
+        for child in &device.children {
+            collect(child, candidates);
+        }
+    }
+    collect(root, &mut candidates);
+    candidates.into_iter().next().ok_or_else(|| {
+        "target disk has no Btrfs root partition after bootc installation".to_string()
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -460,5 +502,57 @@ mod tests {
         assert_eq!(regions[0].start_bytes % 512, 0);
         assert_eq!(regions[0].end_bytes, disk_size - GPT_RESERVE_BYTES);
         assert!(regions[0].size_bytes >= MIN_KYTHOS_BYTES + GPT_RESERVE_BYTES);
+    }
+
+    #[test]
+    fn selects_btrfs_root_only_from_selected_disk() {
+        let snapshot = r#"{
+            "blockdevices": [
+                {
+                    "name": "/dev/sda",
+                    "type": "disk",
+                    "children": [
+                        {"name": "/dev/sda1", "type": "part", "fstype": "vfat"},
+                        {"name": "/dev/sda2", "type": "part", "fstype": "BTRFS"}
+                    ]
+                },
+                {
+                    "name": "/dev/sdb",
+                    "type": "disk",
+                    "children": [
+                        {"name": "/dev/sdb1", "type": "part", "fstype": "btrfs"}
+                    ]
+                }
+            ]
+        }"#;
+        assert_eq!(
+            root_partition_from_snapshot(snapshot, "sda").unwrap(),
+            "/dev/sda2"
+        );
+    }
+
+    #[test]
+    fn rejects_missing_or_unrelated_btrfs_root() {
+        let no_root = r#"{
+            "blockdevices": [{
+                "name": "/dev/sda",
+                "type": "disk",
+                "children": [{"name": "/dev/sda1", "type": "part", "fstype": "vfat"}]
+            }]
+        }"#;
+        let error = root_partition_from_snapshot(no_root, "/dev/sda")
+            .expect_err("a disk without Btrfs must fail closed");
+        assert!(error.contains("no Btrfs root partition"), "{error}");
+
+        let unrelated = r#"{
+            "blockdevices": [{
+                "name": "/dev/sdb",
+                "type": "disk",
+                "children": [{"name": "/dev/sdb1", "type": "part", "fstype": "btrfs"}]
+            }]
+        }"#;
+        let error = root_partition_from_snapshot(unrelated, "/dev/sda")
+            .expect_err("an absent selected disk must fail closed");
+        assert!(error.contains("target disk was not present"), "{error}");
     }
 }

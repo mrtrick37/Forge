@@ -60,6 +60,11 @@ impl NativeInstallRequest {
         let password_hash = text("password_hash", "");
         let install_mode = text("install_mode", "wipe").to_ascii_lowercase();
         let filesystem_install = matches!(install_mode.as_str(), "alongside" | "manual");
+        let target_root = if filesystem_install {
+            "/var/tmp/kyth-alongside-target".to_string()
+        } else {
+            "/var/tmp/kyth-install-root".to_string()
+        };
         let manual_mounts = if install_mode == "manual" {
             let mounts = object
                 .get("mounts")
@@ -67,8 +72,8 @@ impl NativeInstallRequest {
                 .unwrap_or_else(|| serde_json::json!([]));
             Some(
                 serde_json::from_value(serde_json::json!({
-                    "config_root": text("target_root", "/mnt/target"),
-                    "fstab_path": format!("{}/etc/fstab", text("target_root", "/mnt/target")),
+                    "config_root": target_root.clone(),
+                    "fstab_path": format!("{target_root}/etc/fstab"),
                     "mounts": mounts,
                 }))
                 .map_err(|error| format!("invalid manual mount request: {error}"))?,
@@ -78,8 +83,8 @@ impl NativeInstallRequest {
         };
         let account =
             (!username.is_empty()).then_some(crate::installer_accounts::CreateUserInput {
-                deploy_root: text("deploy_root", "/mnt/deploy"),
-                target_root: text("target_root", "/mnt/target"),
+                deploy_root: target_root.clone(),
+                target_root: target_root.clone(),
                 username,
                 password_hash,
             });
@@ -113,7 +118,7 @@ impl NativeInstallRequest {
                     wipe: flag("wipe", false),
                 },
                 configuration: crate::installer_configuration::ConfigurationInput {
-                    target_root: text("target_root", "/mnt/target"),
+                    target_root: target_root.clone(),
                     hostname: text("hostname", "kyth"),
                     timezone: text("timezone", "UTC"),
                     locale: text("locale", "en_US.UTF-8"),
@@ -329,6 +334,9 @@ impl NativePhaseExecutor {
             super::installer_stream::run_command(&mut command, || cancellation.is_cancelled())
                 .map_err(|message| NativePhaseError::Execution { phase, message })?;
         if status.success() {
+            if self.storage_plan.mode == "wipe" {
+                self.mount_wipe_root(phase, cancellation)?;
+            }
             Ok(())
         } else {
             Err(NativePhaseError::Execution {
@@ -336,6 +344,83 @@ impl NativePhaseExecutor {
                 message: format!("bootc exited with status {}", status),
             })
         }
+    }
+
+    fn execute_disk_helper(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+        operation: &serde_json::Value,
+    ) -> Result<(), NativePhaseError> {
+        let input = serde_json::to_vec(operation).map_err(|error| NativePhaseError::Execution {
+            phase,
+            message: format!("could not encode disk operation: {error}"),
+        })?;
+        let mut command = Command::new("/usr/bin/kyth-installer-exec");
+        command.args(["--operation", "disk"]);
+        let status = super::installer_stream::run_command_with_input(&mut command, &input, || {
+            cancellation.is_cancelled()
+        })
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        if status.success() {
+            Ok(())
+        } else {
+            Err(NativePhaseError::Execution {
+                phase,
+                message: format!("disk helper exited with status {status}"),
+            })
+        }
+    }
+
+    fn mount_wipe_root(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
+        let output = Command::new("/usr/bin/lsblk")
+            .args([
+                "--json",
+                "--bytes",
+                "--paths",
+                "--output",
+                "NAME,TYPE,FSTYPE,PKNAME",
+                &self.storage_plan.disk,
+            ])
+            .output()
+            .map_err(|error| NativePhaseError::Execution {
+                phase,
+                message: format!("could not probe installed root partition: {error}"),
+            })?;
+        if !output.status.success() {
+            return Err(NativePhaseError::Execution {
+                phase,
+                message: "installed root partition probe failed".to_string(),
+            });
+        }
+        let snapshot =
+            String::from_utf8(output.stdout).map_err(|_| NativePhaseError::Execution {
+                phase,
+                message: "installed root partition probe was not UTF-8".to_string(),
+            })?;
+        let root = crate::installer_storage::root_partition_from_snapshot(
+            &snapshot,
+            &self.storage_plan.disk,
+        )
+        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        for operation in [
+            serde_json::json!({
+                "operation": "ensure_directory",
+                "path": "/var/tmp/kyth-install-root"
+            }),
+            serde_json::json!({
+                "operation": "mount_filesystem",
+                "device": root,
+                "mountpoint": "/var/tmp/kyth-install-root"
+            }),
+        ] {
+            self.execute_disk_helper(phase, cancellation, &operation)?;
+        }
+        Ok(())
     }
 
     fn execute_storage(
