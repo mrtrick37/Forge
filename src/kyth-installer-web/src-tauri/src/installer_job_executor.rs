@@ -10,6 +10,7 @@
 
 use std::fmt;
 use std::process::Command;
+use std::sync::Mutex;
 
 use super::installer_executor::{self, InstallerExecutionInput, InstallerExecutionPlan};
 use super::installer_job::{CancellationToken, JobSupervisor, PhaseExecutor};
@@ -226,6 +227,7 @@ pub(crate) struct NativePhaseExecutor {
     secure_boot_password: String,
     transaction_id: String,
     transaction_path: String,
+    mounts: Mutex<crate::installer_mount::MountRegistry>,
 }
 
 impl NativePhaseExecutor {
@@ -259,6 +261,7 @@ impl NativePhaseExecutor {
                     .unwrap_or_default()
             ),
             transaction_path,
+            mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
         })
     }
 
@@ -285,6 +288,7 @@ impl NativePhaseExecutor {
                     .unwrap_or_default()
             ),
             transaction_path: "/run/kyth-installer/transaction.json".to_string(),
+            mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
         }
     }
 
@@ -429,6 +433,52 @@ impl NativePhaseExecutor {
         )
     }
 
+    fn register_mount(&self, path: &str) -> Result<(), NativePhaseError> {
+        self.mounts
+            .lock()
+            .map_err(|_| NativePhaseError::Execution {
+                phase: Phase::Configure,
+                message: "native mount state is unavailable".to_string(),
+            })?
+            .register(path);
+        Ok(())
+    }
+
+    fn release_mount(&self, path: &str) -> Result<(), NativePhaseError> {
+        self.mounts
+            .lock()
+            .map_err(|_| NativePhaseError::Execution {
+                phase: Phase::Configure,
+                message: "native mount state is unavailable".to_string(),
+            })?
+            .release(path);
+        Ok(())
+    }
+
+    fn cleanup_mounts(&self, phase: Phase) -> Result<(), String> {
+        let paths = self
+            .mounts
+            .lock()
+            .map_err(|_| "native mount state is unavailable".to_string())?
+            .cleanup_order();
+        let cancellation = CancellationToken::default();
+        let mut first_error = None;
+        for path in paths {
+            let operation = serde_json::json!({
+                "operation": "unmount_filesystem",
+                "mountpoint": path,
+                "recursive": true,
+                "lazy": true
+            });
+            if let Err(error) = self.execute_disk_helper(phase, &cancellation, &operation) {
+                if first_error.is_none() {
+                    first_error = Some(error.to_string());
+                }
+            }
+        }
+        first_error.map_or(Ok(()), Err)
+    }
+
     fn write_terminal_transaction(&self, phase: Option<Phase>, message: &str) {
         let phase = phase.unwrap_or(Phase::Prepare);
         let _ = self.write_transaction("failed", phase, "failed", message);
@@ -531,6 +581,7 @@ impl NativePhaseExecutor {
         ] {
             self.execute_disk_helper(phase, cancellation, &operation)?;
         }
+        self.register_mount("/var/tmp/kyth-install-root")?;
         Ok(())
     }
 
@@ -810,57 +861,90 @@ impl NativePhaseExecutor {
         cancellation: &CancellationToken,
         target: &str,
     ) -> Result<(), NativePhaseError> {
-        let operations = [
-            serde_json::json!({
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
                 "operation": "format_filesystem",
                 "device": target,
                 "fs": "btrfs",
                 "label": "KythOS"
             }),
-            serde_json::json!({
+        )?;
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
                 "operation": "ensure_directory",
                 "path": "/var/tmp/kyth-btrfs-root"
             }),
-            serde_json::json!({
+        )?;
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
                 "operation": "mount_filesystem",
                 "device": target,
                 "mountpoint": "/var/tmp/kyth-btrfs-root"
             }),
-            serde_json::json!({
-                "operation": "btrfs_subvolume_create",
-                "mountpoint": "/var/tmp/kyth-btrfs-root",
-                "name": "@"
-            }),
-            serde_json::json!({
-                "operation": "btrfs_subvolume_create",
-                "mountpoint": "/var/tmp/kyth-btrfs-root",
-                "name": "@home"
-            }),
-            serde_json::json!({
-                "operation": "btrfs_subvolume_set_default",
-                "mountpoint": "/var/tmp/kyth-btrfs-root",
-                "name": "@"
-            }),
-            serde_json::json!({
+        )?;
+        self.register_mount("/var/tmp/kyth-btrfs-root")?;
+
+        let temporary_setup = (|| {
+            for name in ["@", "@home"] {
+                self.execute_disk_helper(
+                    phase,
+                    cancellation,
+                    &serde_json::json!({
+                        "operation": "btrfs_subvolume_create",
+                        "mountpoint": "/var/tmp/kyth-btrfs-root",
+                        "name": name
+                    }),
+                )?;
+            }
+            self.execute_disk_helper(
+                phase,
+                cancellation,
+                &serde_json::json!({
+                    "operation": "btrfs_subvolume_set_default",
+                    "mountpoint": "/var/tmp/kyth-btrfs-root",
+                    "name": "@"
+                }),
+            )
+        })();
+        let cleanup_result = self.execute_disk_helper(
+            phase,
+            &CancellationToken::default(),
+            &serde_json::json!({
                 "operation": "unmount_filesystem",
                 "mountpoint": "/var/tmp/kyth-btrfs-root",
                 "recursive": true,
                 "lazy": true
             }),
-            serde_json::json!({
+        );
+        self.release_mount("/var/tmp/kyth-btrfs-root")?;
+        temporary_setup?;
+        cleanup_result?;
+
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
                 "operation": "ensure_directory",
                 "path": "/var/tmp/kyth-alongside-target"
             }),
-            serde_json::json!({
+        )?;
+        self.execute_disk_helper(
+            phase,
+            cancellation,
+            &serde_json::json!({
                 "operation": "mount_filesystem",
                 "device": target,
                 "mountpoint": "/var/tmp/kyth-alongside-target",
                 "options": ["subvol=@"]
             }),
-        ];
-        for operation in operations {
-            self.execute_disk_helper(phase, cancellation, &operation)?;
-        }
+        )?;
+        self.register_mount("/var/tmp/kyth-alongside-target")?;
         Ok(())
     }
 
@@ -939,6 +1023,8 @@ impl NativePhaseExecutor {
     }
 
     fn execute_complete(&self, phase: Phase) -> Result<(), NativePhaseError> {
+        self.cleanup_mounts(phase)
+            .map_err(|message| NativePhaseError::Execution { phase, message })?;
         self.write_transaction(
             "complete",
             phase,
@@ -963,10 +1049,12 @@ impl PhaseExecutor for NativePhaseExecutor {
     }
 
     fn record_cancelled(&self, phase: Option<Phase>) {
+        let _ = self.cleanup_mounts(phase.unwrap_or(Phase::Prepare));
         self.write_terminal_transaction(phase, super::installer_job::CANCELLATION_MESSAGE);
     }
 
     fn record_failed(&self, phase: Phase, message: &str) {
+        let _ = self.cleanup_mounts(phase);
         self.write_terminal_transaction(Some(phase), message);
     }
 }
