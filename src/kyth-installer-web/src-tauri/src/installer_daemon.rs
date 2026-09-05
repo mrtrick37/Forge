@@ -13,11 +13,11 @@ use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Command, Stdio};
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use super::installer_job::{EventReplay, JobSnapshot, JobSupervisor, StartReceipt};
 use super::installer_job_executor::{NativeInstallRequest, NativePhaseExecutor};
@@ -26,7 +26,6 @@ use super::installer_runtime::RuntimeCoordinator;
 use super::installer_storage;
 
 const MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
-const BACKEND_SOCKET_SUFFIX: &str = ".backend";
 const TRANSACTION_PATH: &str = "/run/kyth-installer/transaction.json";
 
 type NativeSupervisor = JobSupervisor<NativePhaseExecutor>;
@@ -1190,27 +1189,6 @@ fn native_request_from_start(request: &[u8]) -> Result<NativeInstallRequest, Str
     NativeInstallRequest::from_http(value)
 }
 
-fn response_status(response: &[u8]) -> Option<u16> {
-    let header_end = response
-        .windows(4)
-        .position(|window| window == b"\r\n\r\n")?;
-    std::str::from_utf8(&response[..header_end])
-        .ok()?
-        .lines()
-        .next()?
-        .split_whitespace()
-        .nth(1)?
-        .parse()
-        .ok()
-}
-
-fn response_body(response: &[u8]) -> Option<&[u8]> {
-    let header_end = response
-        .windows(4)
-        .position(|window| window == b"\r\n\r\n")?;
-    Some(&response[header_end + 4..])
-}
-
 fn native_report(snapshot: &JobSnapshot) -> Result<serde_json::Value, String> {
     let mut value = serde_json::json!({
         "job_id": snapshot.job_id,
@@ -1237,49 +1215,41 @@ fn native_report(snapshot: &JobSnapshot) -> Result<serde_json::Value, String> {
     Ok(value)
 }
 
-fn forward_buffered(mut backend: UnixStream, mut client: UnixStream) -> Result<Vec<u8>, String> {
-    let mut response = Vec::new();
-    backend
-        .read_to_end(&mut response)
-        .map_err(|error| format!("could not read installer response: {error}"))?;
-    if response.len() > MAX_REQUEST_BYTES {
-        return Err("installer response is too large".to_string());
-    }
+fn native_log(mut client: UnixStream) -> Result<(), String> {
     client
-        .write_all(&response)
-        .map_err(|error| format!("could not forward installer response: {error}"))?;
-    Ok(response)
-}
-
-fn forward_stream(
-    mut backend: UnixStream,
-    mut client: UnixStream,
-    runtime: &RuntimeCoordinator,
-) -> Result<(), String> {
-    let mut buffer = [0_u8; 8192];
-    let mut pending = String::new();
+        .write_all(
+            b"HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n",
+        )
+        .map_err(|error| format!("could not write native log headers: {error}"))?;
+    let path = std::env::var("KYTH_INSTALLER_LOG")
+        .unwrap_or_else(|_| "/run/kyth-installer/log".to_string());
+    let mut file = match OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW)
+        .open(&path)
+    {
+        Ok(file) => file,
+        Err(error) => {
+            let message = format!("Could not read installer log: {error}\n");
+            client
+                .write_all(message.as_bytes())
+                .map_err(|write_error| {
+                    format!("could not write native log error: {write_error}")
+                })?;
+            return Ok(());
+        }
+    };
+    let mut buffer = [0_u8; 64 * 1024];
     loop {
-        let count = backend
+        let count = file
             .read(&mut buffer)
-            .map_err(|error| format!("could not read installer event stream: {error}"))?;
+            .map_err(|error| format!("could not read native installer log: {error}"))?;
         if count == 0 {
             return Ok(());
         }
         client
             .write_all(&buffer[..count])
-            .map_err(|error| format!("could not forward installer event stream: {error}"))?;
-        pending.push_str(&String::from_utf8_lossy(&buffer[..count]));
-        while let Some(newline) = pending.find('\n') {
-            let line = pending[..newline].trim_end_matches('\r').to_string();
-            pending.drain(..newline + 1);
-            if let Some(payload) = line.strip_prefix("data: ") {
-                if let Ok(event) = serde_json::from_str::<serde_json::Value>(payload.trim()) {
-                    // The compatibility stream remains the wire format, but
-                    // Rust is now the lifecycle authority that observes it.
-                    let _ = runtime.event(&event);
-                }
-            }
-        }
+            .map_err(|error| format!("could not stream native installer log: {error}"))?;
     }
 }
 
@@ -1345,7 +1315,6 @@ fn native_stream(
 
 fn handle(
     mut client: UnixStream,
-    backend_path: &Path,
     token: &str,
     expected_uid: Option<u32>,
     runtime: Arc<RuntimeCoordinator>,
@@ -1496,6 +1465,9 @@ fn handle(
         let value = native_rescue_probe();
         json_response(&mut client, "200 OK", &value);
         return Ok(());
+    }
+    if method == "GET" && route == "/api/log" {
+        return native_log(client);
     }
     if method == "POST" && route == "/api/rescue/logs-to-usb" {
         let body = match request_body(&request) {
@@ -1648,87 +1620,16 @@ fn handle(
                 .unwrap_or(0);
             return native_stream(client, &native_registry, last_event_id);
         }
+        json_response(
+            &mut client,
+            "409 Conflict",
+            &serde_json::json!({"error": "No installation is running."}),
+        );
+        return Ok(());
     }
-    let mut backend = UnixStream::connect(backend_path).map_err(|error| {
-        format!("could not connect to installer compatibility backend: {error}")
-    })?;
-    backend
-        .write_all(&request)
-        .map_err(|error| format!("could not forward installer request: {error}"))?;
-    if method == "GET" && route == "/api/stream" {
-        return forward_stream(backend, client, &runtime);
-    }
-    let response = match forward_buffered(backend, client) {
-        Ok(response) => response,
-        Err(error) => {
-            if method == "POST" && route == "/api/start" {
-                let _ = runtime.start_rejected();
-            }
-            if method == "POST" && route == "/api/cancel" {
-                let _ = runtime.cancel_rejected();
-            }
-            return Err(error);
-        }
-    };
-    let status = response_status(&response).unwrap_or(500);
-    let body = response_body(&response).unwrap_or_default();
-    if method == "POST" && route == "/api/start" {
-        let started = serde_json::from_slice::<serde_json::Value>(body)
-            .ok()
-            .and_then(|value| value.get("started").and_then(serde_json::Value::as_bool))
-            .unwrap_or(false);
-        if status < 300 && started {
-            runtime.start_accepted()?;
-        } else {
-            runtime.start_rejected()?;
-        }
-    }
-    if method == "POST" && route == "/api/cancel" {
-        let accepted = serde_json::from_slice::<serde_json::Value>(body)
-            .ok()
-            .and_then(|value| value.get("ok").and_then(serde_json::Value::as_bool))
-            .unwrap_or(false);
-        if !accepted {
-            runtime.cancel_rejected()?;
-        }
-    }
-    Ok(())
-}
-
-struct ChildGuard(Child);
-
-impl Drop for ChildGuard {
-    fn drop(&mut self) {
-        let _ = self.0.kill();
-        let _ = self.0.wait();
-    }
-}
-
-fn start_backend(token_path: &Path, backend_path: &Path) -> Result<ChildGuard, String> {
-    let child = Command::new("/usr/bin/python3")
-        .args(["-m", "kyth_installer.daemon", "--socket-path"])
-        .arg(backend_path)
-        .args(["--session-token-file"])
-        .arg(token_path)
-        .stdin(Stdio::null())
-        .spawn()
-        .map_err(|error| format!("could not start installer compatibility backend: {error}"))?;
-    Ok(ChildGuard(child))
-}
-
-fn wait_for_backend(backend_path: &Path) -> Result<(), String> {
-    let deadline = Instant::now() + Duration::from_secs(10);
-    loop {
-        match UnixStream::connect(backend_path) {
-            Ok(_) => return Ok(()),
-            Err(_error) if Instant::now() < deadline => thread::sleep(Duration::from_millis(25)),
-            Err(error) => {
-                return Err(format!(
-                    "installer compatibility backend did not start: {error}"
-                ))
-            }
-        }
-    }
+    Err(format!(
+        "native installer route is not implemented: {method} {route}"
+    ))
 }
 
 pub fn run(args: &[String]) -> Result<(), String> {
@@ -1737,13 +1638,6 @@ pub fn run(args: &[String]) -> Result<(), String> {
     }
     let options = options(args)?;
     let token = read_session_token(&options.session_token_file)?;
-    let backend_path = PathBuf::from(format!(
-        "{}{}",
-        options.socket_path.display(),
-        BACKEND_SOCKET_SUFFIX
-    ));
-    let _backend = start_backend(&options.session_token_file, &backend_path)?;
-    wait_for_backend(&backend_path)?;
     let listener = listener(&options)?;
     let runtime = Arc::new(RuntimeCoordinator::default());
     let native_registry = Arc::new(NativeJobRegistry::default());
@@ -1753,14 +1647,12 @@ pub fn run(args: &[String]) -> Result<(), String> {
             Ok(stream) => {
                 let token = token.clone();
                 let expected_uid = options.peer_uid;
-                let backend_path = backend_path.clone();
                 let runtime = Arc::clone(&runtime);
                 let native_registry = Arc::clone(&native_registry);
                 let native_journal = Arc::clone(&native_journal);
                 thread::spawn(move || {
                     if let Err(error) = handle(
                         stream,
-                        &backend_path,
                         &token,
                         expected_uid,
                         runtime,
