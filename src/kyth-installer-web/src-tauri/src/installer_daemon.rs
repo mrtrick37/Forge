@@ -15,9 +15,11 @@ use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
 
+use super::installer_job::{EventReplay, JobSnapshot, JobSupervisor, StartReceipt};
 use super::installer_job_executor::{NativeInstallRequest, NativePhaseExecutor};
 use super::installer_plan::{build_plan, InstallerPlanInput};
 use super::installer_runtime::RuntimeCoordinator;
@@ -25,6 +27,74 @@ use super::installer_storage;
 
 const MAX_REQUEST_BYTES: usize = 16 * 1024 * 1024;
 const BACKEND_SOCKET_SUFFIX: &str = ".backend";
+
+type NativeSupervisor = JobSupervisor<NativePhaseExecutor>;
+
+/// Shared native job ownership for the daemon's request threads.
+///
+/// A supervisor is bound to one validated install request, so the registry
+/// stores the active supervisor rather than a reusable executor. The slot is
+/// claimed while holding this mutex, closing the race between concurrent
+/// `/api/start` requests.
+struct NativeJobRegistry {
+    active: Mutex<Option<NativeSupervisor>>,
+}
+
+impl Default for NativeJobRegistry {
+    fn default() -> Self {
+        Self {
+            active: Mutex::new(None),
+        }
+    }
+}
+
+impl NativeJobRegistry {
+    fn start(&self, request: NativeInstallRequest) -> Result<StartReceipt, String> {
+        let mut active = self
+            .active
+            .lock()
+            .map_err(|_| "native installer job state is unavailable".to_string())?;
+        if let Some(supervisor) = active.as_ref() {
+            if supervisor.snapshot()?.worker_active {
+                return Err("An installation is already running.".to_string());
+            }
+        }
+        let supervisor = NativeSupervisor::new(NativePhaseExecutor::from_request(request)?);
+        let receipt = supervisor.start()?;
+        *active = Some(supervisor);
+        Ok(receipt)
+    }
+
+    fn cancel(&self) -> Result<(), String> {
+        let active = self
+            .active
+            .lock()
+            .map_err(|_| "native installer job state is unavailable".to_string())?;
+        active
+            .as_ref()
+            .ok_or_else(|| "No installation is running to cancel.".to_string())?
+            .cancel()
+    }
+
+    fn snapshot(&self) -> Result<Option<JobSnapshot>, String> {
+        let active = self
+            .active
+            .lock()
+            .map_err(|_| "native installer job state is unavailable".to_string())?;
+        active.as_ref().map(JobSupervisor::snapshot).transpose()
+    }
+
+    fn replay(&self, last_event_id: u64) -> Result<Option<EventReplay>, String> {
+        let active = self
+            .active
+            .lock()
+            .map_err(|_| "native installer job state is unavailable".to_string())?;
+        active
+            .as_ref()
+            .map(|supervisor| supervisor.replay(last_event_id))
+            .transpose()
+    }
+}
 
 struct Options {
     socket_path: PathBuf,
@@ -958,5 +1028,16 @@ mod tests {
         let executor = native_executor_from_start(&request).expect("native plan should validate");
         assert_eq!(executor.storage_plan().disk, "/dev/sda");
         assert_eq!(executor.execution_plan().bootc.target, "/dev/sda");
+    }
+
+    #[test]
+    fn native_job_registry_starts_empty_and_rejects_cancel_without_job() {
+        let registry = super::NativeJobRegistry::default();
+        assert!(registry.snapshot().unwrap().is_none());
+        assert!(registry.replay(0).unwrap().is_none());
+        assert_eq!(
+            registry.cancel().unwrap_err(),
+            "No installation is running to cancel."
+        );
     }
 }
