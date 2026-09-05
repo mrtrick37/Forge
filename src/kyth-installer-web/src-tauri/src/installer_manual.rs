@@ -5,14 +5,14 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub(crate) struct ManualMountsInput {
     pub config_root: String,
     pub fstab_path: String,
     pub mounts: Vec<ManualMountInput>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub(crate) struct ManualMountInput {
     pub partition: String,
     pub mountpoint: String,

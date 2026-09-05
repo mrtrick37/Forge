@@ -25,6 +25,7 @@ use crate::installer_configuration;
 pub(crate) struct NativeInstallRequest {
     pub storage: InstallerPlanInput,
     pub execution: InstallerExecutionInput,
+    pub manual_mounts: Option<crate::installer_manual::ManualMountsInput>,
     pub secure_boot_password: String,
 }
 
@@ -58,6 +59,22 @@ impl NativeInstallRequest {
         let password_hash = text("password_hash", "");
         let install_mode = text("install_mode", "wipe").to_ascii_lowercase();
         let filesystem_install = matches!(install_mode.as_str(), "alongside" | "manual");
+        let manual_mounts = if install_mode == "manual" {
+            let mounts = object
+                .get("mounts")
+                .cloned()
+                .unwrap_or_else(|| serde_json::json!([]));
+            Some(
+                serde_json::from_value(serde_json::json!({
+                    "config_root": text("target_root", "/mnt/target"),
+                    "fstab_path": format!("{}/etc/fstab", text("target_root", "/mnt/target")),
+                    "mounts": mounts,
+                }))
+                .map_err(|error| format!("invalid manual mount request: {error}"))?,
+            )
+        } else {
+            None
+        };
         let account =
             (!username.is_empty()).then_some(crate::installer_accounts::CreateUserInput {
                 deploy_root: text("deploy_root", "/mnt/deploy"),
@@ -112,6 +129,7 @@ impl NativeInstallRequest {
                     pending: text("pending", "unknown"),
                 },
             },
+            manual_mounts,
             secure_boot_password: text("mok_password", ""),
         })
     }
@@ -190,6 +208,7 @@ pub(crate) struct NativePhaseExecutor {
     storage_plan: InstallerPlan,
     execution_plan: InstallerExecutionPlan,
     account: Option<crate::installer_accounts::CreateUserInput>,
+    manual_mounts: Option<crate::installer_manual::ManualMountsInput>,
     secure_boot_kernel: String,
     secure_boot_force_stage: bool,
     secure_boot_password: String,
@@ -198,6 +217,7 @@ pub(crate) struct NativePhaseExecutor {
 impl NativePhaseExecutor {
     pub(crate) fn from_request(request: NativeInstallRequest) -> Result<Self, String> {
         let account = request.execution.account.clone();
+        let manual_mounts = request.manual_mounts;
         let secure_boot_kernel = request.execution.secure_boot.kernel.clone();
         let secure_boot_force_stage = request.execution.secure_boot.force_stage;
         let secure_boot_password = request.secure_boot_password;
@@ -207,6 +227,7 @@ impl NativePhaseExecutor {
             storage_plan,
             execution_plan,
             account,
+            manual_mounts,
             secure_boot_kernel,
             secure_boot_force_stage,
             secure_boot_password,
@@ -221,6 +242,7 @@ impl NativePhaseExecutor {
             storage_plan,
             execution_plan,
             account: None,
+            manual_mounts: None,
             secure_boot_kernel: "fedora".to_string(),
             secure_boot_force_stage: false,
             secure_boot_password: String::new(),
@@ -279,6 +301,10 @@ impl NativePhaseExecutor {
                     crate::installer_accounts::apply(account.clone())
                         .map_err(|message| NativePhaseError::Execution { phase, message })?;
                 }
+                if let Some(mounts) = &self.manual_mounts {
+                    crate::installer_manual::apply(mounts.clone())
+                        .map_err(|message| NativePhaseError::Execution { phase, message })?;
+                }
                 Ok(())
             }
             Phase::SecureBoot => self.execute_secure_boot(phase),
@@ -319,7 +345,7 @@ impl NativePhaseExecutor {
             // image phase; there is no separate storage mutation here.
             return Ok(());
         }
-        if self.storage_plan.mode != "alongside" {
+        if !matches!(self.storage_plan.mode.as_str(), "alongside" | "manual") {
             return Err(NativePhaseError::NotImplemented {
                 phase,
                 operation: NativeOperation::StorageMutation,
@@ -485,6 +511,7 @@ mod tests {
                     pending: "unknown".into(),
                 },
             },
+            manual_mounts: None,
             secure_boot_password: String::new(),
         }
     }
