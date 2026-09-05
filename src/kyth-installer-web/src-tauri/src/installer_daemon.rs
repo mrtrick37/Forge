@@ -453,6 +453,101 @@ fn command_output(program: &str, args: &[&str]) -> Result<String, String> {
     String::from_utf8(output.stdout).map_err(|_| format!("{program} returned non-UTF-8 output"))
 }
 
+fn request_body(request: &[u8]) -> Result<serde_json::Value, String> {
+    let end = header_end(request)?;
+    serde_json::from_slice(&request[end..])
+        .map_err(|error| format!("Invalid installer request JSON: {error}"))
+}
+
+fn run_native_helper(
+    operation: &str,
+    value: &serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    if operation != "recovery-export" {
+        return Err("unsupported native helper operation".to_string());
+    }
+    let input = serde_json::to_vec(value)
+        .map_err(|error| format!("could not encode native helper request: {error}"))?;
+    let mut command = Command::new("/usr/bin/kyth-installer-exec");
+    command
+        .args(["--operation", operation])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut child = command
+        .spawn()
+        .map_err(|error| format!("could not start native helper: {error}"))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin
+            .write_all(&input)
+            .map_err(|error| format!("could not provide native helper input: {error}"))?;
+    }
+    let output = child
+        .wait_with_output()
+        .map_err(|error| format!("could not wait for native helper: {error}"))?;
+    if !output.status.success() {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(if detail.is_empty() {
+            format!("native helper exited with status {}", output.status)
+        } else {
+            detail
+        });
+    }
+    serde_json::from_slice(&output.stdout)
+        .map_err(|error| format!("native helper returned malformed JSON: {error}"))
+}
+
+fn first_usb_mount() -> Option<String> {
+    let output = command_output(
+        "/usr/bin/findmnt",
+        &["-R", "-n", "-o", "TARGET", "/run/media"],
+    )
+    .ok()?;
+    output.lines().map(str::trim).find_map(|path| {
+        let path = Path::new(path);
+        (path.starts_with("/run/media/") && path.is_dir() && !path.is_symlink())
+            .then(|| path.to_string_lossy().into_owned())
+    })
+}
+
+fn native_rescue_probe() -> serde_json::Value {
+    let transaction = fs::read_to_string(TRANSACTION_PATH)
+        .ok()
+        .and_then(|contents| serde_json::from_str::<serde_json::Value>(&contents).ok())
+        .filter(serde_json::Value::is_object)
+        .unwrap_or_else(|| serde_json::json!({}));
+    let status = transaction
+        .get("status")
+        .and_then(serde_json::Value::as_str);
+    let mut probe = serde_json::json!({
+        "log_tail": "",
+        "sgdisk_verify": "",
+        "efibootmgr": "",
+        "transaction": transaction,
+        "bootc_status": "",
+        "rescue_guidance": crate::installer_recovery::rescue_guidance(status),
+    });
+    if let Ok(contents) = fs::read_to_string("/run/kyth-installer/log") {
+        let lines = contents.lines().collect::<Vec<_>>();
+        probe["log_tail"] = serde_json::json!(lines[lines.len().saturating_sub(80)..].join("\n"));
+    }
+    if let Some(disk) = probe["transaction"]["disk"]
+        .as_str()
+        .and_then(crate::installer_plan::normalize_device_path)
+    {
+        if let Ok(output) = command_output("/usr/sbin/sgdisk", &["--verify", &disk]) {
+            probe["sgdisk_verify"] = serde_json::json!(output);
+        }
+    }
+    if let Ok(output) = command_output("/usr/bin/efibootmgr", &["-v"]) {
+        probe["efibootmgr"] = serde_json::json!(output);
+    }
+    if let Ok(output) = command_output("/usr/bin/bootc", &["status", "--json"]) {
+        probe["bootc_status"] = serde_json::json!(output.chars().take(8000).collect::<String>());
+    }
+    probe
+}
+
 fn findmnt_sources(path: &str, recursive: bool) -> Result<Vec<String>, String> {
     let mut args = Vec::with_capacity(5);
     if recursive {
@@ -928,6 +1023,64 @@ fn handle(
             Err(error) => return Err(format!("could not read installer transaction: {error}")),
         };
         json_response(&mut client, "200 OK", &value);
+        return Ok(());
+    }
+    if method == "GET" && route == "/api/rescue/probe" {
+        let value = native_rescue_probe();
+        json_response(&mut client, "200 OK", &value);
+        return Ok(());
+    }
+    if method == "POST" && route == "/api/rescue/logs-to-usb" {
+        let body = match request_body(&request) {
+            Ok(value) if value.is_object() => value,
+            Ok(_) => {
+                json_response(
+                    &mut client,
+                    "400 Bad Request",
+                    &serde_json::json!({"ok": false, "message": "Recovery export request must be a JSON object."}),
+                );
+                return Ok(());
+            }
+            Err(error) => {
+                json_response(
+                    &mut client,
+                    "400 Bad Request",
+                    &serde_json::json!({"ok": false, "message": error}),
+                );
+                return Ok(());
+            }
+        };
+        let usb_mount = body
+            .get("usb_mount")
+            .and_then(serde_json::Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .map(str::to_string)
+            .or_else(first_usb_mount);
+        let Some(usb_mount) = usb_mount else {
+            json_response(
+                &mut client,
+                "400 Bad Request",
+                &serde_json::json!({
+                    "ok": false,
+                    "message": "No USB drive found. Insert a USB stick and try again."
+                }),
+            );
+            return Ok(());
+        };
+        let export = serde_json::json!({
+            "usb_mount": usb_mount,
+            "log_path": "/run/kyth-installer/log",
+            "transaction_path": TRANSACTION_PATH,
+            "failure_summary_path": "/run/kyth-installer/failure.json"
+        });
+        match run_native_helper("recovery-export", &export) {
+            Ok(value) => json_response(&mut client, "200 OK", &value),
+            Err(error) => json_response(
+                &mut client,
+                "500 Internal Server Error",
+                &serde_json::json!({"ok": false, "message": error}),
+            ),
+        }
         return Ok(());
     }
     if method == "POST" && route == "/api/start" {
