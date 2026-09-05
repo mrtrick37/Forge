@@ -1,8 +1,8 @@
-//! Pure Secure Boot/MOK decision model.
+//! Native Secure Boot/MOK decision and execution boundary.
 //!
-//! No password, certificate contents, firmware access, or subprocess result
-//! is handled here. The Python service performs those privileged operations
-//! and feeds their bounded observations into the same state model.
+//! The daemon and its root-only execution helper own firmware probing and MOK
+//! staging. Passwords arrive only in the typed stdin request and never enter
+//! argv, durable installer state, event payloads, or diagnostic messages.
 
 use serde::{Deserialize, Serialize};
 use std::io::Write;
@@ -224,6 +224,16 @@ fn stage_certificate(
     }
 }
 
+fn validate_stage_password(password: &str) -> Result<(), String> {
+    if password.is_empty()
+        || password.len() > MAX_MOK_PASSWORD_BYTES
+        || password.contains(['\0', '\n', '\r'])
+    {
+        return Err("Secure Boot password is empty or contains unsupported characters".to_string());
+    }
+    Ok(())
+}
+
 /// Probe firmware state and, when required, stage the fixed KythOS MOK.
 pub(crate) fn stage(input: SecureBootStageInput) -> Result<SecureBootPlan, String> {
     stage_with_cancellation(input, || false)
@@ -239,10 +249,6 @@ pub(crate) fn stage_with_cancellation(
         return Err(
             "Installation cancelled by user. Disk changes may have already started.".to_string(),
         );
-    }
-    if input.password.len() > MAX_MOK_PASSWORD_BYTES || input.password.contains(['\0', '\n', '\r'])
-    {
-        return Err("Secure Boot password is empty or contains unsupported characters".to_string());
     }
     let certificate_present = Path::new(CERTIFICATE).is_file();
     let mokutil_present = Path::new(MOKUTIL).is_file();
@@ -269,6 +275,7 @@ pub(crate) fn stage_with_cancellation(
     if plan.action != "import-certificate" {
         return Ok(plan);
     }
+    validate_stage_password(&input.password)?;
     match stage_certificate(&input.password, cancel_requested)? {
         "staged" => Ok(SecureBootPlan {
             state: "staged".to_string(),
@@ -384,5 +391,21 @@ mod tests {
         .expect_err("cancelled Secure Boot work must not probe firmware");
         assert!(error.contains("cancelled"));
         assert!(!error.contains("secret"));
+    }
+
+    #[test]
+    fn skipped_enrollment_does_not_require_a_password() {
+        let plan = build_plan(SecureBootInput {
+            kernel: "fedora".into(),
+            force_stage: false,
+            certificate_present: true,
+            mokutil_present: true,
+            secure_boot: "enabled".into(),
+            enrolled: "no".into(),
+            pending: "no".into(),
+        })
+        .expect("standard kernel should skip MOK enrollment");
+        assert_eq!(plan.state, "skipped");
+        assert!(validate_stage_password("").is_err());
     }
 }
