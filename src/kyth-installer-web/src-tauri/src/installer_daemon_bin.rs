@@ -9,6 +9,7 @@ mod installer_plan;
 mod installer_runtime;
 mod installer_secure_boot;
 mod installer_storage;
+mod installer_stream;
 
 fn main() -> std::process::ExitCode {
     match installer_daemon::run(&std::env::args().skip(1).collect::<Vec<_>>()) {

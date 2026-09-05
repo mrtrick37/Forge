@@ -265,7 +265,7 @@ impl NativePhaseExecutor {
                 phase,
                 operation: NativeOperation::StorageMutation,
             }),
-            Phase::Image => self.execute_image(phase),
+            Phase::Image => self.execute_image(phase, cancellation),
             Phase::Configure => {
                 installer_configuration::apply_plan(self.execution_plan.configuration.clone())
                     .map_err(|message| NativePhaseError::Execution { phase, message })?;
@@ -283,14 +283,16 @@ impl NativePhaseExecutor {
         }
     }
 
-    fn execute_image(&self, phase: Phase) -> Result<(), NativePhaseError> {
-        let status = Command::new("/usr/bin/bootc")
-            .args(self.execution_plan.bootc.argv.iter().skip(1))
-            .status()
-            .map_err(|error| NativePhaseError::Execution {
-                phase,
-                message: format!("could not run bootc: {error}"),
-            })?;
+    fn execute_image(
+        &self,
+        phase: Phase,
+        cancellation: &CancellationToken,
+    ) -> Result<(), NativePhaseError> {
+        let mut command = Command::new("/usr/bin/bootc");
+        command.args(self.execution_plan.bootc.argv.iter().skip(1));
+        let status =
+            super::installer_stream::run_command(&mut command, || cancellation.is_cancelled())
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
         if status.success() {
             Ok(())
         } else {
