@@ -831,6 +831,15 @@ fn handle(
         forbidden(&mut client);
         return Ok(());
     }
+    if method == "GET" && target.split('?').next().unwrap_or(target) == "/api/runtime" {
+        if let Some(snapshot) = native_registry.snapshot()? {
+            let value = serde_json::to_value(snapshot.runtime).map_err(|error| {
+                format!("could not serialize native installer runtime: {error}")
+            })?;
+            json_response(&mut client, "200 OK", &value);
+            return Ok(());
+        }
+    }
     match read_only_storage_route(method, target, &runtime) {
         Ok(Some(value)) => {
             json_response(&mut client, "200 OK", &value);
