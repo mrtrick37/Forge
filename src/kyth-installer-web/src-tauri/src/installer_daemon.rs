@@ -94,6 +94,21 @@ impl NativeJobRegistry {
             .map(|supervisor| supervisor.replay(last_event_id))
             .transpose()
     }
+
+    fn wait_for_events(
+        &self,
+        last_event_id: u64,
+        timeout: Duration,
+    ) -> Result<Option<EventReplay>, String> {
+        let active = self
+            .active
+            .lock()
+            .map_err(|_| "native installer job state is unavailable".to_string())?;
+        active
+            .as_ref()
+            .map(|supervisor| supervisor.wait_for_events(last_event_id, timeout))
+            .transpose()
+    }
 }
 
 struct Options {
@@ -738,12 +753,69 @@ fn forward_stream(
     }
 }
 
+fn native_stream(mut client: UnixStream, registry: &NativeJobRegistry) -> Result<(), String> {
+    client
+        .write_all(
+            b"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-cache\r\nX-Accel-Buffering: no\r\nConnection: close\r\n\r\n",
+        )
+        .map_err(|error| format!("could not write native stream headers: {error}"))?;
+    let mut sent = 0_u64;
+    loop {
+        let replay = registry
+            .replay(sent.saturating_sub(1))?
+            .or_else(|| {
+                Some(EventReplay {
+                    events: Vec::new(),
+                    next_event_id: sent,
+                    reset_required: false,
+                })
+            })
+            .expect("native stream replay fallback is always present");
+        if replay.reset_required {
+            sent = replay.events.first().map(|event| event.id).unwrap_or(sent);
+        }
+        for event in replay.events {
+            let payload = serde_json::to_string(&event)
+                .map_err(|error| format!("could not encode native installer event: {error}"))?;
+            let frame = format!("id: {}\ndata: {payload}\n\n", event.id);
+            client
+                .write_all(frame.as_bytes())
+                .and_then(|_| client.flush())
+                .map_err(|error| format!("could not forward native installer event: {error}"))?;
+            sent = event.id.saturating_add(1);
+            if matches!(
+                event.kind,
+                super::installer_job::JobEventKind::Done
+                    | super::installer_job::JobEventKind::Error { .. }
+            ) {
+                return Ok(());
+            }
+        }
+        if let Some(replay) =
+            registry.wait_for_events(sent.saturating_sub(1), Duration::from_secs(15))?
+        {
+            if replay.events.is_empty() && !replay.reset_required {
+                client
+                    .write_all(b":ka\n\n")
+                    .and_then(|_| client.flush())
+                    .map_err(|error| format!("could not write native stream keepalive: {error}"))?;
+            }
+        } else {
+            client
+                .write_all(b":ka\n\n")
+                .and_then(|_| client.flush())
+                .map_err(|error| format!("could not write native stream keepalive: {error}"))?;
+        }
+    }
+}
+
 fn handle(
     mut client: UnixStream,
     backend_path: &Path,
     token: &str,
     expected_uid: Option<u32>,
     runtime: Arc<RuntimeCoordinator>,
+    native_registry: Arc<NativeJobRegistry>,
 ) -> Result<(), String> {
     if let Some(expected_uid) = expected_uid {
         if peer_uid(&client)? != expected_uid {
@@ -792,6 +864,9 @@ fn handle(
         }
     };
     let route = target.split('?').next().unwrap_or(target);
+    if method == "GET" && route == "/api/stream" && native_registry.snapshot()?.is_some() {
+        return native_stream(client, &native_registry);
+    }
     if method == "POST" && route == "/api/start" {
         if let Err(error) = runtime.claim_start() {
             json_response(
@@ -909,6 +984,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
     wait_for_backend(&backend_path)?;
     let listener = listener(&options)?;
     let runtime = Arc::new(RuntimeCoordinator::default());
+    let native_registry = Arc::new(NativeJobRegistry::default());
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
@@ -916,9 +992,16 @@ pub fn run(args: &[String]) -> Result<(), String> {
                 let expected_uid = options.peer_uid;
                 let backend_path = backend_path.clone();
                 let runtime = Arc::clone(&runtime);
+                let native_registry = Arc::clone(&native_registry);
                 thread::spawn(move || {
-                    if let Err(error) = handle(stream, &backend_path, &token, expected_uid, runtime)
-                    {
+                    if let Err(error) = handle(
+                        stream,
+                        &backend_path,
+                        &token,
+                        expected_uid,
+                        runtime,
+                        native_registry,
+                    ) {
                         eprintln!("installer request failed: {error}");
                     }
                 });
