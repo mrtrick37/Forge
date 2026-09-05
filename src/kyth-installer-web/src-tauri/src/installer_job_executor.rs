@@ -521,12 +521,20 @@ impl NativePhaseExecutor {
     }
 
     fn append_check(&self, check: serde_json::Value) -> Result<(), NativePhaseError> {
+        self.append_check_for_phase(Phase::Prepare, check)
+    }
+
+    fn append_check_for_phase(
+        &self,
+        phase: Phase,
+        check: serde_json::Value,
+    ) -> Result<(), NativePhaseError> {
         let state = {
             let mut state = self
                 .transaction
                 .lock()
                 .map_err(|_| NativePhaseError::Execution {
-                    phase: Phase::Prepare,
+                    phase,
                     message: "native transaction state is unavailable".to_string(),
                 })?;
             state.checks.push(check);
@@ -538,10 +546,7 @@ impl NativePhaseExecutor {
                 state,
             },
         )
-        .map_err(|message| NativePhaseError::Execution {
-            phase: Phase::Prepare,
-            message,
-        })
+        .map_err(|message| NativePhaseError::Execution { phase, message })
     }
 
     fn append_partition_step(
@@ -722,6 +727,52 @@ impl NativePhaseExecutor {
                         message: format!("could not encode create-user request: {error}"),
                     })?;
                 self.execute_fixed_helper(phase, cancellation, "create-user", &request)?;
+            }
+            let assurance =
+                crate::installer_assurance::validate(crate::installer_assurance::AssuranceInput {
+                    target_root: config.target_root.clone(),
+                    hostname: config
+                        .writes
+                        .iter()
+                        .find(|write| write.path.ends_with("/hostname"))
+                        .map(|write| write.content.trim().to_string())
+                        .unwrap_or_default(),
+                    locale: config
+                        .writes
+                        .iter()
+                        .find(|write| write.path.ends_with("/locale.conf"))
+                        .and_then(|write| write.content.strip_prefix("LANG="))
+                        .map(str::trim)
+                        .unwrap_or_default()
+                        .to_string(),
+                    keymap: config
+                        .writes
+                        .iter()
+                        .find(|write| write.path.ends_with("/vconsole.conf"))
+                        .and_then(|write| write.content.strip_prefix("KEYMAP="))
+                        .map(str::trim)
+                        .unwrap_or_default()
+                        .to_string(),
+                    timezone: config
+                        .localtime_target
+                        .strip_prefix("/usr/share/zoneinfo/")
+                        .unwrap_or_default()
+                        .to_string(),
+                    username: self
+                        .account
+                        .as_ref()
+                        .map(|account| account.username.clone())
+                        .unwrap_or_default(),
+                })
+                .map_err(|message| NativePhaseError::Execution { phase, message })?;
+            for check in assurance {
+                self.append_check_for_phase(
+                    phase,
+                    serde_json::to_value(check).map_err(|error| NativePhaseError::Execution {
+                        phase,
+                        message: format!("could not encode assurance check: {error}"),
+                    })?,
+                )?;
             }
             Ok(())
         })();

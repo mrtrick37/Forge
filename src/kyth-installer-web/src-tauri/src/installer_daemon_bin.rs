@@ -1,5 +1,6 @@
 mod installer_accounts;
 mod installer_alongside;
+mod installer_assurance;
 mod installer_bootc;
 mod installer_configuration;
 mod installer_daemon;
