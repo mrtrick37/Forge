@@ -31,6 +31,327 @@ const TRANSACTION_PATH: &str = "/run/kyth-installer/transaction.json";
 
 type NativeSupervisor = JobSupervisor<NativePhaseExecutor>;
 
+struct NativeJournalRegistry {
+    active: Mutex<Option<super::installer_journal::PartitionJournal>>,
+}
+
+impl Default for NativeJournalRegistry {
+    fn default() -> Self {
+        Self {
+            active: Mutex::new(None),
+        }
+    }
+}
+
+impl NativeJournalRegistry {
+    fn disk(value: &serde_json::Value) -> Result<String, serde_json::Value> {
+        value
+            .get("disk")
+            .and_then(serde_json::Value::as_str)
+            .and_then(super::installer_plan::normalize_device_path)
+            .ok_or_else(|| serde_json::json!({"ok": false, "message": "No disk specified."}))
+    }
+
+    fn journal_for<'a>(
+        active: &'a mut Option<super::installer_journal::PartitionJournal>,
+        disk: &str,
+    ) -> Result<&'a mut super::installer_journal::PartitionJournal, serde_json::Value> {
+        match active {
+            Some(journal) if journal.disk == disk => Ok(journal),
+            _ => Err(serde_json::json!({
+                "ok": false,
+                "message": "No active partition journal for this disk. Create a new partition table first."
+            })),
+        }
+    }
+
+    fn pending(&self, value: &serde_json::Value) -> Result<serde_json::Value, String> {
+        let requested_disk = value
+            .get("disk")
+            .and_then(serde_json::Value::as_str)
+            .and_then(super::installer_plan::normalize_device_path);
+        let active = self
+            .active
+            .lock()
+            .map_err(|_| "native partition journal state is unavailable".to_string())?;
+        Ok(serde_json::to_value(
+            active
+                .as_ref()
+                .filter(|journal| {
+                    requested_disk
+                        .as_deref()
+                        .is_none_or(|disk| journal.disk == disk)
+                })
+                .map(super::installer_journal::PartitionJournal::pending)
+                .unwrap_or_default(),
+        )
+        .unwrap_or_else(|_| serde_json::json!([])))
+    }
+
+    fn filesystems() -> serde_json::Value {
+        serde_json::json!([
+            {"id": "btrfs", "name": "Btrfs", "root_ok": true, "efi_ok": false},
+            {"id": "ext4", "name": "ext4", "root_ok": false, "efi_ok": false},
+            {"id": "xfs", "name": "XFS", "root_ok": false, "efi_ok": false},
+            {"id": "fat32", "name": "FAT32", "root_ok": false, "efi_ok": true},
+            {"id": "linux-swap", "name": "Swap", "root_ok": false, "efi_ok": false}
+        ])
+    }
+
+    fn dispatch(&self, route: &str, value: serde_json::Value) -> (u16, serde_json::Value) {
+        let disk = match Self::disk(&value) {
+            Ok(disk) => disk,
+            Err(error) => return (400, error),
+        };
+        let mut active = match self.active.lock() {
+            Ok(active) => active,
+            Err(_) => {
+                return (
+                    500,
+                    serde_json::json!({"ok": false, "message": "native partition journal state is unavailable"}),
+                )
+            }
+        };
+        match route {
+            "/api/disk/new-table" => {
+                let table_type = value
+                    .get("table_type")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("gpt");
+                if !matches!(table_type, "gpt" | "msdos") {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Table type must be 'gpt' or 'msdos'."}),
+                    );
+                }
+                if let Err(error) = disk_exists(&disk) {
+                    return (400, serde_json::json!({"ok": false, "message": error}));
+                }
+                let mut journal = match super::installer_journal::PartitionJournal::new(&disk) {
+                    Ok(journal) => journal,
+                    Err(error) => return (400, serde_json::json!({"ok": false, "message": error})),
+                };
+                journal.add_op("new_table", serde_json::json!({"table_type": table_type}));
+                let pending = journal.ops.len();
+                *active = Some(journal);
+                (200, serde_json::json!({"ok": true, "pending": pending}))
+            }
+            "/api/disk/create" => {
+                let journal = match Self::journal_for(&mut active, &disk) {
+                    Ok(journal) => journal,
+                    Err(error) => return (400, error),
+                };
+                let Some(start_bytes) =
+                    value.get("start_bytes").and_then(serde_json::Value::as_u64)
+                else {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Invalid start offset or size."}),
+                    );
+                };
+                let Some(size_bytes) = value.get("size_bytes").and_then(serde_json::Value::as_u64)
+                else {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Invalid start offset or size."}),
+                    );
+                };
+                if size_bytes == 0 {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Invalid start offset or size."}),
+                    );
+                }
+                let fs_type = value
+                    .get("fs_type")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("btrfs");
+                if !matches!(fs_type, "btrfs" | "ext4" | "xfs" | "fat32" | "linux-swap") {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": format!("Unsupported filesystem: {fs_type}")}),
+                    );
+                }
+                journal.add_op(
+                    "create",
+                    serde_json::json!({
+                        "start_bytes": start_bytes,
+                        "size_bytes": size_bytes,
+                        "fs_type": fs_type,
+                        "label": value.get("label").and_then(serde_json::Value::as_str).unwrap_or_default(),
+                        "mountpoint": value.get("mountpoint").and_then(serde_json::Value::as_str).unwrap_or_default(),
+                    }),
+                );
+                let pending = journal.ops.len();
+                (
+                    200,
+                    serde_json::json!({"ok": true, "pending": pending, "errors": []}),
+                )
+            }
+            "/api/disk/pending/remove" => {
+                let journal = match Self::journal_for(&mut active, &disk) {
+                    Ok(journal) => journal,
+                    Err(error) => return (400, error),
+                };
+                if journal.committed {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Partition changes have already been committed and cannot be edited."}),
+                    );
+                }
+                let Some(index) = value.get("index").and_then(serde_json::Value::as_u64) else {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Invalid pending operation index."}),
+                    );
+                };
+                if !journal.remove_op(index as usize) {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Invalid pending operation index."}),
+                    );
+                }
+                (
+                    200,
+                    serde_json::json!({"ok": true, "pending": journal.ops.len()}),
+                )
+            }
+            "/api/disk/delete"
+            | "/api/disk/resize"
+            | "/api/disk/format"
+            | "/api/disk/set-mountpoint" => {
+                let journal = match Self::journal_for(&mut active, &disk) {
+                    Ok(journal) => journal,
+                    Err(error) => return (400, error),
+                };
+                let Some(partition) = value
+                    .get("partition")
+                    .and_then(serde_json::Value::as_str)
+                    .and_then(super::installer_plan::normalize_device_path)
+                else {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": "Disk and partition are required."}),
+                    );
+                };
+                let valid = super::installer_journal::validate_target_request(
+                    super::installer_journal::JournalTargetInput {
+                        disk: disk.clone(),
+                        partition: partition.clone(),
+                    },
+                );
+                if !valid
+                    .get("valid")
+                    .and_then(serde_json::Value::as_bool)
+                    .unwrap_or(false)
+                {
+                    return (
+                        400,
+                        serde_json::json!({"ok": false, "message": valid.get("error").cloned().unwrap_or_else(|| serde_json::json!("Partition target is invalid."))}),
+                    );
+                }
+                let (kind, params) = match route {
+                    "/api/disk/delete" => ("delete", serde_json::json!({"partition": partition})),
+                    "/api/disk/resize" => {
+                        let Some(new_size_bytes) = value
+                            .get("new_size_bytes")
+                            .and_then(serde_json::Value::as_u64)
+                        else {
+                            return (
+                                400,
+                                serde_json::json!({"ok": false, "message": "A new size is required."}),
+                            );
+                        };
+                        (
+                            "resize",
+                            serde_json::json!({"partition": partition, "new_size_bytes": new_size_bytes}),
+                        )
+                    }
+                    "/api/disk/format" => {
+                        let fs_type = value
+                            .get("fs_type")
+                            .and_then(serde_json::Value::as_str)
+                            .unwrap_or("btrfs");
+                        if !matches!(fs_type, "btrfs" | "ext4" | "xfs" | "fat32" | "linux-swap") {
+                            return (
+                                400,
+                                serde_json::json!({"ok": false, "message": format!("Unsupported filesystem: {fs_type}")}),
+                            );
+                        }
+                        (
+                            "format",
+                            serde_json::json!({"partition": partition, "fs_type": fs_type, "label": value.get("label").and_then(serde_json::Value::as_str).unwrap_or_default()}),
+                        )
+                    }
+                    _ => {
+                        let mountpoint = value
+                            .get("mountpoint")
+                            .and_then(serde_json::Value::as_str)
+                            .unwrap_or_default();
+                        if !mountpoint.is_empty()
+                            && mountpoint != "swap"
+                            && !mountpoint.starts_with('/')
+                        {
+                            return (
+                                400,
+                                serde_json::json!({"ok": false, "message": "Mount point must be an absolute path (e.g. /, /home)."}),
+                            );
+                        }
+                        (
+                            "set_mountpoint",
+                            serde_json::json!({"partition": partition, "mountpoint": mountpoint}),
+                        )
+                    }
+                };
+                journal.add_op(kind, params);
+                (
+                    200,
+                    serde_json::json!({"ok": true, "pending": journal.ops.len()}),
+                )
+            }
+            "/api/disk/commit" => {
+                let journal = match Self::journal_for(&mut active, &disk) {
+                    Ok(journal) => journal.clone(),
+                    Err(error) => return (400, error),
+                };
+                match super::installer_journal::commit_request(
+                    super::installer_journal::JournalCommitInput { journal },
+                ) {
+                    Ok(response) => {
+                        if response.get("ok").and_then(serde_json::Value::as_bool) == Some(true) {
+                            if let Ok(committed) = serde_json::from_value::<
+                                super::installer_journal::PartitionJournal,
+                            >(
+                                response["journal"].clone()
+                            ) {
+                                *active = Some(committed);
+                            }
+                            (200, response)
+                        } else if response.get("errors").is_some() {
+                            (400, response)
+                        } else {
+                            (500, response)
+                        }
+                    }
+                    Err(error) => (500, serde_json::json!({"ok": false, "message": error})),
+                }
+            }
+            "/api/disk/rollback" => {
+                let journal = match Self::journal_for(&mut active, &disk) {
+                    Ok(journal) => journal,
+                    Err(error) => return (400, error),
+                };
+                journal.rollback_metadata();
+                (200, serde_json::json!({"ok": true}))
+            }
+            _ => (
+                404,
+                serde_json::json!({"ok": false, "message": "Route not found."}),
+            ),
+        }
+    }
+}
+
 /// Shared native job ownership for the daemon's request threads.
 ///
 /// A supervisor is bound to one validated install request, so the registry
@@ -420,6 +741,17 @@ fn json_response(stream: &mut UnixStream, status: &str, value: &serde_json::Valu
     let _ = stream.write_all(response.as_bytes());
 }
 
+fn json_status(status: u16) -> &'static str {
+    match status {
+        200 => "200 OK",
+        400 => "400 Bad Request",
+        404 => "404 Not Found",
+        409 => "409 Conflict",
+        500 => "500 Internal Server Error",
+        _ => "500 Internal Server Error",
+    }
+}
+
 fn add_display_sizes(value: &mut serde_json::Value) {
     let Some(items) = value.as_array_mut() else {
         return;
@@ -451,6 +783,23 @@ fn command_output(program: &str, args: &[&str]) -> Result<String, String> {
         ));
     }
     String::from_utf8(output.stdout).map_err(|_| format!("{program} returned non-UTF-8 output"))
+}
+
+fn disk_exists(disk: &str) -> Result<(), String> {
+    let disk = super::installer_plan::normalize_device_path(disk)
+        .ok_or_else(|| "Invalid or unsafe disk.".to_string())?;
+    let output = Command::new("/usr/bin/lsblk")
+        .args(["--noheadings", "--output", "TYPE", &disk])
+        .output()
+        .map_err(|error| format!("could not inspect {disk}: {error}"))?;
+    if !output.status.success()
+        || !String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .any(|line| line.trim() == "disk")
+    {
+        return Err("Invalid or unsafe disk.".to_string());
+    }
+    Ok(())
 }
 
 fn request_body(request: &[u8]) -> Result<serde_json::Value, String> {
@@ -696,6 +1045,12 @@ fn query_value<'a>(target: &'a str, name: &str) -> Option<&'a str> {
         .1
         .split('&')
         .find_map(|part| part.strip_prefix(&format!("{name}=")))
+}
+
+fn native_pending_request(target: &str) -> serde_json::Value {
+    query_value(target, "disk")
+        .map(|disk| serde_json::json!({"disk": disk}))
+        .unwrap_or_else(|| serde_json::json!({}))
 }
 
 fn rebuild_request(request: &[u8], body: &[u8]) -> Result<Vec<u8>, String> {
@@ -953,6 +1308,7 @@ fn handle(
     expected_uid: Option<u32>,
     runtime: Arc<RuntimeCoordinator>,
     native_registry: Arc<NativeJobRegistry>,
+    native_journal: Arc<NativeJournalRegistry>,
 ) -> Result<(), String> {
     if let Some(expected_uid) = expected_uid {
         if peer_uid(&client)? != expected_uid {
@@ -1010,6 +1366,75 @@ fn handle(
         }
     };
     let route = target.split('?').next().unwrap_or(target);
+    if method == "GET" && route == "/api/disk/pending" {
+        match native_journal.pending(&native_pending_request(target)) {
+            Ok(value) => json_response(&mut client, "200 OK", &value),
+            Err(error) => json_response(
+                &mut client,
+                "500 Internal Server Error",
+                &serde_json::json!({"ok": false, "message": error}),
+            ),
+        }
+        return Ok(());
+    }
+    if method == "GET" && route == "/api/disk/filesystems" {
+        json_response(&mut client, "200 OK", &NativeJournalRegistry::filesystems());
+        return Ok(());
+    }
+    if method == "POST"
+        && matches!(
+            route,
+            "/api/disk/new-table"
+                | "/api/disk/create"
+                | "/api/disk/delete"
+                | "/api/disk/resize"
+                | "/api/disk/format"
+                | "/api/disk/set-mountpoint"
+                | "/api/disk/pending/remove"
+                | "/api/disk/commit"
+                | "/api/disk/rollback"
+        )
+    {
+        if native_registry
+            .snapshot()?
+            .is_some_and(|snapshot| snapshot.worker_active)
+        {
+            json_response(
+                &mut client,
+                "409 Conflict",
+                &serde_json::json!({
+                    "ok": false,
+                    "message": "Partition changes are locked while installation is running."
+                }),
+            );
+            return Ok(());
+        }
+        let body = match request_body(&request) {
+            Ok(value) if value.is_object() => value,
+            Ok(_) => {
+                json_response(
+                    &mut client,
+                    "400 Bad Request",
+                    &serde_json::json!({
+                        "ok": false,
+                        "message": "Partition request must be a JSON object."
+                    }),
+                );
+                return Ok(());
+            }
+            Err(error) => {
+                json_response(
+                    &mut client,
+                    "400 Bad Request",
+                    &serde_json::json!({"ok": false, "message": error}),
+                );
+                return Ok(());
+            }
+        };
+        let (status, value) = native_journal.dispatch(route, body);
+        json_response(&mut client, json_status(status), &value);
+        return Ok(());
+    }
     if method == "GET" && route == "/api/report" {
         if let Some(snapshot) = native_registry.snapshot()? {
             let value = native_report(&snapshot)?;
@@ -1255,6 +1680,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
     let listener = listener(&options)?;
     let runtime = Arc::new(RuntimeCoordinator::default());
     let native_registry = Arc::new(NativeJobRegistry::default());
+    let native_journal = Arc::new(NativeJournalRegistry::default());
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
@@ -1263,6 +1689,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
                 let backend_path = backend_path.clone();
                 let runtime = Arc::clone(&runtime);
                 let native_registry = Arc::clone(&native_registry);
+                let native_journal = Arc::clone(&native_journal);
                 thread::spawn(move || {
                     if let Err(error) = handle(
                         stream,
@@ -1271,6 +1698,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
                         expected_uid,
                         runtime,
                         native_registry,
+                        native_journal,
                     ) {
                         eprintln!("installer request failed: {error}");
                     }
@@ -1286,7 +1714,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
 mod tests {
     use super::{
         native_executor_from_start, native_request_from_start, normalize_start_request, options,
-        read_session_token, route_allowed,
+        read_session_token, route_allowed, NativeJournalRegistry,
     };
     use serde_json::Value;
     use std::fs;
@@ -1402,5 +1830,109 @@ mod tests {
             registry.cancel().unwrap_err(),
             "No installation is running to cancel."
         );
+    }
+
+    #[test]
+    fn native_journal_routes_preserve_pending_metadata_without_python() {
+        let registry = NativeJournalRegistry::default();
+        let (status, response) = registry.dispatch(
+            "/api/create",
+            serde_json::json!({"disk": "/dev/sda", "size_bytes": 4096}),
+        );
+        assert_eq!(status, 404);
+        assert_eq!(response["ok"], false);
+
+        *registry.active.lock().unwrap() =
+            Some(super::super::installer_journal::PartitionJournal::new("/dev/sda").unwrap());
+        let (status, response) = registry.dispatch(
+            "/api/disk/create",
+            serde_json::json!({
+                "disk": "/dev/sda",
+                "start_bytes": 4 * 1024 * 1024,
+                "size_bytes": 32 * 1024 * 1024 * 1024_u64,
+                "fs_type": "btrfs",
+                "mountpoint": "/"
+            }),
+        );
+        assert_eq!(status, 200);
+        assert_eq!(response["ok"], true);
+        assert_eq!(response["pending"], 1);
+        let pending = registry.pending(&serde_json::json!({})).unwrap();
+        assert_eq!(pending.as_array().unwrap().len(), 1);
+        assert_eq!(pending[0]["kind"], "create");
+        assert_eq!(pending[0]["params"]["mountpoint"], "/");
+    }
+
+    #[test]
+    fn native_journal_routes_fail_closed_for_unsafe_and_unsupported_requests() {
+        let registry = NativeJournalRegistry::default();
+        let (status, response) = registry.dispatch(
+            "/api/disk/new-table",
+            serde_json::json!({"disk": "../../etc/passwd", "table_type": "gpt"}),
+        );
+        assert_eq!(status, 400);
+        assert_eq!(response["ok"], false);
+
+        *registry.active.lock().unwrap() =
+            Some(super::super::installer_journal::PartitionJournal::new("/dev/sda").unwrap());
+        let (status, response) = registry.dispatch(
+            "/api/disk/create",
+            serde_json::json!({
+                "disk": "/dev/sda",
+                "start_bytes": 4 * 1024 * 1024,
+                "size_bytes": 32 * 1024 * 1024 * 1024_u64,
+                "fs_type": "zfs"
+            }),
+        );
+        assert_eq!(status, 400);
+        assert_eq!(response["ok"], false);
+        assert!(response["message"]
+            .as_str()
+            .unwrap()
+            .contains("Unsupported"));
+    }
+
+    #[test]
+    fn native_journal_pending_remove_and_rollback_clear_state() {
+        let registry = NativeJournalRegistry::default();
+        *registry.active.lock().unwrap() =
+            Some(super::super::installer_journal::PartitionJournal::new("/dev/sda").unwrap());
+        let (_, response) = registry.dispatch(
+            "/api/disk/create",
+            serde_json::json!({
+                "disk": "/dev/sda",
+                "start_bytes": 4 * 1024 * 1024,
+                "size_bytes": 32 * 1024 * 1024 * 1024_u64
+            }),
+        );
+        assert_eq!(response["pending"], 1);
+        let (status, response) = registry.dispatch(
+            "/api/disk/pending/remove",
+            serde_json::json!({"disk": "/dev/sda", "index": 0}),
+        );
+        assert_eq!(status, 200);
+        assert_eq!(response["pending"], 0);
+
+        let (_, response) = registry.dispatch(
+            "/api/disk/create",
+            serde_json::json!({
+                "disk": "/dev/sda",
+                "start_bytes": 4 * 1024 * 1024,
+                "size_bytes": 32 * 1024 * 1024 * 1024_u64
+            }),
+        );
+        assert_eq!(response["pending"], 1);
+        let (status, response) = registry.dispatch(
+            "/api/disk/rollback",
+            serde_json::json!({"disk": "/dev/sda"}),
+        );
+        assert_eq!(status, 200);
+        assert_eq!(response["ok"], true);
+        assert!(registry
+            .pending(&serde_json::json!({}))
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .is_empty());
     }
 }
