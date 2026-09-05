@@ -10,7 +10,7 @@ fn default_true() -> bool {
     true
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub(crate) struct BootcInstallInput {
     pub subcommand: String,
     pub source_imgref: String,

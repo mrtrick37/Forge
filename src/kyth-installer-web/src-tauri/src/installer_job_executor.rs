@@ -225,6 +225,7 @@ impl fmt::Display for NativePhaseError {
 pub(crate) struct NativePhaseExecutor {
     storage_plan: InstallerPlan,
     execution_plan: InstallerExecutionPlan,
+    bootc_request: crate::installer_bootc::BootcInstallInput,
     account: Option<crate::installer_accounts::CreateUserInput>,
     manual_mounts: Option<crate::installer_manual::ManualMountsInput>,
     source_imgref: String,
@@ -240,6 +241,7 @@ pub(crate) struct NativePhaseExecutor {
 
 impl NativePhaseExecutor {
     pub(crate) fn from_request(request: NativeInstallRequest) -> Result<Self, String> {
+        let bootc_request = request.execution.bootc.clone();
         let account = request.execution.account.clone();
         let manual_mounts = request.manual_mounts;
         let source_imgref = request.execution.bootc.source_imgref.clone();
@@ -260,6 +262,7 @@ impl NativePhaseExecutor {
         Ok(Self {
             storage_plan,
             execution_plan,
+            bootc_request,
             account,
             manual_mounts,
             source_imgref,
@@ -283,6 +286,16 @@ impl NativePhaseExecutor {
         Self {
             storage_plan,
             execution_plan,
+            bootc_request: crate::installer_bootc::BootcInstallInput {
+                subcommand: "to-disk".to_string(),
+                source_imgref: String::new(),
+                target_imgref: String::new(),
+                target: String::new(),
+                skip_fetch_check: true,
+                skip_finalize: false,
+                root_subvolume: false,
+                wipe: false,
+            },
             account: None,
             manual_mounts: None,
             source_imgref: "".to_string(),
@@ -323,6 +336,20 @@ impl NativePhaseExecutor {
         } else {
             "local"
         };
+        let source_status =
+            crate::installer_readonly::source_status_for(source_imgref, target_imgref);
+        let source = source_status
+            .get("kind")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or(source_kind);
+        let digest = source_status
+            .get("digest")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_default();
+        let verified = source_status
+            .get("verified")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false);
         crate::installer_transaction::TransactionState {
             schema_version: 1,
             transaction_id,
@@ -339,9 +366,9 @@ impl NativePhaseExecutor {
                 .or_else(|| storage_plan.resize_partition.clone())
                 .unwrap_or_default(),
             source: crate::installer_transaction::TransactionSource {
-                kind: source_kind.to_string(),
-                digest: std::env::var("KYTH_SOURCE_DIGEST").unwrap_or_default(),
-                verified: false,
+                kind: source.to_string(),
+                digest: digest.to_string(),
+                verified,
                 target_ref: target_imgref.to_string(),
             },
             checks: Vec::new(),
@@ -557,11 +584,9 @@ impl NativePhaseExecutor {
 
     fn persist_failure_summary(&self, message: &str) {
         if let Ok(state) = self.transaction.lock().map(|state| state.clone()) {
-            let _ = crate::installer_transaction::write_failure_summary(
-                "/run/kyth-installer/failure.json",
-                &state,
-                message,
-            );
+            let path = std::env::var("KYTH_INSTALLER_FAILURE_SUMMARY")
+                .unwrap_or_else(|_| "/run/kyth-installer/failure.json".to_string());
+            let _ = crate::installer_transaction::write_failure_summary(&path, &state, message);
         }
     }
 
@@ -625,12 +650,16 @@ impl NativePhaseExecutor {
             crate::installer_guard::validate_target_disk(&self.storage_plan.disk)
                 .map_err(|message| NativePhaseError::Execution { phase, message })?;
         }
-        let mut command = Command::new("/usr/bin/bootc");
-        command.args(self.execution_plan.bootc.argv.iter().skip(1));
-        let status =
-            super::installer_stream::run_command(&mut command, || cancellation.is_cancelled())
-                .map_err(|message| NativePhaseError::Execution { phase, message })?;
-        if status.success() {
+        let status = self.execute_stream_helper(
+            phase,
+            cancellation,
+            serde_json::json!({
+                "kind": "bootc_install",
+                "request": self.bootc_request.clone(),
+            }),
+            None,
+        )?;
+        if status {
             if self.storage_plan.mode == "wipe" {
                 self.mount_wipe_root(phase, cancellation)?;
             }
@@ -787,26 +816,28 @@ impl NativePhaseExecutor {
         phase: Phase,
         cancellation: &CancellationToken,
         operation: serde_json::Value,
-    ) -> Result<(), NativePhaseError> {
+        partition_step: Option<(&str, &str)>,
+    ) -> Result<bool, NativePhaseError> {
         let step_kind = operation
-            .get("operation")
+            .get("request")
+            .and_then(|request| request.get("operation"))
             .and_then(serde_json::Value::as_str)
-            .filter(|kind| *kind == "filesystem_resize");
+            .filter(|kind| *kind == "filesystem_resize")
+            .or_else(|| partition_step.map(|(kind, _)| kind));
         let step_target = operation
-            .get("device")
+            .get("request")
+            .and_then(|request| request.get("device"))
             .and_then(serde_json::Value::as_str)
+            .or_else(|| partition_step.map(|(_, target)| target))
             .unwrap_or_default();
         if let Some(kind) = step_kind {
             self.append_partition_step(kind, "started", step_target, phase)?;
         }
-        let input = serde_json::to_vec(&serde_json::json!({
-            "kind": "disk",
-            "request": operation,
-        }))
-        .map_err(|error| NativePhaseError::Execution {
-            phase,
-            message: format!("could not encode streaming disk operation: {error}"),
-        })?;
+        let input =
+            serde_json::to_vec(&operation).map_err(|error| NativePhaseError::Execution {
+                phase,
+                message: format!("could not encode streaming disk operation: {error}"),
+            })?;
         let mut command = Command::new("/usr/bin/kyth-installer-exec");
         command.args(["--operation", "stream"]);
         let status = super::installer_stream::run_command_with_input(&mut command, &input, || {
@@ -817,7 +848,7 @@ impl NativePhaseExecutor {
             if let Some(kind) = step_kind {
                 self.append_partition_step(kind, "completed", step_target, phase)?;
             }
-            Ok(())
+            Ok(true)
         } else {
             if let Some(kind) = step_kind {
                 let _ = self.append_partition_step(kind, "failed", step_target, phase);
@@ -991,12 +1022,16 @@ impl NativePhaseExecutor {
                 phase,
                 cancellation,
                 serde_json::json!({
-                    "operation": "filesystem_resize",
-                    "device": partition,
-                    "fs": "ntfs",
-                    "new_size_bytes": new_size,
-                    "stage": stage
+                    "kind": "disk",
+                    "request": {
+                        "operation": "filesystem_resize",
+                        "device": partition,
+                        "fs": "ntfs",
+                        "new_size_bytes": new_size,
+                        "stage": stage
+                    }
                 }),
+                Some(("filesystem_resize", partition)),
             )?;
         }
         self.execute_disk_helper(

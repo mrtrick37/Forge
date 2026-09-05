@@ -89,16 +89,22 @@ fn configured(name: &str, default: &str) -> String {
         .unwrap_or_else(|| default.to_string())
 }
 
-fn source_reference() -> String {
-    let image = configured("KYTH_SOURCE_IMAGE", "ghcr.io/kyth-os/kyth:latest");
+fn normalize_source_reference(image: &str) -> String {
     if ["docker://", "containers-storage:", "oci:", "ostree:"]
         .iter()
         .any(|prefix| image.starts_with(prefix))
     {
-        image
+        image.to_string()
     } else {
         format!("docker://{image}")
     }
+}
+
+fn source_reference() -> String {
+    normalize_source_reference(&configured(
+        "KYTH_SOURCE_IMAGE",
+        "ghcr.io/kyth-os/kyth:latest",
+    ))
 }
 
 fn target_reference() -> String {
@@ -230,9 +236,8 @@ fn embedded_digest(reference: &str, target: &str) -> Result<String, String> {
     Ok(digest.to_string())
 }
 
-fn source_status() -> Value {
-    let source = source_reference();
-    let target = target_reference();
+pub(crate) fn source_status_for(source_value: &str, target: &str) -> Value {
+    let source = normalize_source_reference(source_value);
     if source.starts_with("oci:") {
         return match embedded_digest(&source, &target) {
             Ok(digest) => serde_json::json!({
@@ -279,6 +284,10 @@ fn source_status() -> Value {
         "target_ref": target,
         "message": "Network image selected"
     })
+}
+
+fn source_status() -> Value {
+    source_status_for(&source_reference(), &target_reference())
 }
 
 pub(crate) fn config() -> Value {
