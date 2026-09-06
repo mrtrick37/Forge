@@ -208,15 +208,6 @@
       "status": "queued"
     },
     {
-      "migration_priority": 0,
-      "name": "kyth-installerd",
-      "owner": "fixture::build_files/kyth-installerd.service",
-      "path": "build_files/kyth-installerd.service",
-      "runtime_authority": "rust-transport-python-backend",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
       "migration_priority": 2,
       "name": "kyth-kali-desktop-fixup",
       "owner": "fixture::build_files/kyth-kali-desktop-fixup",
@@ -376,528 +367,6 @@
       "path": "build_files/kyth-web-app-categorize",
       "runtime_authority": "python-runtime",
       "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "__init__",
-      "owner": "fixture::src/kyth-installer/kyth_installer/__init__.py",
-      "path": "src/kyth-installer/kyth_installer/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "app",
-      "owner": "fixture::src/kyth-installer/kyth_installer/app.py",
-      "path": "src/kyth-installer/kyth_installer/app.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "assurance",
-      "owner": "fixture::src/kyth-installer/kyth_installer/assurance.py",
-      "path": "src/kyth-installer/kyth_installer/assurance.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "cleanup",
-      "owner": "fixture::src/kyth-installer/kyth_installer/cleanup.py",
-      "path": "src/kyth-installer/kyth_installer/cleanup.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "config",
-      "owner": "fixture::src/kyth-installer/kyth_installer/config.py",
-      "path": "src/kyth-installer/kyth_installer/config.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "context",
-      "owner": "fixture::src/kyth-installer/kyth_installer/context.py",
-      "path": "src/kyth-installer/kyth_installer/context.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "context_types",
-      "owner": "fixture::src/kyth-installer/kyth_installer/context_types.py",
-      "path": "src/kyth-installer/kyth_installer/context_types.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "daemon",
-      "owner": "fixture::src/kyth-installer/kyth_installer/daemon.py",
-      "path": "src/kyth-installer/kyth_installer/daemon.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "__init__",
-      "owner": "fixture::src/kyth-installer/kyth_installer/disk/__init__.py",
-      "path": "src/kyth-installer/kyth_installer/disk/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "_lookup",
-      "owner": "fixture::src/kyth-installer/kyth_installer/disk/_lookup.py",
-      "path": "src/kyth-installer/kyth_installer/disk/_lookup.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "_probe",
-      "owner": "fixture::src/kyth-installer/kyth_installer/disk/_probe.py",
-      "path": "src/kyth-installer/kyth_installer/disk/_probe.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "_query",
-      "owner": "fixture::src/kyth-installer/kyth_installer/disk/_query.py",
-      "path": "src/kyth-installer/kyth_installer/disk/_query.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "_util",
-      "owner": "fixture::src/kyth-installer/kyth_installer/disk/_util.py",
-      "path": "src/kyth-installer/kyth_installer/disk/_util.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "disk_snapshot",
-      "owner": "fixture::src/kyth-installer/kyth_installer/disk_snapshot.py",
-      "path": "src/kyth-installer/kyth_installer/disk_snapshot.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "execution",
-      "owner": "fixture::src/kyth-installer/kyth_installer/execution.py",
-      "path": "src/kyth-installer/kyth_installer/execution.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "executor",
-      "owner": "fixture::src/kyth-installer/kyth_installer/executor.py",
-      "path": "src/kyth-installer/kyth_installer/executor.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "fsresize",
-      "owner": "fixture::src/kyth-installer/kyth_installer/fsresize.py",
-      "path": "src/kyth-installer/kyth_installer/fsresize.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "imagesrc",
-      "owner": "fixture::src/kyth-installer/kyth_installer/imagesrc.py",
-      "path": "src/kyth-installer/kyth_installer/imagesrc.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "install",
-      "owner": "fixture::src/kyth-installer/kyth_installer/install.py",
-      "path": "src/kyth-installer/kyth_installer/install.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "interfaces",
-      "owner": "fixture::src/kyth-installer/kyth_installer/interfaces.py",
-      "path": "src/kyth-installer/kyth_installer/interfaces.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "mount_registry",
-      "owner": "fixture::src/kyth-installer/kyth_installer/mount_registry.py",
-      "path": "src/kyth-installer/kyth_installer/mount_registry.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "orchestration",
-      "owner": "fixture::src/kyth-installer/kyth_installer/orchestration.py",
-      "path": "src/kyth-installer/kyth_installer/orchestration.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "partition_cli",
-      "owner": "fixture::src/kyth-installer/kyth_installer/partition_cli.py",
-      "path": "src/kyth-installer/kyth_installer/partition_cli.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "partition_ops",
-      "owner": "fixture::src/kyth-installer/kyth_installer/partition_ops.py",
-      "path": "src/kyth-installer/kyth_installer/partition_ops.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "partition_ops_journal",
-      "owner": "fixture::src/kyth-installer/kyth_installer/partition_ops_journal.py",
-      "path": "src/kyth-installer/kyth_installer/partition_ops_journal.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "__init__",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/__init__.py",
-      "path": "src/kyth-installer/kyth_installer/phases/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "bootc_cmd",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/bootc_cmd.py",
-      "path": "src/kyth-installer/kyth_installer/phases/bootc_cmd.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "common",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/common.py",
-      "path": "src/kyth-installer/kyth_installer/phases/common.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "compat",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/compat.py",
-      "path": "src/kyth-installer/kyth_installer/phases/compat.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "finalize",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize.py",
-      "path": "src/kyth-installer/kyth_installer/phases/finalize.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "finalize_artifacts",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_artifacts.py",
-      "path": "src/kyth-installer/kyth_installer/phases/finalize_artifacts.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "finalize_configure",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_configure.py",
-      "path": "src/kyth-installer/kyth_installer/phases/finalize_configure.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "finalize_fstab",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_fstab.py",
-      "path": "src/kyth-installer/kyth_installer/phases/finalize_fstab.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "finalize_identity",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_identity.py",
-      "path": "src/kyth-installer/kyth_installer/phases/finalize_identity.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "preflight",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/preflight.py",
-      "path": "src/kyth-installer/kyth_installer/phases/preflight.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "run",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/run.py",
-      "path": "src/kyth-installer/kyth_installer/phases/run.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "storage",
-      "owner": "fixture::src/kyth-installer/kyth_installer/phases/storage.py",
-      "path": "src/kyth-installer/kyth_installer/phases/storage.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "plan",
-      "owner": "fixture::src/kyth-installer/kyth_installer/plan.py",
-      "path": "src/kyth-installer/kyth_installer/plan.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "plan_commit",
-      "owner": "fixture::src/kyth-installer/kyth_installer/plan_commit.py",
-      "path": "src/kyth-installer/kyth_installer/plan_commit.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "plan_query",
-      "owner": "fixture::src/kyth-installer/kyth_installer/plan_query.py",
-      "path": "src/kyth-installer/kyth_installer/plan_query.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "plan_request",
-      "owner": "fixture::src/kyth-installer/kyth_installer/plan_request.py",
-      "path": "src/kyth-installer/kyth_installer/plan_request.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "plan_types",
-      "owner": "fixture::src/kyth-installer/kyth_installer/plan_types.py",
-      "path": "src/kyth-installer/kyth_installer/plan_types.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "plan_validate",
-      "owner": "fixture::src/kyth-installer/kyth_installer/plan_validate.py",
-      "path": "src/kyth-installer/kyth_installer/plan_validate.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "post_routes",
-      "owner": "fixture::src/kyth-installer/kyth_installer/post_routes.py",
-      "path": "src/kyth-installer/kyth_installer/post_routes.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "recovery",
-      "owner": "fixture::src/kyth-installer/kyth_installer/recovery.py",
-      "path": "src/kyth-installer/kyth_installer/recovery.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "runner",
-      "owner": "fixture::src/kyth-installer/kyth_installer/runner.py",
-      "path": "src/kyth-installer/kyth_installer/runner.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "secure_boot",
-      "owner": "fixture::src/kyth-installer/kyth_installer/secure_boot.py",
-      "path": "src/kyth-installer/kyth_installer/secure_boot.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "server",
-      "owner": "fixture::src/kyth-installer/kyth_installer/server.py",
-      "path": "src/kyth-installer/kyth_installer/server.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "__init__",
-      "owner": "fixture::src/kyth-installer/kyth_installer/services/__init__.py",
-      "path": "src/kyth-installer/kyth_installer/services/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "disk_service",
-      "owner": "fixture::src/kyth-installer/kyth_installer/services/disk_service.py",
-      "path": "src/kyth-installer/kyth_installer/services/disk_service.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "installer_service",
-      "owner": "fixture::src/kyth-installer/kyth_installer/services/installer_service.py",
-      "path": "src/kyth-installer/kyth_installer/services/installer_service.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "storage_guard",
-      "owner": "fixture::src/kyth-installer/kyth_installer/storage_guard.py",
-      "path": "src/kyth-installer/kyth_installer/storage_guard.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "storage_snapshot",
-      "owner": "fixture::src/kyth-installer/kyth_installer/storage_snapshot.py",
-      "path": "src/kyth-installer/kyth_installer/storage_snapshot.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "streaming",
-      "owner": "fixture::src/kyth-installer/kyth_installer/streaming.py",
-      "path": "src/kyth-installer/kyth_installer/streaming.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "system",
-      "owner": "fixture::src/kyth-installer/kyth_installer/system.py",
-      "path": "src/kyth-installer/kyth_installer/system.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "system_mount",
-      "owner": "fixture::src/kyth-installer/kyth_installer/system_mount.py",
-      "path": "src/kyth-installer/kyth_installer/system_mount.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "system_privilege",
-      "owner": "fixture::src/kyth-installer/kyth_installer/system_privilege.py",
-      "path": "src/kyth-installer/kyth_installer/system_privilege.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 0,
-      "name": "validation",
-      "owner": "fixture::src/kyth-installer/kyth_installer/validation.py",
-      "path": "src/kyth-installer/kyth_installer/validation.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
       "status": "queued"
     },
     {
@@ -3198,541 +2667,540 @@
   ],
   "generated_from": "build_files/config/runtime-migration-inventory.json",
   "inventory_schema_version": 2,
-  "p0_open": [
+  "p0_open": [],
+  "schema_version": 1,
+  "source_only": [
     {
-      "migration_priority": 0,
-      "name": "kyth-installerd",
-      "owner": "fixture::build_files/kyth-installerd.service",
-      "path": "build_files/kyth-installerd.service",
-      "runtime_authority": "rust-transport-python-backend",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "migration_priority": 3,
+      "name": "kyth-installer",
+      "owner": "fixture::build_files/kyth-installer",
+      "path": "build_files/kyth-installer",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "__init__",
       "owner": "fixture::src/kyth-installer/kyth_installer/__init__.py",
       "path": "src/kyth-installer/kyth_installer/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "app",
       "owner": "fixture::src/kyth-installer/kyth_installer/app.py",
       "path": "src/kyth-installer/kyth_installer/app.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "assurance",
       "owner": "fixture::src/kyth-installer/kyth_installer/assurance.py",
       "path": "src/kyth-installer/kyth_installer/assurance.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "cleanup",
       "owner": "fixture::src/kyth-installer/kyth_installer/cleanup.py",
       "path": "src/kyth-installer/kyth_installer/cleanup.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "config",
       "owner": "fixture::src/kyth-installer/kyth_installer/config.py",
       "path": "src/kyth-installer/kyth_installer/config.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "context",
       "owner": "fixture::src/kyth-installer/kyth_installer/context.py",
       "path": "src/kyth-installer/kyth_installer/context.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "context_types",
       "owner": "fixture::src/kyth-installer/kyth_installer/context_types.py",
       "path": "src/kyth-installer/kyth_installer/context_types.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "daemon",
       "owner": "fixture::src/kyth-installer/kyth_installer/daemon.py",
       "path": "src/kyth-installer/kyth_installer/daemon.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "__init__",
       "owner": "fixture::src/kyth-installer/kyth_installer/disk/__init__.py",
       "path": "src/kyth-installer/kyth_installer/disk/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "_lookup",
       "owner": "fixture::src/kyth-installer/kyth_installer/disk/_lookup.py",
       "path": "src/kyth-installer/kyth_installer/disk/_lookup.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "_probe",
       "owner": "fixture::src/kyth-installer/kyth_installer/disk/_probe.py",
       "path": "src/kyth-installer/kyth_installer/disk/_probe.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "_query",
       "owner": "fixture::src/kyth-installer/kyth_installer/disk/_query.py",
       "path": "src/kyth-installer/kyth_installer/disk/_query.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "_util",
       "owner": "fixture::src/kyth-installer/kyth_installer/disk/_util.py",
       "path": "src/kyth-installer/kyth_installer/disk/_util.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "disk_snapshot",
       "owner": "fixture::src/kyth-installer/kyth_installer/disk_snapshot.py",
       "path": "src/kyth-installer/kyth_installer/disk_snapshot.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "execution",
       "owner": "fixture::src/kyth-installer/kyth_installer/execution.py",
       "path": "src/kyth-installer/kyth_installer/execution.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "executor",
       "owner": "fixture::src/kyth-installer/kyth_installer/executor.py",
       "path": "src/kyth-installer/kyth_installer/executor.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "fsresize",
       "owner": "fixture::src/kyth-installer/kyth_installer/fsresize.py",
       "path": "src/kyth-installer/kyth_installer/fsresize.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "imagesrc",
       "owner": "fixture::src/kyth-installer/kyth_installer/imagesrc.py",
       "path": "src/kyth-installer/kyth_installer/imagesrc.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "install",
       "owner": "fixture::src/kyth-installer/kyth_installer/install.py",
       "path": "src/kyth-installer/kyth_installer/install.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "interfaces",
       "owner": "fixture::src/kyth-installer/kyth_installer/interfaces.py",
       "path": "src/kyth-installer/kyth_installer/interfaces.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "mount_registry",
       "owner": "fixture::src/kyth-installer/kyth_installer/mount_registry.py",
       "path": "src/kyth-installer/kyth_installer/mount_registry.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "orchestration",
       "owner": "fixture::src/kyth-installer/kyth_installer/orchestration.py",
       "path": "src/kyth-installer/kyth_installer/orchestration.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "partition_cli",
       "owner": "fixture::src/kyth-installer/kyth_installer/partition_cli.py",
       "path": "src/kyth-installer/kyth_installer/partition_cli.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "partition_ops",
       "owner": "fixture::src/kyth-installer/kyth_installer/partition_ops.py",
       "path": "src/kyth-installer/kyth_installer/partition_ops.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "partition_ops_journal",
       "owner": "fixture::src/kyth-installer/kyth_installer/partition_ops_journal.py",
       "path": "src/kyth-installer/kyth_installer/partition_ops_journal.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "__init__",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/__init__.py",
       "path": "src/kyth-installer/kyth_installer/phases/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "bootc_cmd",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/bootc_cmd.py",
       "path": "src/kyth-installer/kyth_installer/phases/bootc_cmd.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "common",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/common.py",
       "path": "src/kyth-installer/kyth_installer/phases/common.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "compat",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/compat.py",
       "path": "src/kyth-installer/kyth_installer/phases/compat.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "finalize",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize.py",
       "path": "src/kyth-installer/kyth_installer/phases/finalize.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "finalize_artifacts",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_artifacts.py",
       "path": "src/kyth-installer/kyth_installer/phases/finalize_artifacts.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "finalize_configure",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_configure.py",
       "path": "src/kyth-installer/kyth_installer/phases/finalize_configure.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "finalize_fstab",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_fstab.py",
       "path": "src/kyth-installer/kyth_installer/phases/finalize_fstab.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "finalize_identity",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/finalize_identity.py",
       "path": "src/kyth-installer/kyth_installer/phases/finalize_identity.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "preflight",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/preflight.py",
       "path": "src/kyth-installer/kyth_installer/phases/preflight.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "run",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/run.py",
       "path": "src/kyth-installer/kyth_installer/phases/run.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "storage",
       "owner": "fixture::src/kyth-installer/kyth_installer/phases/storage.py",
       "path": "src/kyth-installer/kyth_installer/phases/storage.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "plan",
       "owner": "fixture::src/kyth-installer/kyth_installer/plan.py",
       "path": "src/kyth-installer/kyth_installer/plan.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "plan_commit",
       "owner": "fixture::src/kyth-installer/kyth_installer/plan_commit.py",
       "path": "src/kyth-installer/kyth_installer/plan_commit.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "plan_query",
       "owner": "fixture::src/kyth-installer/kyth_installer/plan_query.py",
       "path": "src/kyth-installer/kyth_installer/plan_query.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "plan_request",
       "owner": "fixture::src/kyth-installer/kyth_installer/plan_request.py",
       "path": "src/kyth-installer/kyth_installer/plan_request.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "plan_types",
       "owner": "fixture::src/kyth-installer/kyth_installer/plan_types.py",
       "path": "src/kyth-installer/kyth_installer/plan_types.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "plan_validate",
       "owner": "fixture::src/kyth-installer/kyth_installer/plan_validate.py",
       "path": "src/kyth-installer/kyth_installer/plan_validate.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "post_routes",
       "owner": "fixture::src/kyth-installer/kyth_installer/post_routes.py",
       "path": "src/kyth-installer/kyth_installer/post_routes.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "recovery",
       "owner": "fixture::src/kyth-installer/kyth_installer/recovery.py",
       "path": "src/kyth-installer/kyth_installer/recovery.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "runner",
       "owner": "fixture::src/kyth-installer/kyth_installer/runner.py",
       "path": "src/kyth-installer/kyth_installer/runner.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "secure_boot",
       "owner": "fixture::src/kyth-installer/kyth_installer/secure_boot.py",
       "path": "src/kyth-installer/kyth_installer/secure_boot.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "server",
       "owner": "fixture::src/kyth-installer/kyth_installer/server.py",
       "path": "src/kyth-installer/kyth_installer/server.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "__init__",
       "owner": "fixture::src/kyth-installer/kyth_installer/services/__init__.py",
       "path": "src/kyth-installer/kyth_installer/services/__init__.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "disk_service",
       "owner": "fixture::src/kyth-installer/kyth_installer/services/disk_service.py",
       "path": "src/kyth-installer/kyth_installer/services/disk_service.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "installer_service",
       "owner": "fixture::src/kyth-installer/kyth_installer/services/installer_service.py",
       "path": "src/kyth-installer/kyth_installer/services/installer_service.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "storage_guard",
       "owner": "fixture::src/kyth-installer/kyth_installer/storage_guard.py",
       "path": "src/kyth-installer/kyth_installer/storage_guard.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "storage_snapshot",
       "owner": "fixture::src/kyth-installer/kyth_installer/storage_snapshot.py",
       "path": "src/kyth-installer/kyth_installer/storage_snapshot.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "streaming",
       "owner": "fixture::src/kyth-installer/kyth_installer/streaming.py",
       "path": "src/kyth-installer/kyth_installer/streaming.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "system",
       "owner": "fixture::src/kyth-installer/kyth_installer/system.py",
       "path": "src/kyth-installer/kyth_installer/system.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "system_mount",
       "owner": "fixture::src/kyth-installer/kyth_installer/system_mount.py",
       "path": "src/kyth-installer/kyth_installer/system_mount.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "system_privilege",
       "owner": "fixture::src/kyth-installer/kyth_installer/system_privilege.py",
       "path": "src/kyth-installer/kyth_installer/system_privilege.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     },
     {
-      "migration_priority": 0,
+      "migration_priority": 3,
       "name": "validation",
       "owner": "fixture::src/kyth-installer/kyth_installer/validation.py",
       "path": "src/kyth-installer/kyth_installer/validation.py",
-      "runtime_authority": "python-installer",
-      "runtime_scope": "installer",
-      "status": "queued"
-    }
-  ],
-  "schema_version": 1,
-  "source_only": [
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
     {
       "migration_priority": 3,
       "name": "__init__",
@@ -4511,27 +3979,25 @@
   "summary": {
     "active_by_authority": {
       "data-or-config": 9,
-      "python-installer": 58,
       "python-runtime": 41,
       "python-shared-package": 255,
       "rust-dispatcher": 16,
-      "rust-service": 9,
-      "rust-transport-python-backend": 1,
-      "shell-orchestration": 172
+      "rust-service": 10,
+      "shell-orchestration": 171
     },
     "active_by_scope": {
-      "installer": 59,
+      "installer": 1,
       "standalone": 255,
       "system-service": 35,
-      "user-session": 212
+      "user-session": 211
     },
-    "active_entries": 561,
-    "active_python_entries": 355,
+    "active_entries": 502,
+    "active_python_entries": 296,
     "entries": 655,
-    "p0_open_entries": 59,
+    "p0_open_entries": 0,
     "status_by_active_entry": {
-      "done-native": 118,
-      "queued": 443
+      "done-native": 120,
+      "queued": 382
     }
   }
 }

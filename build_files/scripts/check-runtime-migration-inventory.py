@@ -54,7 +54,10 @@ NATIVE_BINARIES = {
 }
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-doctor", "kyth-health-check", "kyth-smoke-check", "kyth-resume-check", "kyth-nvidia-status", "kyth-controller-check", "kyth-creator-check", "kyth-exe-compat", "kyth-snapshot-timeline", "kyth-print-check", "kyth-windows-verify", "kyth-tunable", "kyth-configure-session", "kyth-set-resolution", "kyth-set-kickoff-icon", "kyth-greeter-compositor", "kyth-config-apply"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-tunable-rs", "kyth-game-boost"}
-PACKAGED_NATIVE_LAUNCHERS = NATIVE_BINARIES
+NATIVE_BINARIES = NATIVE_BINARIES | {
+    "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
+}
+PACKAGED_NATIVE_LAUNCHERS = NATIVE_BINARIES | {"kyth-launch-installer"}
 NOT_PORTED = {"kyth-default-flatpaks", "kyth-flathub-setup", "kyth-local-bin-migrate", "rclone@", "scx_loader"}
 NOT_PORTED_PATHS = {"src/kyth-welcome/kyth_welcome/services/privileged.py"}
 READ_ONLY_NAMES = {
@@ -140,7 +143,7 @@ def runtime_metadata(
     priority = 3
 
     if surface == "installer-runtime":
-        authority, scope, active, priority = "python-installer", "installer", True, 0
+        authority, scope, active, priority = "source-only", "test-fixture", False, 3
     elif surface == "python-runtime":
         if rel(path).startswith("src/kyth-welcome/"):
             authority, scope, active, priority = "source-only", "test-fixture", False, 3
@@ -153,7 +156,7 @@ def runtime_metadata(
     elif surface == "systemd-unit":
         commands = " ".join(exec_start or [])
         if "kyth-installerd" in commands:
-            authority, scope, active, priority = "rust-transport-python-backend", "installer", True, 0
+            authority, scope, active, priority = "rust-service", "installer", True, 0
         elif any(binary in commands for binary in NATIVE_BINARIES):
             authority, scope, active, priority = "rust-service", "system-service", True, 1
         elif "python" in commands:
@@ -163,7 +166,11 @@ def runtime_metadata(
     elif surface == "launcher":
         scope = "user-session"
         active = True
-        if name in NATIVE_BINARIES:
+        if name == "kyth-installer":
+            authority, scope, active, priority = "source-only", "test-fixture", False, 3
+        elif name == "kyth-launch-installer":
+            authority, priority = "shell-orchestration", 0
+        elif name in NATIVE_BINARIES:
             authority, priority = "rust-dispatcher", 1
         elif kind == "python":
             authority, priority = "python-runtime", 2
@@ -215,6 +222,7 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
         "resolved_target": rel(path.resolve()) if path.exists() else None,
         "current_implementation": kind,
         "installed_implementation": (
+            "native-launcher" if item_name == "kyth-launch-installer" and status == "done-native" else
             "rust" if status == "done-native" else
             "not-installed" if status == "explicitly-not-ported" else kind
         ),
