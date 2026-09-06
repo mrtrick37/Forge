@@ -1713,6 +1713,47 @@ class InstallerSystemTests(unittest.TestCase):
         self.assertEqual(result, "failed")
 
 
+    @patch.object(system, "_as_root", side_effect=lambda argv: argv)
+    @patch.object(system, "run_command")
+    @patch.object(system, "shutil")
+    def test_mok_enrollment_native_helper_stages_via_stdin_password(self, mock_shutil, mock_run, mock_as_root):
+        mock_shutil.which.return_value = "/usr/bin/kyth-installer-exec"
+        mock_run.return_value = MagicMock(
+            stdout=json.dumps({"state": "staged", "message": "enrollment staged"})
+        )
+        logs = []
+        result = system._try_stage_mok_enrollment(logs.append, kernel="fedora", mok_password="hunter2")
+        self.assertEqual(result, "staged")
+        self.assertIn("enrollment staged", logs[0])
+        self.assertEqual(
+            mock_run.call_args.args[0],
+            ["kyth-installer-exec", "--operation", "secure-boot-stage"],
+        )
+        payload = json.loads(mock_run.call_args.kwargs["input"])
+        self.assertEqual(payload["password"], "hunter2")
+        self.assertNotIn("hunter2", " ".join(mock_run.call_args.args[0]))
+
+    @patch.object(system, "_as_root", side_effect=lambda argv: argv)
+    @patch.object(system, "run_command")
+    @patch.object(system, "shutil")
+    def test_mok_enrollment_native_helper_rejects_malformed_response(self, mock_shutil, mock_run, mock_as_root):
+        mock_shutil.which.return_value = "/usr/bin/kyth-installer-exec"
+        mock_run.return_value = MagicMock(stdout=json.dumps({"state": "staged"}))
+        result = system._try_stage_mok_enrollment(lambda _m: None, kernel="fedora")
+        self.assertEqual(result, "failed")
+
+    @patch.object(system, "_as_root", side_effect=lambda argv: argv)
+    @patch.object(system, "run_command")
+    @patch.object(system, "shutil")
+    def test_mok_enrollment_native_helper_failure_is_caught(self, mock_shutil, mock_run, mock_as_root):
+        mock_shutil.which.return_value = "/usr/bin/kyth-installer-exec"
+        mock_run.side_effect = RuntimeError("helper crashed")
+        logs = []
+        result = system._try_stage_mok_enrollment(logs.append, kernel="fedora")
+        self.assertEqual(result, "failed")
+        self.assertIn("helper crashed", logs[0])
+
+
 class InstallerGptDiskTests(unittest.TestCase):
     @patch("kyth_installer.plan.run_command")
     def test_is_gpt_disk_via_blkid(self, mock_run):

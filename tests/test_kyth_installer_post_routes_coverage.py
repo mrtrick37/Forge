@@ -71,6 +71,28 @@ class PostRouteCoverageTests(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(response.payload["copied"], ["install.log"])
 
+    def test_reboot_uses_native_operation_when_helper_is_installed(self):
+        with (
+            mock.patch("kyth_installer.post_routes.shutil.which", return_value="/usr/bin/kyth-installer-exec"),
+            mock.patch("kyth_installer.orchestration.native_operation", return_value=None) as native,
+        ):
+            response = self.routes.reboot({})
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.payload, {"ok": True})
+        native.assert_called_once_with("reboot", {})
+
+    def test_reboot_native_failure_maps_to_500(self):
+        with (
+            mock.patch("kyth_installer.post_routes.shutil.which", return_value="/usr/bin/kyth-installer-exec"),
+            mock.patch(
+                "kyth_installer.orchestration.native_operation",
+                side_effect=RuntimeError("native reboot failed"),
+            ),
+        ):
+            response = self.routes.reboot({})
+        self.assertEqual(response.status, 500)
+        self.assertIn("native reboot failed", response.payload["error"])
+
     def test_rescue_logs_uses_native_recovery_export_when_helper_is_installed(self):
         with tempfile.TemporaryDirectory() as tmp:
             mount = Path(tmp) / "usb"
