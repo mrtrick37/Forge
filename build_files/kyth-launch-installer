@@ -38,7 +38,6 @@ if [ -z "${session_user}" ] || [ "${session_user}" = root ] || ! /usr/bin/id -u 
 fi
 
 session_uid="$(/usr/bin/id -u "${session_user}")"
-session_gid="$(/usr/bin/id -g "${session_user}")"
 session_home="$(/usr/bin/getent passwd "${session_user}" | /usr/bin/cut -d: -f6)"
 if [ -z "${session_home}" ] || [ "${session_uid}" -eq 0 ]; then
 	exit 1
