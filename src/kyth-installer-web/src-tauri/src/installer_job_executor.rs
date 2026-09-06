@@ -29,6 +29,15 @@ pub(crate) struct NativeInstallRequest {
     pub transaction_path: String,
 }
 
+fn normalize_kernel_flavor(value: &str) -> String {
+    let normalized = value.trim().to_ascii_lowercase();
+    if normalized == "cachyos" {
+        "cachy".to_string()
+    } else {
+        normalized
+    }
+}
+
 impl NativeInstallRequest {
     /// Decode the flat HTTP representation used by the existing frontend.
     /// Secrets are consumed into the typed request and never serialized back.
@@ -143,7 +152,7 @@ impl NativeInstallRequest {
                 },
                 account,
                 secure_boot: crate::installer_secure_boot::SecureBootInput {
-                    kernel: text("kernel", "fedora"),
+                    kernel: normalize_kernel_flavor(&text("kernel", "fedora")),
                     force_stage: flag("force_stage", false),
                     certificate_present: flag("certificate_present", false),
                     mokutil_present: flag("mokutil_present", false),
@@ -1584,6 +1593,16 @@ mod tests {
             secure_boot_password: String::new(),
             transaction_path: "/tmp/kyth-transaction.json".into(),
         }
+    }
+
+    #[test]
+    fn frontend_cachyos_kernel_alias_is_normalized_for_native_secure_boot() {
+        let request = NativeInstallRequest::from_http(serde_json::json!({
+            "kernel": " CachyOS ",
+        }))
+        .expect("frontend request should decode");
+
+        assert_eq!(request.execution.secure_boot.kernel, "cachy");
     }
 
     #[test]
