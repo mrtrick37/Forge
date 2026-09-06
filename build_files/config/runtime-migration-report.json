@@ -3978,7 +3978,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "data-or-config": 9,
+      "data-or-config": 8,
       "python-runtime": 41,
       "python-shared-package": 255,
       "rust-dispatcher": 16,
@@ -3989,15 +3989,15 @@
       "installer": 1,
       "standalone": 255,
       "system-service": 35,
-      "user-session": 211
+      "user-session": 210
     },
-    "active_entries": 502,
+    "active_entries": 501,
     "active_python_entries": 296,
-    "entries": 655,
+    "entries": 654,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 382
+      "queued": 381
     }
   }
 }

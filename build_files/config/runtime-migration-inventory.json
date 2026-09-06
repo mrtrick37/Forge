@@ -5411,28 +5411,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "data",
-      "cutover": "replace installed kyth-vpn-status entry point after parity gates",
-      "installed_implementation": "data",
-      "migration_priority": 3,
-      "name": "kyth-vpn-status",
-      "owner": "fixture::build_files/kyth-vpn-status",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-vpn-status",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-vpn-status",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
-      "rollback": "restore previous installed kyth-vpn-status entry point",
-      "runtime_active": true,
-      "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "shell",
       "cutover": "replace installed kyth-vpnc-script entry point after parity gates",
       "installed_implementation": "shell",
