@@ -1,9 +1,6 @@
 # shellcheck shell=bash
-# ── KythOS Hub launcher and installer packaging ──────────────────────────────
-# /ctx is a read-only BuildKit bind mount. Setuptools creates build metadata
-# beside a local project, so stage the package in the writable build tmpfs.
-installer_package_dir="$(mktemp -d /tmp/kyth-installer-package.XXXXXX)"
-# /ctx/kyth-welcome and /ctx/kyth-installer are symlinks to ../src/... inside
+# ── KythOS Hub launcher and native installer packaging ───────────────────────
+# /ctx/kyth-welcome is a symlink to ../src/... inside
 # build_files. When build_files is bind-mounted as /ctx, those symlinks dangle
 # and BuildKit overlay mounts do not reliably hide them. Use /src fallback.
 _resolve_ctx_src() {
@@ -34,18 +31,8 @@ _resolve_ctx_src() {
     echo "/ctx/${name}"
 }
 _welcome_src="$(_resolve_ctx_src kyth-welcome)"
-_installer_src="$(_resolve_ctx_src kyth-installer)"
-echo "branding: welcome_src=${_welcome_src} installer_src=${_installer_src} (ctx_welcome_exists=$(test -d /ctx/kyth-welcome && echo yes || echo no) src_exists=$(test -d /src/kyth-welcome && echo yes || echo no) ctx_islink=$(test -L /ctx/kyth-welcome && echo yes || echo no))" >&2
+echo "branding: welcome_src=${_welcome_src} (ctx_welcome_exists=$(test -d /ctx/kyth-welcome && echo yes || echo no) src_exists=$(test -d /src/kyth-welcome && echo yes || echo no) ctx_islink=$(test -L /ctx/kyth-welcome && echo yes || echo no))" >&2
 ls -ld "/ctx/kyth-welcome" "/src/kyth-welcome" 2>&1 | head -n 5 >&2 || true
-ls -ld "/ctx/kyth-installer" "/src/kyth-installer" 2>&1 | head -n 5 >&2 || true
-cp -a "${_installer_src}/." "${installer_package_dir}/"
-python3 -m pip install \
-	--no-cache-dir \
-	--no-deps \
-	--no-build-isolation \
-	--prefix=/usr \
-	"${installer_package_dir}"
-rm -rf "${installer_package_dir}"
 install -m 0755 "${_welcome_src}/kyth-welcome-launch" /usr/bin/kyth-welcome-launch
 install -m 0644 "${_welcome_src}/kyth-welcome.desktop" \
 	/usr/share/applications/kyth-welcome.desktop
@@ -62,7 +49,7 @@ install -m 0644 "${_welcome_src}/kyth-welcome.desktop" \
 install -Dm0644 /src/kyth-hub-web/src/data/hubRoutes.json \
 	/usr/share/kyth/hubRoutes.json
 
-unset _welcome_src _installer_src installer_package_dir
+unset _welcome_src
 write_config /usr/share/applications/kyth-app-store.desktop <<'APPSTOREEOF'
 [Desktop Entry]
 Type=Application

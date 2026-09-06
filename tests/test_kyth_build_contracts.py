@@ -248,24 +248,27 @@ class BuildAssemblyContracts(unittest.TestCase):
         script = (BUILD_FILES / "scripts/kernel-repair.sh").read_text(encoding="utf-8")
         self.assertIn('find /usr/lib/kernel -name "vmlinuz-${KVER}"', script)
 
-    def test_packaged_installer_is_the_only_installation_entry_point(self):
+    def test_native_installer_is_the_only_installed_entry_point(self):
         self.assertFalse((BUILD_FILES / "kyth-install.sh").exists())
         self.assertFalse((BUILD_FILES / "kyth-manual-install.sh").exists())
-        installer = BUILD_FILES / "kyth-installer/pyproject.toml"
         launcher = BUILD_FILES / "kyth-launch-installer"
-        self.assertIn('kyth-installer = "kyth_installer.app:main"', installer.read_text())
-        self.assertIn("/usr/bin/kyth-installer", launcher.read_text())
+        self.assertIn("kyth-installerd.service", (ROOT / "installer/build.sh").read_text())
+        self.assertIn("/usr/bin/kyth-installer-shell", (ROOT / "installer/Containerfile").read_text())
+        self.assertIn("/usr/bin/kyth-launch-installer", launcher.read_text())
+        self.assertNotIn("/usr/bin/kyth-installer \"$@\"", launcher.read_text())
+        self.assertNotIn("chromium", launcher.read_text().lower())
 
     def test_live_installer_sudo_is_single_argument_free_entry_point(self):
         build = (ROOT / "installer/build.sh").read_text(encoding="utf-8")
         policy = build.split("/etc/sudoers.d/liveuser-live <<'EOF'", 1)[1].split("\nEOF", 1)[0]
         grants = [line for line in policy.splitlines() if "NOPASSWD:" in line]
-        self.assertEqual(grants, ['liveuser ALL=(root) NOPASSWD: /usr/bin/kyth-installer ""'])
+        self.assertEqual(grants, ['liveuser ALL=(root) NOPASSWD: /usr/bin/kyth-launch-installer ""'])
         for dangerous in ("/usr/bin/cp", "/usr/bin/tee", "/usr/bin/systemctl", "/usr/bin/podman"):
             self.assertNotIn(dangerous, policy)
 
         launcher = (BUILD_FILES / "kyth-launch-installer").read_text(encoding="utf-8")
-        self.assertIn('sudo -n /usr/bin/kyth-installer "$@"', launcher)
+        self.assertIn("/usr/bin/sudo -n -- /usr/bin/kyth-launch-installer", launcher)
+        self.assertNotIn("/usr/bin/kyth-installer \"$@\"", launcher)
         self.assertNotIn("sudo -n env", launcher)
 
     def test_webengine_no_sandbox_is_scoped_to_live_installer(self):

@@ -64,7 +64,7 @@ class PythonPackagingTests(unittest.TestCase):
         )
         self.assertNotIn("scripts", welcome["project"])
 
-    def test_image_builds_install_python_projects_via_pip(self):
+    def test_image_builds_install_only_the_native_installer_runtime(self):
         dockerfile = (ROOT / "Dockerfile").read_text()
         installer_build = (ROOT / "installer/build.sh").read_text()
         helper_build = (
@@ -80,14 +80,16 @@ class PythonPackagingTests(unittest.TestCase):
             "source=build_files/kyth_shared,target=/ctx/kyth_shared",
             dockerfile,
         )
-        self.assertIn("python3 -m pip install", installer_build)
-        self.assertIn("/src/build_files/kyth-installer", installer_build)
-        self.assertIn("mktemp -d /tmp/kyth-installer-packages", installer_build)
-        self.assertIn('"${installer_package_root}/kyth-installer"', installer_build)
-        self.assertIn("python3 -m pip install", helper_build)
-        self.assertIn("/ctx/kyth-installer", helper_build)
-        self.assertIn("mktemp -d /tmp/kyth-installer-package", helper_build)
-        self.assertIn('"${installer_package_dir}"', helper_build)
+        self.assertIn("kyth-launch-installer", installer_build)
+        self.assertIn("kyth-installerd.service", installer_build)
+        self.assertNotIn("python3 -m pip install", installer_build)
+        self.assertNotIn("/src/build_files/kyth-installer/", installer_build)
+        self.assertNotIn("kyth-installer-package", installer_build)
+        self.assertNotIn("python3 -m pip install", helper_build)
+        self.assertNotIn("/ctx/kyth-installer", helper_build)
+        self.assertNotIn("kyth-installer-package", helper_build)
+        self.assertNotIn("chromium", installer_build.lower())
+        self.assertNotIn("chromium", helper_build.lower())
         self.assertIn("kyth-hub-desktop-entries", helper_build)
         self.assertNotIn('from kyth_welcome.krunner_desktop import', helper_build)
         self.assertNotIn('"${welcome_package_dir}"', helper_build)

@@ -3,7 +3,7 @@
 #
 # This script is only a desktop-session orchestrator. The Rust daemon owns the
 # authenticated API and all installation operations; the unprivileged Rust
-# shell owns the UI. No Python package, Chromium fallback, arbitrary command,
+# shell owns the UI. No Python package, browser fallback, arbitrary command,
 # or user-supplied launcher argument is accepted here.
 
 set -euo pipefail

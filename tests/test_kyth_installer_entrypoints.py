@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 INSTALLER_ROOT = ROOT / "build_files" / "kyth-installer"
+sys.path.insert(0, str(ROOT / "build_files" / "kyth_shared"))
 sys.path.insert(0, str(INSTALLER_ROOT))
 
 
@@ -37,14 +38,16 @@ class InstallerEntrypointTests(unittest.TestCase):
             check=True,
         )
 
-    def test_live_image_installs_shared_python_package(self):
+    def test_live_image_installs_native_installer_runtime(self):
         containerfile = (ROOT / "installer" / "Containerfile").read_text()
         build_script = (ROOT / "installer" / "build.sh").read_text()
 
-        self.assertIn("source=build_files/kyth_shared", containerfile)
-        self.assertIn("python3 -m pip install", build_script)
-        self.assertIn("/src/build_files/kyth_shared", build_script)
-        self.assertNotIn("/usr/kyth_shared", build_script)
+        self.assertIn("COPY --from=installer-web-builder /build/kyth-installer-shell /usr/bin/kyth-installer-shell", containerfile)
+        self.assertIn("COPY --from=installer-web-builder /build/kyth-installerd /usr/bin/kyth-installerd", containerfile)
+        self.assertIn("kyth-launch-installer", build_script)
+        self.assertIn("kyth-installerd.service", build_script)
+        self.assertNotIn("python3 -m pip install", build_script)
+        self.assertNotIn("kyth-installer-package", build_script)
 
     def test_installer_socket_service_is_packaged_but_not_boot_enabled(self):
         unit = (ROOT / "build_files" / "kyth-installerd.service").read_text()
@@ -62,8 +65,9 @@ class InstallerEntrypointTests(unittest.TestCase):
     def test_launcher_preserves_only_fixed_installer_transport_settings(self):
         launcher = (ROOT / "build_files" / "kyth-launch-installer").read_text()
         sudoers = (ROOT / "installer" / "build.sh").read_text()
+        for name in ("KYTH_INSTALLER_SOCKET", "KYTH_INSTALLER_SESSION_TOKEN"):
+            self.assertIn(name, launcher)
         for name in ("KYTH_INSTALLER_SOCKET", "KYTH_INSTALLER_SOCKET_GROUP", "KYTH_INSTALLER_TOKEN_FILE"):
-            self.assertIn(f'export {name}=', launcher)
             self.assertIn(name, sudoers)
 
 
