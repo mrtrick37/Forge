@@ -67,6 +67,12 @@ pub(crate) trait PhaseExecutor: Send + Sync + 'static {
     fn record_cancelled(&self, _phase: Option<Phase>) {}
 
     fn record_failed(&self, _phase: Phase, _message: &str) {}
+
+    /// Return a bounded native Secure Boot state for a successful install.
+    /// Error and cancellation events carry their own terminal semantics.
+    fn success_mok_state(&self) -> Option<String> {
+        None
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -75,7 +81,10 @@ pub(crate) enum JobEventKind {
     Phase {
         phase: Phase,
     },
-    Done,
+    Done {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        mok_state: Option<String>,
+    },
     Error {
         message: String,
         phase: Option<Phase>,
@@ -443,13 +452,14 @@ fn run_worker<E: PhaseExecutor>(shared: Arc<Shared<E>>, job_id: u64) {
         finish_cancelled(&shared, job_id, Some(Phase::Complete));
         return;
     }
+    let mok_state = shared.executor.success_mok_state();
     state.runtime.lifecycle = Lifecycle::Done;
     state.runtime.phase = Phase::Complete;
     state.runtime.cancel_requested = false;
     state.cancellation = None;
     state.worker_active = false;
     state.worker_id = None;
-    state.terminal_event_id = Some(append_event(&mut state, JobEventKind::Done));
+    state.terminal_event_id = Some(append_event(&mut state, JobEventKind::Done { mok_state }));
     shared.changed.notify_all();
 }
 
@@ -514,6 +524,7 @@ mod tests {
         release: AtomicBool,
         cleanup_complete: AtomicBool,
         instances: AtomicUsize,
+        mok_state: Mutex<Option<String>>,
     }
 
     impl FakeExecutor {
@@ -528,6 +539,10 @@ mod tests {
         fn release(&self) {
             self.release.store(true, Ordering::Release);
             self.entered.notify_all();
+        }
+
+        fn set_mok_state(&self, state: &str) {
+            *self.mok_state.lock().unwrap() = Some(state.to_string());
         }
 
         fn wait_until_entered(&self) {
@@ -581,6 +596,10 @@ mod tests {
         ) -> Result<(), String> {
             self.0.execute_phase(phase, cancellation)
         }
+
+        fn success_mok_state(&self) -> Option<String> {
+            self.0.mok_state.lock().unwrap().clone()
+        }
     }
 
     fn terminal(supervisor: &JobSupervisor<ArcExecutor>) -> JobSnapshot {
@@ -622,7 +641,30 @@ mod tests {
         let replay = supervisor
             .replay(receipt.first_event_id.saturating_sub(1))
             .unwrap();
-        assert_eq!(replay.events.last().unwrap().kind, JobEventKind::Done);
+        assert_eq!(
+            replay.events.last().unwrap().kind,
+            JobEventKind::Done { mok_state: None }
+        );
+    }
+
+    #[test]
+    fn successful_terminal_event_carries_executor_mok_state() {
+        let (supervisor, executor) = supervisor();
+        executor.set_mok_state("staged");
+        supervisor.start().unwrap();
+        executor.release();
+        terminal(&supervisor);
+
+        let event = supervisor.replay(0).unwrap().events.pop().unwrap();
+        assert_eq!(
+            event.kind,
+            JobEventKind::Done {
+                mok_state: Some("staged".to_string())
+            }
+        );
+        let encoded = serde_json::to_value(event).unwrap();
+        assert_eq!(encoded["type"], "done");
+        assert_eq!(encoded["mok_state"], "staged");
     }
 
     #[test]
@@ -641,7 +683,7 @@ mod tests {
         assert!(first
             .events
             .iter()
-            .any(|event| matches!(event.kind, JobEventKind::Done)));
+            .any(|event| matches!(event.kind, JobEventKind::Done { .. })));
         assert_eq!(
             supervisor.snapshot().unwrap().runtime.lifecycle,
             Lifecycle::Done
@@ -724,6 +766,6 @@ mod tests {
         );
         assert!(!events
             .iter()
-            .any(|event| matches!(event.kind, JobEventKind::Done)));
+            .any(|event| matches!(event.kind, JobEventKind::Done { .. })));
     }
 }

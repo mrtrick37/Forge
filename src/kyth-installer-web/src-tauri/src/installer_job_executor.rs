@@ -248,6 +248,7 @@ pub(crate) struct NativePhaseExecutor {
     transaction: Mutex<crate::installer_transaction::TransactionState>,
     mounts: Mutex<crate::installer_mount::MountRegistry>,
     storage_target: Mutex<Option<String>>,
+    secure_boot_state: Mutex<Option<String>>,
 }
 
 impl NativePhaseExecutor {
@@ -286,6 +287,7 @@ impl NativePhaseExecutor {
             transaction: Mutex::new(transaction),
             mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
             storage_target: Mutex::new(None),
+            secure_boot_state: Mutex::new(None),
         })
     }
 
@@ -320,6 +322,7 @@ impl NativePhaseExecutor {
             transaction: Mutex::new(transaction),
             mounts: Mutex::new(crate::installer_mount::MountRegistry::default()),
             storage_target: Mutex::new(None),
+            secure_boot_state: Mutex::new(None),
         }
     }
 
@@ -1446,9 +1449,6 @@ impl NativePhaseExecutor {
         phase: Phase,
         cancellation: &CancellationToken,
     ) -> Result<(), NativePhaseError> {
-        if self.execution_plan.secure_boot.action == "none" {
-            return Ok(());
-        }
         let plan = crate::installer_secure_boot::stage_with_cancellation(
             crate::installer_secure_boot::SecureBootStageInput {
                 kernel: self.secure_boot_kernel.clone(),
@@ -1458,6 +1458,13 @@ impl NativePhaseExecutor {
             || cancellation.is_cancelled(),
         )
         .map_err(|message| NativePhaseError::Execution { phase, message })?;
+        *self
+            .secure_boot_state
+            .lock()
+            .map_err(|_| NativePhaseError::Execution {
+                phase,
+                message: "native Secure Boot state is unavailable".to_string(),
+            })? = Some(plan.state.clone());
         if plan.state == "failed" {
             return Err(NativePhaseError::Execution {
                 phase,
@@ -1479,9 +1486,8 @@ impl NativePhaseExecutor {
         .map_err(|message| NativePhaseError::Execution { phase, message })
     }
 
-    /// Build a native supervisor without starting a Python compatibility
-    /// worker.  The caller supplies this supervisor to the daemon's native
-    /// route integration once request decoding is connected.
+    /// Build a native supervisor without starting a compatibility worker. The
+    /// daemon supplies this supervisor to the native route integration.
     pub(crate) fn into_supervisor(self) -> JobSupervisor<Self> {
         JobSupervisor::new(self)
     }
@@ -1512,6 +1518,13 @@ impl PhaseExecutor for NativePhaseExecutor {
         let _ = self.cleanup_mounts(phase);
         self.write_terminal_transaction(Some(phase), message);
         self.persist_failure_summary(message);
+    }
+
+    fn success_mok_state(&self) -> Option<String> {
+        self.secure_boot_state
+            .lock()
+            .ok()
+            .and_then(|state| state.clone())
     }
 }
 
@@ -1626,6 +1639,10 @@ mod tests {
         assert_eq!(
             executor.execute_phase_typed(Phase::SecureBoot, &cancellation),
             Ok(())
+        );
+        assert_eq!(
+            <NativePhaseExecutor as PhaseExecutor>::success_mok_state(&executor),
+            Some("skipped".to_string())
         );
         let plan = serde_json::to_string(executor.execution_plan()).unwrap();
         assert!(!plan.contains("mok-secret-must-not-leak"));

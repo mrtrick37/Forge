@@ -1304,7 +1304,7 @@ fn native_stream(
             sent = event.id.saturating_add(1);
             if matches!(
                 event.kind,
-                super::installer_job::JobEventKind::Done
+                super::installer_job::JobEventKind::Done { .. }
                     | super::installer_job::JobEventKind::Error { .. }
             ) {
                 return Ok(());
