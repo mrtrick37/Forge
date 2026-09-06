@@ -2,8 +2,7 @@
 //!
 //! The parser accepts explicit snapshots so the safety policy is testable
 //! without touching devices. The root-owned daemon supplies those snapshots
-//! through fixed, read-only probes and serializes the same API records that
-//! the compatibility service historically returned.
+//! through fixed, read-only probes and serializes the API records directly.
 
 use serde::{Deserialize, Serialize};
 

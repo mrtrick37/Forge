@@ -1,17 +1,19 @@
 # Installer Migration Plan
 
-**Status:** P0 control plane complete; installer backend migration is the next
-high-risk workstream
+**Status:** Native Rust installer backend ownership is complete for the
+supported runtime; full VM/live-media acceptance remains intentionally deferred
 **Scope:** Migrate the KythOS installer to the React/Tauri style used by the System Hub.
 
 ## Context
 
-The installer now has a production React/Tauri client, a native Slint recovery
-client, a root-owned Rust transport daemon, and a typed Rust execution helper.
-The compatibility backend is still Python and remains authoritative for most
-phase orchestration. It owns disk discovery fallbacks, partitioning fallbacks,
-filesystem resize orchestration, bootc deployment sequencing, Secure Boot
-setup, progress, cancellation, transaction recovery, and rescue mode.
+At the migration baseline, the installer had a production React/Tauri client,
+a native Slint recovery client, a root-owned Rust transport daemon, and a
+typed Rust execution helper. The supported runtime has now completed the
+backend cutover: Rust owns discovery, partitioning, filesystem resize and
+mount orchestration, bootc deployment, configuration, account creation,
+Secure Boot setup, progress, cancellation, transaction recovery, and Rescue.
+The former Python implementation remains only as source fixture material for
+parity tests and is not installed in the supported image.
 
 The migration must preserve those safety properties. A UI rewrite and a
 Python-to-Rust rewrite should not happen simultaneously: that would make disk
@@ -24,13 +26,13 @@ Migrate in layers:
 1. Keep the frozen logical HTTP/SSE contract while the React client is hosted
    in an unprivileged Tauri shell.
 2. Keep the root-owned Rust Unix-socket daemon as the only user-visible
-   privileged boundary; it currently proxies to Python for the remaining
-   compatibility operations.
+   privileged boundary; it invokes only fixed typed Rust helper operations.
 3. Port backend components selectively to Rust after behavioral parity is
    established, with storage and recovery gates before every destructive
    cutover.
-4. Remove the Python installer package and root Python launcher only after the
-   native daemon passes all install-mode and recovery acceptance gates.
+4. Remove the Python installer package and root Python launcher from the
+   supported image; destructive VM/live-media acceptance remains a separate
+   release gate and is not part of this code-level cutover.
 
 The Tauri process must not run as root and must not gain a generic command,
 filesystem, or disk-writing bridge. The privileged service remains the trust
@@ -198,8 +200,8 @@ Before replacing Chromium in the image:
   contract smoke tests pass. The Slint client remains an explicit recovery
   fallback, not a second backend authority.
 - Phase 2/3 — Tauri shell and Rust Unix-socket boundary: implemented and
-  packaged. The Rust daemon still proxies the compatibility Python backend for
-  the remaining destructive workflow.
+  packaged. The Rust daemon owns the packaged socket and invokes only native
+  Rust phase/helper operations.
 - Local acceptance — the live ISO, install-only path, reboot into the installed
   system, and installed Hub checks pass in KVM/QEMU/SPICE. All installer modes,
   cancellation, power-loss recovery, and update/rollback lifecycle acceptance
@@ -212,12 +214,11 @@ Before replacing Chromium in the image:
 
 ## Review findings (2026-09-05)
 
-The code-level migration is complete for the current React/Tauri client and
-native Rust Unix-socket boundary. The Python backend remains authoritative for
-destructive execution until future Rust backend ports independently achieve
-behavioral parity. The local install-only live-media qualification is complete;
-the remaining installer work is native backend ownership plus the broader
-disposable-VM destructive-path matrix.
+The code-level migration is complete for the React/Tauri client, native Rust
+Unix-socket boundary, and native backend execution path. The Python installer
+tree is no longer an installed authority; it remains source-only fixture
+material for parity tests. Live-media qualification and the broader
+disposable-VM destructive-path matrix remain release work.
 
 ## Prepared continuation
 
@@ -254,37 +255,38 @@ Do not start selective installer logic ports merely because a Rust shell exists.
 ### Acceptance scope decision
 
 Per the current migration execution request, the live-media and destructive VM
-acceptance stages are deferred. This does not authorize retiring the Python
-compatibility runtime or changing the installed-authority classifications:
-those changes still require the deferred acceptance gates. Code-level parity,
-contract tests, and host-independent validation continue below.
+acceptance stages are deferred. This means the code-level cutover is validated
+by host-independent checks only; it does not claim destructive install or
+hardware acceptance. The supported image now uses the native Rust authority,
+while deferred acceptance remains a release gate.
 
-### Phase 2 — Tauri installer shell (in progress)
+### Phase 2 — Tauri installer shell (complete)
 
 - Add an unprivileged Tauri shell around the React build. **Done:** `src/kyth-installer-web/src-tauri/` embeds the production assets and exposes only the fixed backend connection/token handoff.
 - Embed production assets; do not use a development server or `--no-sandbox`.
 - Preserve single-instance/startup routing behavior from System Hub. **Done:** the shell uses the single-instance plugin and the launcher passes bootstrap/session tokens.
 - Expose no unrestricted command, filesystem, or disk-writing bridge. **Done:** the shell has one typed connection command and no OS command/file APIs.
-- Add WebKitGTK/runtime dependencies to the installer image and replace the Chromium launcher only after live-ISO validation. **Build wiring done;** launcher keeps Chromium as a safe compatibility fallback until the live-ISO gate passes.
+- Add WebKitGTK/runtime dependencies to the installer image and use the native
+  launcher. **Done:** Chromium and the Python UI launcher are not installed.
 
 ### Phase 3 — Unix-socket privileged service
 
 - **Done:** Add a root-owned native Rust service entrypoint and activate the socket transport in the installer launcher.
 - **Done:** Replace loopback HTTP access with a root-owned Unix-socket service in the live-image configuration; development keeps the loopback fallback.
 - **Done:** Use socket ownership/permissions and peer credentials, retaining the per-run session token as defense in depth.
-- Validate the activated service and Tauri client in a built live ISO before removing the compatibility fallback.
+- Validate the activated service and Tauri client in a built live ISO as a
+  deferred release gate; no compatibility backend is required by the image.
 - Preserve the frozen logical API, SSE/event semantics, validation, journal, and recovery behavior.
 - **Done:** The Rust service validates the token, configured socket peer,
-  request size, route allowlist, and loopback backend boundary before
-  proxying to Python.
+  request size, route allowlist, and every native request before dispatch.
 
 ### Phase 4 — Selective Rust migration
 
-The first slice is now implemented: the native Rust transport daemon performs
-pure request normalization and install-plan projection before calling the
-privileged Python service. The service remains authoritative and repeats all
-storage-dependent checks before any mutation. Shared Rust/Python parity
-fixtures now cover all five modes and representative rejection branches.
+The native Rust transport daemon performs request normalization and install-plan
+projection, then the native executor repeats all storage-dependent checks
+immediately before mutation. Shared Rust/Python parity fixtures cover all five
+modes and representative rejection branches; the Python side is used only to
+verify fixture compatibility.
 The Rust shell also parses explicit `lsblk` snapshots into typed disk and
 partition records; the same fixture is exercised through the Python discovery
 functions to pin safety-relevant output.
@@ -298,8 +300,8 @@ Port components only after behavioral parity and focused tests exist:
 - **Done as a runtime query:** the root-owned Rust daemon now performs fixed,
   read-only `lsblk`, `findmnt`, and `blockdev` probes for disk inventory,
   partition inventory, and free-space regions. The Rust parser applies the
-  protected-disk policy before returning API-compatible records; Python keeps
-  authoritative validation immediately before destructive operations.
+  protected-disk policy before returning API-compatible records and the native
+  executor repeats validation immediately before destructive operations.
 - **Done as metadata/validation plus a typed execution boundary:** the
   partition journal model, serialization, and safety checks remain covered,
   while GPT backup/restore, table creation, partition create/delete/flag
@@ -308,71 +310,110 @@ Port components only after behavioral parity and focused tests exist:
   partition targets and owns journal locking, backup/restore, operation
   ordering, filesystem shrinking, and commit failure rollback. The helper
   synchronizes completed partition-table backups and their parent directory
-  before they can be used as recovery snapshots. Python retains only the
-  compatibility fallback when the helper is absent, last-moment power and
-  encryption guards before filesystem shrink, and the event/transaction
-  adapter around the native journal operation. Both manual-journal and guided
+  before they can be used as recovery snapshots. The former Python fallback is
+  retained only in source fixtures for parity tests. Both manual-journal and guided
   NTFS partition-boundary resize use the same typed Rust operation, including
   its fixed interactive confirmation and cancellation-safe child handling.
 - **Done as a typed state and persistence boundary:** Rust owns transaction
   state encoding, atomic replacement, file/directory fsync, and Rescue
-  classification when the native helper is installed. Python retains the
-  compatibility writer and recovery-action orchestration until the live-image
-  parity gate.
+  classification. The Python writer is retained only as source fixture
+  material; the packaged daemon reads and writes native transaction state.
 - **Done as a pure model:** streaming command output framing, bounded failure
   tails, independent I/O/network/absolute timeout decisions, and cooperative
   cancellation; shared Rust/Python fixtures cover framing and failure tails,
-  while process execution and privilege boundaries remain Python-owned.
+  while process execution and privilege boundaries are owned by the Rust daemon
+  and fixed root-only helper.
 - **Done as a state model and typed executor:** mount registration, release,
   LIFO cleanup ordering, cleanup-state clearing, filesystem mounts,
   subvolume options, bind mounts, and recursive/lazy unmounts now use the
-  root-only Rust disk helper when installed. Python retains the fixed-argv
-  compatibility fallback and phase-specific filesystem work.
+  root-only Rust disk helper. The fixed-argv compatibility implementation is
+  retained only as source fixture material.
 - **Bootc image-write handoff complete at the process boundary:** the typed
   bootc operation is validated and projected by Rust, then
-  `kyth-installer-exec` pins and `exec`s `/usr/bin/bootc`. Python still owns
+  `kyth-installer-exec` pins and `exec`s `/usr/bin/bootc`. Rust owns
   phase-specific filesystem work, recovery reporting, and target
-  configuration. Rust now owns orchestration decisions, cancellation
+  configuration, as well as orchestration decisions, cancellation
   classification, transaction-status ordering, and the power-supply probe.
   The compatibility command builder remains until the full
   storage/configuration executor is ported.
 - **Non-secret target configuration now uses the typed Rust executor:**
   hostname, locale, keyboard layout, and timezone-link writes are validated,
-  synced, and applied by `kyth-installer-exec`; Python retains account
+  synced, and applied by the native daemon/helper; Rust also owns account
   creation and phase sequencing.
 - **First storage/configuration execution slice now uses the typed Rust
   executor:** Btrfs formatting, creation of the fixed `@`/`@home` subvolumes,
   default-subvolume selection, installer staging-directory creation, and
-  append-only `/etc/fstab` updates all cross the root-only helper. Python keeps
-  phase orchestration, read-only UUID/EFI probes, and the compatibility fallback
-  until live-media parity is proven.
+  append-only `/etc/fstab` updates all cross the root-only helper. Rust also
+  owns phase orchestration and read-only UUID/EFI probes.
 - **First streaming lifecycle slice now runs in Rust:** typed bootc image writes
   and filesystem-resize streams are validated, spawned, waited, and protected
-  with parent-death cancellation by `kyth-installer-exec`. Python still owns
-  output framing, progress/network telemetry, timeout policy, and the user
-  cancellation request until the native stream protocol replaces that adapter.
+  with parent-death cancellation by `kyth-installer-exec`. Rust owns output
+  framing, bounded failure tails, timeout policy, and the user cancellation
+  request.
 - **First recovery-action slice now runs in Rust:** the support-log export
   validates the USB destination and configured artifact paths, skips symlink
   sources, copies only bounded installer artifacts, and syncs the exported
-  files. Python retains removable-media discovery and the compatibility copy
-  path until recovery parity is complete.
-- **Done as a typed decision boundary:** Rust and Python agree on Secure
-  Boot/MOK states and import-result classification, and the installed helper
-  supplies the decision to the privileged flow; `mokutil`, passwords, and
-  firmware interactions remain Python-owned.
+  files. Rust also owns removable-media discovery and the bounded copy path;
+  the Python copy path remains only as source fixture material.
+- **Done as a native execution boundary:** Rust performs Secure Boot/MOK
+  probing and import-result classification, and the installed helper supplies
+  the fixed firmware operation; `mokutil`, passwords, and firmware
+  interactions never cross into Python.
 
-### Saved non-acceptance refactoring backlog
+### Fifteen-item implementation ledger
 
-The following work is intentionally saved in priority order. Acceptance,
-live-image, VM, and hardware validation work is tracked separately below and
-is excluded from this backlog.
+All implementation items below are complete and locally committed. Full
+live-media, VM, hardware, and reboot acceptance is deliberately excluded from
+this ledger and remains a release gate.
 
-1. Move remaining storage and configuration execution into Rust.
-2. Move streaming process lifecycle and cancellation ownership into Rust.
-3. Move recovery-action orchestration into Rust.
-4. Port installer account creation while preserving secret-handling boundaries.
-5. Port Secure Boot/MOK execution, not only decision routing.
-6. Remove the remaining Python compatibility paths after parity is established.
+#### P0 — authority and durable safety
+
+1. Native daemon owns the typed job/state machine, routes, and event stream.
+2. Native transaction, failure-summary, and installer-log paths are unified
+   and atomically persisted.
+3. Native source-image inventory validates embedded OCI layout, digest, and
+   metadata before destructive work.
+
+#### P1 — destructive execution
+
+4. Native storage execution covers wipe, alongside, free-space, manual, and
+   NTFS-resize plan paths with protected-disk and geometry checks.
+5. Native partition journal, mount registry, EFI reuse, cleanup, and typed disk
+   helper boundary own storage mutations.
+6. Native streaming process lifecycle owns fixed bootc/filesystem-resize
+   commands, bounded output, cancellation, child reaping, and parent-death
+   handling.
+
+#### P2 — target configuration and identity
+
+7. Native hostname, locale, keymap, timezone, and fstab configuration is
+   validated, synced, and rolled back on later failure.
+8. Native account creation runs through the typed helper; passwords and hashes
+   remain stdin-only and out of plans, logs, events, and reports.
+9. Native post-configuration assurance verifies identity files, account,
+   fstab, boot metadata, and the installed deployment before success.
+
+#### P3 — firmware and recovery
+
+10. Native Secure Boot/MOK probing and staging uses fixed paths, stdin-only
+    passwords, bounded waits, cancellation, and explicit state classification.
+11. Native Rescue owns transaction classification, read-only diagnostics,
+    bootc summary, report/log reads, and bounded USB support export.
+12. Native completion, cancellation, failure-summary, and recovery state
+    transitions preserve the frozen API/SSE contract.
+
+#### P4 — packaging and authority retirement
+
+13. Native launcher creates the root-owned session token, starts the Rust
+    service, launches the unprivileged Rust shell, and cleans up deterministically.
+14. The live image no longer installs Python installer packages, Chromium, or
+    the legacy Python launcher/backend.
+
+#### P5 — evidence and inventory
+
+15. Runtime inventory, generated reports, source comments, and host-independent
+    Rust/Python parity checks classify the Rust installer as the installed
+    authority and Python installer sources as fixtures only.
 
 ### Phase 5 — VM destructive-path acceptance
 
@@ -388,11 +429,11 @@ is excluded from this backlog.
 - Verify authentication, asset embedding, single-instance behavior, and all installer workflows on live media.
 - Confirm passwords never appear in URLs, logs, process arguments, persistent state, telemetry, or rescue exports.
 
-### Phase 7 — Launcher retirement
+### Phase 7 — Launcher retirement (code complete; acceptance deferred)
 
-- Switch the live image to the validated Tauri launcher.
-- Keep the Python backend behind the privileged-service compatibility adapter until every subsystem has parity coverage.
-- Remove the Chromium/Python UI launcher only after all safety gates pass.
+- **Done:** Switch the live image to the native launcher and Rust daemon.
+- **Done:** Remove the Python backend package and Chromium/Python UI launcher
+  from the supported image after code-level parity coverage.
 - Reassess whether Calamares remains an optional fallback or can be retired.
 
 ## Next implementation starting point

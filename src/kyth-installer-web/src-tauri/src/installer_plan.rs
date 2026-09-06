@@ -1,8 +1,8 @@
 //! Pure installer request normalization and plan projection.
 //!
-//! This is the first Phase 4 slice. It validates request shape and
-//! mode-specific scalar invariants only. The privileged Python service still
-//! re-scans storage and repeats every safety check before mutation.
+//! The native daemon validates request shape and mode-specific scalar
+//! invariants before the native executor re-scans storage and repeats safety
+//! checks immediately before mutation.
 
 use serde::{Deserialize, Serialize};
 

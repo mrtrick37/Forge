@@ -1,8 +1,8 @@
 //! Transaction-state schema, decoder, and durable writer.
 //!
-//! The compatibility service supplies only support-safe state. The native
-//! helper owns the atomic replace and fsync boundary when installed; Python
-//! retains a compatibility writer for environments without the helper.
+//! The daemon and typed helper own atomic replacement and fsync boundaries for
+//! support-safe installed state. No secret-bearing request fields are part of
+//! this schema.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

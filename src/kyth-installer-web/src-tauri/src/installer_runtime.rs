@@ -1,10 +1,9 @@
 //! Rust-owned installer job state and event projection.
 //!
-//! The compatibility worker may still perform a phase's domain operation,
-//! but the privileged daemon owns the externally visible job lifecycle. This
-//! keeps start/cancel races, terminal classification, and event ordering out
-//! of the Python HTTP adapter. Durable transaction state remains the source
-//! of truth across daemon restarts.
+//! The privileged daemon owns both the externally visible job lifecycle and
+//! the native phase executor. This keeps start/cancel races, terminal
+//! classification, and event ordering out of any UI transport adapter.
+//! Durable transaction state remains the source of truth across restarts.
 
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;

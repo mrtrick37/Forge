@@ -1,12 +1,10 @@
-//! Production adapter between the native job supervisor and typed operations.
+//! Native production executor between the job supervisor and typed operations.
 //!
-//! This adapter is deliberately conservative while the remaining destructive
-//! operations are being moved into Rust.  It accepts a complete typed request,
-//! validates it through the existing plan builders, and retains only the
-//! resulting non-secret plans.  A phase is either safe to execute without
-//! live installer state or fails with an explicit typed capability error.
-//! It never starts the Python whole-install worker and never provides a
-//! generic command or filesystem bridge.
+//! It accepts a complete typed request, validates it through the plan
+//! builders, and retains only the resulting non-secret plans. Every phase is
+//! either implemented by Rust or a fixed, typed root-only helper operation;
+//! there is no Python whole-install worker or generic command/filesystem
+//! bridge.
 
 use std::fmt;
 use std::process::Command;

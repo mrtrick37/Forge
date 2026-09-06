@@ -1,11 +1,10 @@
-//! Rust-owned execution handoff for destructive installer image writes.
+//! Rust-owned execution helper for destructive installer operations.
 //!
-//! The compatibility Python service still owns phase-specific filesystem work
-//! and recovery storage. It invokes this helper with typed operations on
-//! stdin. The helper validates and projects each request with the same Rust
-//! plans used by the native clients. Scalar operations use exec handoff;
-//! streaming operations are spawned and waited by this helper so parent-death
-//! cancellation cannot orphan a long-running utility.
+//! The daemon invokes this helper with typed operations on stdin. The helper
+//! validates and projects each request with the same Rust plans used by the
+//! native daemon. Scalar operations use fixed executable paths; streaming
+//! operations are spawned and waited here so parent-death cancellation cannot
+//! orphan a long-running utility.
 
 mod installer_accounts;
 mod installer_alongside;

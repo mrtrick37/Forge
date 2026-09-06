@@ -1,10 +1,9 @@
-//! Native root-facing transport for the installer compatibility backend.
+//! Native root-facing installer daemon.
 //!
-//! The destructive installer phases are still implemented by the Python
-//! backend while their Rust equivalents gain parity coverage.  This binary
-//! owns the privileged Unix socket, validates the session boundary, and
-//! exposes the backend only through a loopback connection.  The Python
-//! process never binds the user-visible socket.
+//! This binary owns the privileged Unix socket, request authentication,
+//! native job lifecycle, storage/configuration execution, recovery actions,
+//! and the typed helper boundary. The Python installer tree is source-only
+//! compatibility material and never binds or serves the packaged socket.
 
 use std::ffi::CString;
 use std::fs::{self, OpenOptions};
@@ -1131,10 +1130,10 @@ fn rebuild_request(request: &[u8], body: &[u8]) -> Result<Vec<u8>, String> {
 
 /// Normalize only the pure storage portion of an authenticated start request.
 ///
-/// The Python service still repeats live discovery, current-disk policy, user
+/// The native executor repeats live discovery, current-disk policy, user
 /// acknowledgements, locale checks, and every destructive safety check. This
 /// boundary owns the request shape and canonical device/region projection so
-/// malformed paths and impossible guided-plan values never reach that worker.
+/// malformed paths and impossible guided-plan values never reach mutation.
 fn normalize_start_request(request: &[u8]) -> Result<Vec<u8>, String> {
     let (method, target, _headers) = request_parts(request)?;
     let path = target.split('?').next().unwrap_or(target);

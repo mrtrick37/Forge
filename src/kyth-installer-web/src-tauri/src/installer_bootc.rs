@@ -1,8 +1,8 @@
 //! Pure bootc install-command planning.
 //!
 //! This module deliberately constructs an operation description instead of
-//! spawning bootc. The root-owned Python service remains the only executor;
-//! the Tauri process can use this plan for preflight and parity checks.
+//! spawning bootc. The root-owned Rust daemon and its typed helper are the
+//! only executors; the unprivileged shell can use this plan for preflight.
 
 use serde::{Deserialize, Serialize};
 

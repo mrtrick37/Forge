@@ -1,9 +1,9 @@
 // Unprivileged shell for the React installer frontend.
 //
-// The Python installer still owns all disk/boot operations. This process only
-// embeds the frontend and exposes the fixed, allowlisted transport supplied
-// by the root-owned launcher. There is deliberately no generic filesystem or
-// command bridge.
+// The Rust daemon and typed execution helper own all disk/boot operations.
+// This process only embeds the frontend and exposes the fixed, allowlisted
+// transport supplied by the root-owned launcher. There is deliberately no
+// generic filesystem or command bridge.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod installer_accounts;

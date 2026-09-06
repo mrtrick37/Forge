@@ -1,8 +1,8 @@
 //! Native Slint installer shell.
 //!
-//! The root-owned Python installer service remains the only process allowed
-//! to perform storage/boot operations. This native shell owns the request
-//! model and fixed-route transport for the guarded installer flow.
+//! The root-owned Rust installer daemon is the only process allowed to
+//! perform storage/boot operations. This native shell owns the request model
+//! and fixed-route transport for the guarded installer flow.
 
 slint::include_modules!();
 

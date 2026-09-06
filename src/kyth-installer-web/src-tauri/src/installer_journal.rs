@@ -1,8 +1,7 @@
 //! Immutable metadata model for staged partition operations.
 //!
 //! This module owns the journal model, target validation, and native execution
-//! boundary. The Python journal remains a compatibility adapter when the
-//! helper is unavailable and bridges native progress into transaction state.
+//! boundary. Python journal code is retained only as a source fixture.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
