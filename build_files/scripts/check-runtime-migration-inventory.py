@@ -54,6 +54,7 @@ NATIVE_BINARIES = {
 }
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-doctor", "kyth-health-check", "kyth-smoke-check", "kyth-resume-check", "kyth-nvidia-status", "kyth-controller-check", "kyth-creator-check", "kyth-exe-compat", "kyth-snapshot-timeline", "kyth-print-check", "kyth-windows-verify", "kyth-tunable", "kyth-configure-session", "kyth-set-resolution", "kyth-set-kickoff-icon", "kyth-greeter-compositor", "kyth-config-apply"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-tunable-rs", "kyth-game-boost"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }

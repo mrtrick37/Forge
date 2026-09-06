@@ -1,4 +1,5 @@
 # shellcheck shell=bash
 # ── SCX per-game preset ──────────────────────────────────────────────────
-install -m 0755 /ctx/kyth-apply-scx-preset /usr/bin/kyth-apply-scx-preset
+# kyth-apply-scx-preset is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 # scx.toml declarative per-game hash-gated

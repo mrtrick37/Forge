@@ -59,6 +59,20 @@ pub fn generate_polkit_rules(rules: &PolkitRules) -> String {
     format!("{}\n", lines.join("\n"))
 }
 
+/// Resolves the on-disk path for `scx.toml`.
+///
+/// Unlike [`system_path`] (used by `plymouth_path`/`polkit_path`, which default
+/// to `/etc/kyth` for operator-owned presets), this mirrors the Python
+/// `kyth_shared.scx_preset.scx_config_path` it replaces: an explicit `path`
+/// wins, then `$XDG_CONFIG_HOME/kyth/scx.toml`, then `$HOME/.config/kyth/scx.toml`.
+/// `scx.toml` is a hand-authored, per-user file (see `kyth-apply-scx-preset`),
+/// not a system preset store, so the home-directory default is preserved
+/// rather than converged onto `/etc/kyth`.
+pub fn scx_config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
+    if let Some(path) = path { return path.as_ref().to_path_buf(); }
+    if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(xdg).join("kyth/scx.toml"); }
+    PathBuf::from(std::env::var_os("HOME").unwrap_or_default()).join(".config/kyth/scx.toml")
+}
 pub fn load_scx(path: impl AsRef<Path>) -> BTreeMap<String, String> {
     let Ok(raw) = std::fs::read_to_string(path) else { return BTreeMap::new(); };
     let Ok(value) = raw.parse::<toml::Value>() else { return BTreeMap::new(); };
@@ -99,5 +113,25 @@ mod tests {
         let games = BTreeMap::from([("game".into(), "scx_lavd".into())]);
         save_scx(&path, &games).unwrap();
         assert_eq!(load_scx(&path), games);
+    }
+
+    #[test]
+    fn scx_config_path_prefers_explicit_then_xdg_then_home() {
+        assert_eq!(scx_config_path(Some("/tmp/explicit.toml")), PathBuf::from("/tmp/explicit.toml"));
+    }
+
+    /// `load_scx` returns a `BTreeMap`, so a file with two `[games.*]` tables
+    /// has no "first inserted" entry to reproduce from the Python launcher
+    /// (which picked `list(dict.values())[0]`, i.e. TOML file order). This
+    /// pins the deliberate replacement semantics: `apply_scx_preset_bin`
+    /// selects the lexicographically-first app name via `BTreeMap` iteration.
+    #[test]
+    fn multi_game_scx_selects_lexicographically_first_app() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("scx.toml");
+        let games = BTreeMap::from([("zelda".into(), "scx_lavd".into()), ("ananicy".into(), "scx_bpfland".into())]);
+        save_scx(&path, &games).unwrap();
+        let loaded = load_scx(&path);
+        assert_eq!(loaded.iter().next(), Some((&"ananicy".to_string(), &"scx_bpfland".to_string())));
     }
 }

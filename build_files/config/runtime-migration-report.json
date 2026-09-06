@@ -101,15 +101,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-apply-scx-preset",
-      "owner": "fixture::build_files/kyth-apply-scx-preset",
-      "path": "build_files/kyth-apply-scx-preset",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-apply-tailscale",
       "owner": "fixture::build_files/kyth-apply-tailscale",
       "path": "build_files/kyth-apply-tailscale",
@@ -3979,7 +3970,7 @@
   "summary": {
     "active_by_authority": {
       "data-or-config": 8,
-      "python-runtime": 41,
+      "python-runtime": 40,
       "python-shared-package": 255,
       "rust-dispatcher": 16,
       "rust-service": 10,
@@ -3989,15 +3980,15 @@
       "installer": 1,
       "standalone": 255,
       "system-service": 35,
-      "user-session": 210
+      "user-session": 209
     },
-    "active_entries": 501,
-    "active_python_entries": 296,
-    "entries": 654,
+    "active_entries": 500,
+    "active_python_entries": 295,
+    "entries": 653,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 381
+      "queued": 380
     }
   }
 }
