@@ -17,7 +17,8 @@ The supported image contains only the native Rust installer backend. The
 legacy Python WebUI remains in the repository as source-only compatibility
 fixture material for parity tests.
 
-Run locally with the Python installer service available on `127.0.0.1:8642`:
+For fixture-only local development, run the legacy Python installer service on
+`127.0.0.1:8642`:
 
 ```bash
 npm install
@@ -31,7 +32,8 @@ generic command bridge. The packaged image uses the fixed Unix-socket
 transport with typed native request/event commands; loopback is retained only
 for local development fixtures.
 
-For local development, run the backend on port 7777 and use:
+For native local development, run the Rust daemon with the configured Unix
+socket and use:
 
 ```bash
 npm install

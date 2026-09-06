@@ -1486,8 +1486,7 @@ impl NativePhaseExecutor {
         .map_err(|message| NativePhaseError::Execution { phase, message })
     }
 
-    /// Build a native supervisor without starting a compatibility worker. The
-    /// daemon supplies this supervisor to the native route integration.
+    /// Build a native supervisor for the daemon's route integration.
     pub(crate) fn into_supervisor(self) -> JobSupervisor<Self> {
         JobSupervisor::new(self)
     }

@@ -1,17 +1,24 @@
 # Kyth Installer API Contract
 
-Status: **baseline, frozen for frontend migration**  
+Status: **logical contract, frozen across the native Rust cutover**
 Contract version: **1.0**  
-Compatibility target: the existing Python installer server and the planned React/Tauri client.
+Compatibility target: the native Rust installer daemon and React/Tauri client;
+the Python implementation is retained only as a parity-test fixture.
 
-This document describes the behavior that a replacement frontend must consume. It is not a promise that every operation is safe on arbitrary hardware: disk mutation remains guarded by the Python installer and its validation/journal layers.
+This document describes the behavior that installer clients consume. It is not a
+promise that every operation is safe on arbitrary hardware: disk mutation is
+guarded by the native Rust validation, journal, and recovery layers.
 
 ## 1. Transport and authentication
 
-The current transport is HTTP on loopback (`127.0.0.1:<PORT>`, with `PORT` supplied by installer configuration). The server must not be exposed on a non-loopback interface.
+The packaged transport is HTTP framing over a root-owned Unix socket
+(`KYTH_INSTALLER_SOCKET`). The legacy HTTP-on-loopback transport
+(`127.0.0.1:<PORT>`, with `PORT` supplied by installer configuration) remains
+available only for local-development fixture compatibility and must not be
+used as the packaged authority.
 
-The Phase 3 transport adapter may serve the same HTTP framing over an explicitly
-configured Unix socket (`KYTH_INSTALLER_SOCKET`). The socket is created with
+The native daemon serves the same HTTP framing over the explicitly configured
+Unix socket (`KYTH_INSTALLER_SOCKET`). The socket is created with
 mode `0600`, or `0660` when `KYTH_INSTALLER_SOCKET_GROUP` is configured. API
 authentication remains the session token, and mutating socket requests also
 require a valid Linux `SO_PEERCRED` result. The socket path and route set are
@@ -20,7 +27,8 @@ bridge. In the live image, the root launcher writes the per-run session token
 to `/run/kyth-installer/session-token` with mode `0600`, starts the
 `kyth-installerd.service`, and removes the token after the shell exits.
 
-The initial `GET /` request must include the one-use `bootstrap_token` query parameter. A successful request sets:
+The legacy HTTP root request must include the one-use `bootstrap_token` query
+parameter. A successful request sets:
 
 ```http
 Set-Cookie: bootstrap_auth=<session-token>; Path=/; HttpOnly; SameSite=Strict
@@ -28,7 +36,11 @@ Set-Cookie: bootstrap_auth=<session-token>; Path=/; HttpOnly; SameSite=Strict
 
 The bootstrap token is consumed atomically and cannot be reused. Subsequent requests authenticate with either the `bootstrap_auth` cookie or `X-Kyth-Session-Token: <session-token>`. Unauthenticated requests receive HTTP 403.
 
-All mutating requests additionally require `Host: 127.0.0.1:<PORT>` or `Host: localhost:<PORT>`. This is the current DNS-rebinding defense. A future Unix-socket or Tauri transport must preserve the same logical authorization boundary, even though it will not use an HTTP Host header.
+Legacy loopback mutating requests additionally require `Host:
+127.0.0.1:<PORT>` or `Host: localhost:<PORT>` as their DNS-rebinding defense.
+The packaged Unix-socket transport preserves the same logical authorization
+boundary with peer credentials and the session token instead of an HTTP Host
+header.
 
 JSON requests use `Content-Type: application/json` and UTF-8 bodies. Invalid JSON receives HTTP 400. JSON responses use `Content-Type: application/json`; errors are normally JSON objects with `ok: false` and either `message` or `error`.
 
@@ -54,7 +66,9 @@ Unless noted otherwise, API routes require authentication. Paths and methods are
 | `/api/log` | none | Plain-text installer log stream. |
 | `/api/stream` | `since` may be supplied by legacy clients but is currently ignored; reconnect is defined by `Last-Event-ID` | SSE stream; see §3. |
 
-The root page and static JavaScript/CSS assets are transport details of the legacy web UI. A replacement client may bundle its own assets, but it still needs the same authenticated session.
+The root page and static JavaScript/CSS assets are transport details of the
+legacy HTTP fixture. The packaged Tauri clients bundle their own assets, but
+they still use the same authenticated session and logical route contract.
 
 ### Mutating POST routes
 
@@ -126,11 +140,10 @@ prepare → storage → image → configure → secure_boot → complete
 Every phase entry publishes a `phase` event. Progress events and phase events are independent: clients should not infer phase from a progress number, and should render the most recent phase label separately from the progress bar.
 
 Lifecycle transitions, phase-order validation, cancellation decisions, durable
-transaction-status ordering, and the live power-supply probe are owned by the
-typed Rust `kyth-installer-exec` orchestration operations. The Python service
-is a compatibility adapter for phase-specific work: it uses the legacy local
-implementation only when the native helper is absent, and treats malformed or
-rejected native responses as failures.
+transaction-status ordering, the live power-supply probe, and all destructive
+phase execution are owned by the typed Rust `kyth-installerd` and
+`kyth-installer-exec` operations. The Python service implementation is not a
+packaged fallback; it is retained only for source-level parity tests.
 
 Cancellation sets a flag and publishes a log message. The worker stops at its next safe point. Once destructive storage/image/configuration/secure-boot work has begun, the error explicitly warns that disk changes may already have started; cancellation is never an implicit rollback.
 

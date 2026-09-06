@@ -49,7 +49,7 @@ kyth-installerd (root-owned)
     |
     +-- partition journal and transaction state
     +-- bootc / filesystem / mount operations
-    +-- existing Python backend initially
+    +-- Python parity fixtures (source-only, not packaged)
 ```
 
 ## Migration phases
@@ -69,7 +69,7 @@ Document the current routes and events from `src/kyth-installer/kyth_installer/s
 
 This contract is the compatibility target for both implementations.
 
-### 1. React compatibility frontend with the existing backend
+### 1. React compatibility frontend with the existing backend (historical)
 
 Create `src/kyth-installer-web/` with typed services and page components:
 
@@ -86,7 +86,7 @@ is identical installer behavior with a typed React state model and component
 tests. This client is compatibility-only; the Rust/Slint client is the
 production UI.
 
-### 2. Rust/Slint production UI and Tauri compatibility shell
+### 2. Rust/Slint production UI and Tauri compatibility shell (complete)
 
 Create `src/kyth-installer-web/src-tauri/`, following the System Hub shell's
 build and single-instance patterns, with these differences:
@@ -97,10 +97,9 @@ build and single-instance patterns, with these differences:
 - expose no unrestricted command or filesystem bridge
 - preserve startup routing and one-instance behavior
 
-Initially, Tauri may proxy to the existing loopback Python service. Add a
-builder stage and WebKitGTK runtime dependencies to `installer/Containerfile`,
-then replace the Chromium launcher only after the shell works in a built live
-ISO.
+The original milestone used the loopback Python service as a development
+fixture. The completed image uses the Rust shell and root-owned Rust daemon;
+the loopback service and Chromium path remain source-only fixture material.
 
 ### 3. Unix-socket privileged service
 
@@ -150,9 +149,9 @@ Highest-risk source areas are:
 - `phases/storage.py`
 - `phases/finalize.py`
 
-## Required safety gates
+## Historical safety gates and deferred acceptance
 
-Before replacing Chromium in the image:
+Before the native cutover, the original plan required:
 
 - React build, typecheck, and embedded-asset checks pass.
 - All existing installer tests remain green.
@@ -175,16 +174,16 @@ Before replacing Chromium in the image:
 6. VM destructive-path acceptance testing — 3–5 days
 7. Remove Chromium/Python UI launcher — 1–2 days after parity
 
-## Open decisions
+## Decisions
 
-- Whether the Unix-socket service initially wraps Python directly or uses a
-  small Rust transport adapter. **Decided:** the native Rust daemon owns the
-  Unix socket and proxies to the Python backend on a private local socket until the
-  destructive backend parity ports are complete.
-- Whether Calamares remains an optional build path or is retired after the
-  custom installer reaches parity.
-- Whether the first React milestone preserves SSE or moves directly to socket
-  events.
+- The native Rust daemon owns the Unix socket and all packaged installer
+  operations. It does not proxy to the Python implementation; Python remains
+  available only for source-level parity fixtures.
+- Calamares remains an optional, separately scoped build path until a release
+  owner decides whether to retire it; it is not part of the 15-item Rust
+  backend migration ledger.
+- The logical SSE contract is preserved over the Unix-socket HTTP framing so
+  reconnect, event IDs, cancellation, and terminal state remain compatible.
 
 ## Current progress
 
@@ -220,21 +219,22 @@ tree is no longer an installed authority; it remains source-only fixture
 material for parity tests. Live-media qualification and the broader
 disposable-VM destructive-path matrix remain release work.
 
-## Prepared continuation
+## Deferred release continuation
 
-### Next change set — live-media release gate
+The code-level migration is complete. The following work remains deliberately
+outside this loop and is release/acceptance work:
 
-1. Restore Cargo dependencies and build both Rust binaries with `--locked`.
-2. Run the native Rust unit and parity tests.
-3. Build the live ISO with the native client packaged.
-4. Exercise all install modes in disposable VMs.
-5. Test cancellation and power-loss recovery at every durable phase.
-6. Complete the credential, socket, privilege-boundary, and rescue-export audit.
-7. Remove obsolete launcher paths only after live-media acceptance.
+1. Build the live ISO with the native client packaged.
+2. Exercise all install modes in disposable VMs.
+3. Test cancellation and power-loss recovery at every durable phase.
+4. Reconfirm the packaged image contains only the native launcher and service
+   in the built artifact.
 
-### Following change set — Phase 2 shell scaffold
+### Historical implementation scaffolding (superseded)
 
-After Phase 1 closes, create `src/kyth-installer-web/src-tauri/` with:
+The following section records the original scaffold plan for historical
+traceability. It is complete and must not be read as an open implementation
+item. The `src/kyth-installer-web/src-tauri/` shell now provides:
 
 - an unprivileged, production-asset-only Tauri configuration;
 - the minimum capabilities needed to host the application (no shell, generic
@@ -247,8 +247,8 @@ After Phase 1 closes, create `src/kyth-installer-web/src-tauri/` with:
 - image packaging additions that build the shell but do not switch the live
   launcher until live-ISO validation succeeds.
 
-Phase 3 should then define the socket protocol from the frozen logical API.
-Do not start selective installer logic ports merely because a Rust shell exists.
+Phase 3 and the selective backend ports are also complete; the daemon now owns
+the socket protocol and native installer operations.
 
 ## Remaining plan
 
@@ -294,7 +294,7 @@ functions to pin safety-relevant output.
 Port components only after behavioral parity and focused tests exist:
 
 - **Done as a transport preflight:** request and install-plan normalization
-  (native Rust daemon; Python server-side validation remains authoritative).
+  (native Rust daemon; Python validation is retained only for fixture parity).
   Shared parity cases live in
   `src/kyth-installer-web/src-tauri/testdata/installer_plan_cases.json`.
 - **Done as a runtime query:** the root-owned Rust daemon now performs fixed,
@@ -436,9 +436,9 @@ this ledger and remains a release gate.
   from the supported image after code-level parity coverage.
 - Reassess whether Calamares remains an optional fallback or can be retired.
 
-## Next implementation starting point
+## Historical implementation starting point (complete)
 
-Begin with the installer P1 slices in this order:
+The original implementation sequence was:
 
 1. Make the Rust daemon own the typed installer job/state machine and event
    stream while preserving the logical API.
@@ -448,3 +448,7 @@ Begin with the installer P1 slices in this order:
 4. Move Secure Boot/MOK execution and final reboot classification.
 5. Run the complete destructive-path acceptance matrix, then remove the
    Python installer runtime and compatibility launcher.
+
+Items 1–4 are complete in the native code-level migration. Item 5 remains the
+deferred full VM/live-media acceptance gate; Python installer sources remain in
+the repository only as fixtures and are not installed by the supported image.

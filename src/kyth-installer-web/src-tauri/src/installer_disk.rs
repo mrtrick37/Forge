@@ -1,8 +1,8 @@
 //! Typed, root-only execution plans for non-interactive disk operations.
 //!
-//! The Python installer may choose when an operation is needed, but it must
-//! not construct the argv for a destructive disk utility. Every accepted
-//! request maps to one fixed executable and one fixed argv shape.
+//! The native executor chooses when an operation is needed but never accepts
+//! caller-provided argv. Every accepted request maps to one fixed executable
+//! and one fixed argv shape.
 
 use serde::Deserialize;
 

@@ -82,9 +82,9 @@ runs CVE scans.
   checksums, signature bundles, metadata, and provenance links.
 - The live installer exposes a React/Tauri UI as the supported client and uses
   an authenticated root-owned Rust Unix-socket service for installer actions.
-  The remaining Python installer backend is a transitional compatibility
-  authority behind that service and is tracked in the generated
-  [runtime migration report](../build_files/config/runtime-migration-report.json).
+  The Python installer tree is source-only parity-fixture material and is not
+  installed or used as an authority in the supported image. Its classification
+  is tracked in the generated [runtime migration report](../build_files/config/runtime-migration-report.json).
 - System Hub invokes privileged actions through narrowly scoped installed
   helpers and the platform's normal authentication paths.
 
