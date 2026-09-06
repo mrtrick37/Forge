@@ -55,6 +55,7 @@ struct InstallState {
     keymap: String,
     username: String,
     password: String,
+    mok_password: String,
     kernel: String,
     confirm_backup: bool,
     confirm_erase: bool,
@@ -78,6 +79,7 @@ impl Default for InstallState {
             keymap: "us".into(),
             username: String::new(),
             password: String::new(),
+            mok_password: String::new(),
             kernel: "fedora".into(),
             confirm_backup: false,
             confirm_erase: false,
@@ -103,6 +105,7 @@ impl InstallState {
             "keymap": self.keymap,
             "username": self.username,
             "password": self.password,
+            "mok_password": self.mok_password,
             "kernel": self.kernel,
             "confirm_backup": self.confirm_backup,
             "confirm_erase": self.confirm_erase,
@@ -833,6 +836,7 @@ fn request_from_window(window: &InstallerWindow, state: &Arc<Mutex<InstallState>
     request.keymap = window.get_keymap().to_string();
     request.username = window.get_username().to_string();
     request.password = window.get_password().to_string();
+    request.mok_password = window.get_mok_password().to_string();
     request.confirm_backup = window.get_confirm_backup();
     request.confirm_erase = window.get_confirm_erase();
     request.confirm_current = window.get_confirm_current();

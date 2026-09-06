@@ -52,6 +52,7 @@ export component InstallerWindow inherits Window {
     in-out property <string> hostname: "kyth";
     in-out property <string> username: "";
     in-out property <string> password: "";
+    in-out property <string> mok-password: "";
     in-out property <bool> confirm-backup: false;
     in-out property <bool> confirm-erase: false;
     in-out property <bool> confirm-current: false;
@@ -190,6 +191,12 @@ export component InstallerWindow inherits Window {
                                 LineEdit { text <=> username; placeholder-text: "Username"; }
                                 Text { text: "Password"; color: #9fb1d1; font-size: 12px; vertical-alignment: center; }
                                 LineEdit { text <=> password; input-type: InputType.password; placeholder-text: "Password"; }
+                            }
+                            HorizontalLayout {
+                                visible: kernel == "cachyos";
+                                spacing: 8px;
+                                Text { text: "MOK password"; color: #9fb1d1; font-size: 12px; vertical-alignment: center; }
+                                LineEdit { text <=> mok-password; input-type: InputType.password; placeholder-text: "Only needed if Secure Boot requests enrollment"; }
                             }
                             HorizontalLayout {
                                 spacing: 8px;

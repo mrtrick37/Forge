@@ -14,7 +14,7 @@ export interface RescueProbe { log_tail?: string; transaction?: TransactionRepor
 export interface InstallRequest {
   disk: string; install_mode: InstallMode; target_partition: string; resize_partition: string;
   resize_gib: number; free_region_start: number; free_region_end: number; hostname: string;
-  timezone: string; locale: string; keymap: string; username: string; password: string; kernel: string;
+  timezone: string; locale: string; keymap: string; username: string; password: string; mok_password: string; kernel: string;
   confirm_backup: boolean; confirm_erase: boolean; confirm_current: boolean;
 }
 
