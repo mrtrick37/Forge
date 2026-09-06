@@ -202,9 +202,9 @@ Before the native cutover, the original plan required:
   packaged. The Rust daemon owns the packaged socket and invokes only native
   Rust phase/helper operations.
 - Local acceptance — the live ISO, install-only path, reboot into the installed
-  system, and installed Hub checks pass in KVM/QEMU/SPICE. All installer modes,
-  cancellation, power-loss recovery, and update/rollback lifecycle acceptance
-  remain open.
+  system, and installed Hub checks have not been run in KVM/QEMU/SPICE and
+  remain release-gate work. All installer modes, cancellation, power-loss
+  recovery, and update/rollback lifecycle acceptance remain open as well.
 - Host-side acceptance harness checks — the unittest-based VM acceptance
   contract tests pass (68 tests), and the fast repository validation gate
   passes. A destructive VM run is still pending because this host has neither

@@ -21,7 +21,11 @@ interface InstallerNativeResponse {
 let connection: InstallerConnection | null = null;
 let connectionPromise: Promise<void> | null = null;
 
-/** Bootstrap the embedded UI against the root-owned Python backend once. */
+/**
+ * Bootstrap the embedded UI against the root-owned Rust installer daemon once.
+ * The HTTP bootstrap fetch below only runs on the dev-loopback transport; the
+ * packaged Unix-socket transport authenticates via the session token instead.
+ */
 async function ensureConnection(): Promise<void> {
   if (!inTauriShell() || connection) return;
   if (!connectionPromise) {

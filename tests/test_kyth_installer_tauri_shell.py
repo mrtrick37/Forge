@@ -12,7 +12,7 @@ INSTALLER_WEB = ROOT / "src/kyth-installer-web"
 SHELL_RS = INSTALLER_WEB / "src-tauri/src/main.rs"
 NATIVE_RS = INSTALLER_WEB / "src-tauri/src/native_main.rs"
 NATIVE_SLINT = INSTALLER_WEB / "src-tauri/ui/installer.slint"
-LAUNCHER = ROOT / "src/kyth-installer/kyth_installer/app.py"
+LAUNCHER = ROOT / "build_files/kyth-launch-installer"
 SERVER = ROOT / "src/kyth-installer/kyth_installer/server.py"
 
 
@@ -108,17 +108,21 @@ class InstallerTauriShellTests(unittest.TestCase):
         self.assertNotIn("Command::new", rust)
         self.assertNotIn("std::fs", rust)
 
-    def test_launcher_prefers_tauri_ui_but_retains_native_recovery_fallback(self):
+    def test_launcher_starts_the_daemon_and_execs_the_native_shell(self):
         launcher = LAUNCHER.read_text()
-        source = LAUNCHER.read_text()
-        self.assertIn('shutil.which("kyth-installer-shell") or shutil.which("kyth-installer-native")', source)
-        self.assertIn('KYTH_USE_NATIVE_INSTALLER', source)
-        self.assertIn('"--bootstrap-token", config._bootstrap_token', launcher)
-        self.assertIn('"--session-token", SESSION_TOKEN', launcher)
-        self.assertIn('systemctl", "start", "kyth-installerd.service', launcher)
-        self.assertIn('SESSION_TOKEN_FILE', launcher)
-        self.assertIn('"--no-sandbox"', launcher)
-        self.assertIn("legacy Chromium fallback", launcher)
+        self.assertIn('if [ "$#" -ne 0 ]; then', launcher)
+        self.assertIn("exit 64", launcher)
+        self.assertIn('/usr/bin/sudo -n -- /usr/bin/kyth-launch-installer', launcher)
+        self.assertIn('/usr/bin/systemctl start kyth-installerd.service', launcher)
+        self.assertIn('/usr/bin/systemctl is-active --quiet kyth-installerd.service', launcher)
+        self.assertIn('KYTH_INSTALLER_SOCKET="${SOCKET_PATH}"', launcher)
+        self.assertIn('KYTH_INSTALLER_SESSION_TOKEN="${session_token}"', launcher)
+        self.assertIn('/usr/bin/kyth-installer-shell --socket-path "${SOCKET_PATH}"', launcher)
+        self.assertNotIn("chromium", launcher.lower())
+        self.assertNotIn("--no-sandbox", launcher)
+        self.assertNotIn("kyth_installer", launcher)
+        self.assertNotIn("app.py", launcher)
+        self.assertNotIn("--bootstrap-token", launcher)
 
     def test_frontend_uses_backend_token_and_fixed_dev_proxy(self):
         api = (INSTALLER_WEB / "src/api.ts").read_text()
