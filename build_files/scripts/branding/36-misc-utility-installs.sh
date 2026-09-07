@@ -7,7 +7,8 @@ install -m 0755 /ctx/kyth-distrobox-root-launch /usr/bin/kyth-distrobox-root-lau
 # hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-local-bin-migrate /usr/bin/kyth-local-bin-migrate
 install -m 0755 /ctx/kyth-nearby-share /usr/bin/kyth-nearby-share
-install -m 0755 /ctx/kyth-setup-transfer /usr/bin/kyth-setup-transfer
+# kyth-setup-transfer is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-dynamic-lock /usr/bin/kyth-dynamic-lock
 # kyth-duperemove.service/.timer and kyth-local-bin-migrate.service are
 # installed in branding/31-ujust-recipes.sh instead, right before the

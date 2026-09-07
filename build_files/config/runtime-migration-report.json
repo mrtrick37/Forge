@@ -101,15 +101,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-setup-transfer",
-      "owner": "fixture::build_files/kyth-setup-transfer",
-      "path": "build_files/kyth-setup-transfer",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-storage-sense",
       "owner": "fixture::build_files/kyth-storage-sense",
       "path": "build_files/kyth-storage-sense",
@@ -2934,7 +2925,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 17,
+      "python-runtime": 16,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 12,
@@ -2944,15 +2935,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 178
+      "user-session": 177
     },
-    "active_entries": 377,
-    "active_python_entries": 180,
-    "entries": 630,
+    "active_entries": 376,
+    "active_python_entries": 179,
+    "entries": 629,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 122,
-      "queued": 255
+      "queued": 254
     },
     "superseded_entries": 92
   },

@@ -1,8 +1,0 @@
-#!/usr/bin/env python3
-"""Compatibility launcher for the packaged KythOS setup-transfer CLI."""
-
-from kyth_shared.setup_transfer import main
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

@@ -250,6 +250,10 @@ path = "src/session_snapshot_bin.rs"
 name = "kyth-setup-devcontainer"
 path = "src/setup_devcontainer_bin.rs"
 
+[[bin]]
+name = "kyth-setup-transfer"
+path = "src/setup_transfer_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -153,6 +153,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-report-issue",
             "kyth-session-snapshot",
             "kyth-setup-devcontainer",
+            "kyth-setup-transfer",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

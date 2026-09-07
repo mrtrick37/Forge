@@ -3851,28 +3851,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-setup-transfer entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-setup-transfer",
-      "owner": "fixture::build_files/kyth-setup-transfer",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-setup-transfer",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-setup-transfer",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-setup-transfer entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "alias",
       "cutover": "replace installed kyth-shader-cache-size entry point after parity gates",
       "installed_implementation": "rust",
