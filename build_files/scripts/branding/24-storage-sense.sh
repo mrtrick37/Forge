@@ -3,7 +3,8 @@
 # Automatic housekeeping: empty Recycle Bin items older than 30 days, drop unused
 # Flatpak runtimes, vacuum the user journal. Opt-in: the timer ships disabled and
 # System Hub -> Health Report has the on/off switch.
-install -m 0755 /ctx/kyth-storage-sense /usr/bin/kyth-storage-sense
+# kyth-storage-sense is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 
 write_config /usr/lib/systemd/user/kyth-storage-sense.service <<'STORAGESENSESVCEOF'
 [Unit]

@@ -262,6 +262,10 @@ path = "src/vscode_wallet_bin.rs"
 name = "kyth-web-app-categorize"
 path = "src/web_app_categorize_bin.rs"
 
+[[bin]]
+name = "kyth-storage-sense"
+path = "src/storage_sense_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

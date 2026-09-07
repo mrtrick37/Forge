@@ -88,6 +88,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-setup-devcontainer"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-setup-transfer"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-vscode-wallet"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-web-app-categorize"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-storage-sense"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }
