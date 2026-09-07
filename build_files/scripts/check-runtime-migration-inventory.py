@@ -93,6 +93,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-duperemove"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-batteryd"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-cloud-mount"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-save-sync"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-backup"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }

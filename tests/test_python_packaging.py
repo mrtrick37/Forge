@@ -161,6 +161,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-batteryd",
             "kyth-cloud-mount",
             "kyth-save-sync",
+            "kyth-backup",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

@@ -34,6 +34,28 @@ pub fn load(path: impl AsRef<Path>) -> BackupConfig {
     }
 }
 
+/// True when any battery reports `Discharging`, mirroring the launcher
+/// helper. Unreadable files are skipped.
+pub fn on_battery_in(root: &Path) -> bool {
+    let Ok(entries) = std::fs::read_dir(root) else { return false };
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if !name.starts_with("BAT") {
+            continue;
+        }
+        if let Ok(status) = std::fs::read_to_string(entry.path().join("status")) {
+            if status.trim() == "Discharging" {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+pub fn on_battery() -> bool {
+    on_battery_in(Path::new("/sys/class/power_supply"))
+}
+
 pub fn save(path: impl AsRef<Path>, config: &BackupConfig) -> std::io::Result<()> {
     let text = format!("# Kyth backup full /home\nrepo = {:?}\nbtrfs_send = {}\non_battery = {}\nremote = {:?}\n", config.repo, config.btrfs_send, config.on_battery, config.remote);
     crate::atomic_io::atomic_write_text(path, &text, Some(0o600))
@@ -43,6 +65,19 @@ pub fn save(path: impl AsRef<Path>, config: &BackupConfig) -> std::io::Result<()
 mod tests {
     use super::*;
     use tempfile::tempdir;
+
+    #[test]
+    fn detects_discharging_batteries() {
+        let directory = tempdir().unwrap();
+        let root = directory.path().join("power_supply");
+        std::fs::create_dir_all(root.join("BAT0")).unwrap();
+        std::fs::create_dir_all(root.join("AC")).unwrap();
+        std::fs::write(root.join("BAT0/status"), "Discharging\n").unwrap();
+        assert!(on_battery_in(&root));
+        std::fs::write(root.join("BAT0/status"), "Charging\n").unwrap();
+        assert!(!on_battery_in(&root));
+        assert!(!on_battery_in(&directory.path().join("missing")));
+    }
 
     #[test]
     fn round_trips_backup_config() {
