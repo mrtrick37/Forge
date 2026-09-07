@@ -148,6 +148,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-driver-switch",
             "kyth-kali-desktop-fixup",
             "kyth-ntfs-repair",
+            "kyth-performance-mode",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

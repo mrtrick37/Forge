@@ -2,7 +2,8 @@
 # ── Gaming performance CLI tools ───────────────────────────────────────────────
 install -m 0755 /ctx/game-performance /usr/bin/game-performance
 install -m 0755 /ctx/kyth-gamescope /usr/bin/kyth-gamescope
-install -m 0755 /ctx/kyth-performance-mode /usr/bin/kyth-performance-mode
+# kyth-performance-mode is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-scx /usr/bin/kyth-scx
 install -m 0755 /ctx/kyth-nvme-tuning /usr/bin/kyth-nvme-tuning
 install -m 0755 /ctx/zink-run /usr/bin/zink-run

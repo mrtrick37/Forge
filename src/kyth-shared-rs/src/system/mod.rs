@@ -123,6 +123,7 @@ pub mod plasma_drift;
 pub mod tailscale_preset;
 pub mod vrr;
 pub mod window_snap;
+pub mod performance_mode;
 pub mod extended_preferences;
 pub mod desktop_preferences;
 pub mod desktop_shortcuts;

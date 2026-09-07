@@ -226,6 +226,10 @@ path = "src/kali_fixup_bin.rs"
 name = "kyth-ntfs-repair"
 path = "src/ntfs_repair_bin.rs"
 
+[[bin]]
+name = "kyth-performance-mode"
+path = "src/performance_mode_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
