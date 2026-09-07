@@ -16,7 +16,7 @@ use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
-use std::process::Child;
+use std::process::{Child, Command};
 use std::sync::{Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,10 @@ mod commands;
 /// unchanged, whether that's at first launch (via `take_pending_page`) or
 /// on a later single-instance activation (via the "navigate" event).
 struct PendingPage(Mutex<Option<String>>);
+
+/// File supplied by the native MIME-handler launcher. Kept separate from page
+/// deep links so a filename can never be interpreted as a Hub route.
+struct PendingExeHandler(Mutex<Option<String>>);
 
 static APP_INSTALLS: OnceLock<Mutex<HashMap<String, (String, String)>>> = OnceLock::new();
 fn app_installs() -> &'static Mutex<HashMap<String, (String, String)>> {
@@ -50,6 +54,13 @@ fn extract_page_arg<S: AsRef<str>>(argv: &[S]) -> Option<String> {
         .position(|a| a.as_ref() == "--page")
         .and_then(|i| argv.get(i + 1))
         .map(|s| s.as_ref().to_string())
+}
+
+fn extract_exe_handler_arg<S: AsRef<str>>(argv: &[S]) -> Option<String> {
+    argv.iter()
+        .position(|argument| argument.as_ref() == "--exe-handler")
+        .and_then(|index| argv.get(index + 1))
+        .map(|argument| argument.as_ref().to_string())
 }
 
 #[derive(Serialize)]
@@ -122,7 +133,11 @@ fn guardian_snapshot() -> GuardianSnapshotResponse {
 /// the deterministic core sweep and state writer; extended/model-assisted
 /// probes remain an explicitly tracked parity gap.
 #[derive(serde::Serialize)]
-struct GuardianActionLaunch { job: String, state: String, detail: String }
+struct GuardianActionLaunch {
+    job: String,
+    state: String,
+    detail: String,
+}
 #[tauri::command]
 fn guardian_check(investigate: bool) -> Result<GuardianActionLaunch, String> {
     if !std::path::Path::new("/usr/bin/kyth-guardian").exists() {
@@ -155,7 +170,11 @@ fn guardian_check(investigate: bool) -> Result<GuardianActionLaunch, String> {
             .unwrap()
             .insert(job_for_thread, (state.into(), detail));
     });
-    Ok(GuardianActionLaunch { job, state: "running".into(), detail: "Guardian check is running…".into() })
+    Ok(GuardianActionLaunch {
+        job,
+        state: "running".into(),
+        detail: "Guardian check is running…".into(),
+    })
 }
 
 #[tauri::command]
@@ -215,7 +234,11 @@ fn guardian_control(action: String) -> Result<GuardianActionLaunch, String> {
             ),
         );
     });
-    Ok(GuardianActionLaunch { job, state: "running".into(), detail: format!("Running Guardian {action}…") })
+    Ok(GuardianActionLaunch {
+        job,
+        state: "running".into(),
+        detail: format!("Running Guardian {action}…"),
+    })
 }
 
 /// Phase 2: guardian execute_recipe (Repair/Diagnostics mutating)
@@ -298,7 +321,9 @@ fn smb_mount(share: String) -> Result<String, String> {
     let share = share.trim();
     if share.len() > 2048
         || !share.starts_with("smb://")
-        || share.chars().any(|character| character.is_control() || character.is_whitespace())
+        || share
+            .chars()
+            .any(|character| character.is_control() || character.is_whitespace())
     {
         return Err("Enter a valid SMB share such as smb://server/share.".to_string());
     }
@@ -410,7 +435,10 @@ fn smb_save_configured_share(share: SmbConfiguredShare) -> Result<SmbActionResul
     shares.retain(|existing| existing.name != share.name);
     shares.push(share);
     save_smb_configured_shares(&shares)?;
-    Ok(SmbActionResult { state: "complete".into(), detail: "Network share configuration saved.".into() })
+    Ok(SmbActionResult {
+        state: "complete".into(),
+        detail: "Network share configuration saved.".into(),
+    })
 }
 
 #[tauri::command]
@@ -426,11 +454,17 @@ fn smb_remove_configured_share(name: String) -> Result<SmbActionResult, String> 
     let mut shares = load_smb_configured_shares();
     shares.retain(|existing| existing.name != name);
     save_smb_configured_shares(&shares)?;
-    Ok(SmbActionResult { state: "complete".into(), detail: "Network share configuration removed.".into() })
+    Ok(SmbActionResult {
+        state: "complete".into(),
+        detail: "Network share configuration removed.".into(),
+    })
 }
 
 #[derive(serde::Serialize)]
-struct SmbActionResult { state: String, detail: String }
+struct SmbActionResult {
+    state: String,
+    detail: String,
+}
 
 #[derive(serde::Serialize)]
 struct MemoryPressureResponse {
@@ -536,19 +570,50 @@ fn cloud_sync_remotes() -> Vec<CloudSyncRemote> {
 #[tauri::command]
 fn cloud_sync_now(remote: String) -> Result<String, String> {
     let config_path = cloud_sync_config_path()?;
-    let metadata = fs::symlink_metadata(&config_path).map_err(|_| "Cloud sync is not configured yet".to_string())?;
-    if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() > 128 * 1024 { return Err("Cloud sync configuration is unavailable".to_string()); }
-    let raw = fs::read_to_string(&config_path).map_err(|_| "Could not read cloud sync configuration".to_string())?;
-    let entries = serde_json::from_str::<HashMap<String, serde_json::Value>>(&raw).map_err(|_| "Cloud sync configuration is invalid".to_string())?;
-    let info = entries.get(&remote).ok_or_else(|| "That cloud remote is not configured".to_string())?;
-    let Some(configured) = valid_cloud_sync_remote(&remote, info) else { return Err("That cloud remote is invalid".to_string()); };
+    let metadata = fs::symlink_metadata(&config_path)
+        .map_err(|_| "Cloud sync is not configured yet".to_string())?;
+    if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() > 128 * 1024 {
+        return Err("Cloud sync configuration is unavailable".to_string());
+    }
+    let raw = fs::read_to_string(&config_path)
+        .map_err(|_| "Could not read cloud sync configuration".to_string())?;
+    let entries = serde_json::from_str::<HashMap<String, serde_json::Value>>(&raw)
+        .map_err(|_| "Cloud sync configuration is invalid".to_string())?;
+    let info = entries
+        .get(&remote)
+        .ok_or_else(|| "That cloud remote is not configured".to_string())?;
+    let Some(configured) = valid_cloud_sync_remote(&remote, info) else {
+        return Err("That cloud remote is invalid".to_string());
+    };
     let job = commands::job::start_job("cloud-sync", &format!("Syncing {}…", configured.name))?;
-    let argv = vec!["rclone".to_string(), "sync".to_string(), format!("{}:", configured.name), configured.folder.clone(), "--progress".to_string(), "--stats-one-line".to_string(), "--stats=2s".to_string()];
-    commands::job::spawn_argv_job(job.clone(), argv, std::time::Duration::from_secs(3600), move |result| match result {
-        Ok(output) if output.status.success() => ("complete".to_string(), format!("{} synced to {}.", configured.name, configured.folder)),
-        Ok(output) => ("failed".to_string(), commands::job::failure_detail("Cloud sync", &output)),
-        Err(error) => ("failed".to_string(), format!("Could not start cloud sync: {error}")),
-    });
+    let argv = vec![
+        "rclone".to_string(),
+        "sync".to_string(),
+        format!("{}:", configured.name),
+        configured.folder.clone(),
+        "--progress".to_string(),
+        "--stats-one-line".to_string(),
+        "--stats=2s".to_string(),
+    ];
+    commands::job::spawn_argv_job(
+        job.clone(),
+        argv,
+        std::time::Duration::from_secs(3600),
+        move |result| match result {
+            Ok(output) if output.status.success() => (
+                "complete".to_string(),
+                format!("{} synced to {}.", configured.name, configured.folder),
+            ),
+            Ok(output) => (
+                "failed".to_string(),
+                commands::job::failure_detail("Cloud sync", &output),
+            ),
+            Err(error) => (
+                "failed".to_string(),
+                format!("Could not start cloud sync: {error}"),
+            ),
+        },
+    );
     Ok(job)
 }
 
@@ -575,7 +640,10 @@ fn m365_app(name: &str) -> Option<(&'static str, &'static str)> {
         "Outlook" => Some(("https://outlook.office.com/mail/", "Email and calendar")),
         "Word" => Some(("https://office.live.com/start/Word.aspx", "Documents")),
         "Excel" => Some(("https://office.live.com/start/Excel.aspx", "Spreadsheets")),
-        "PowerPoint" => Some(("https://office.live.com/start/PowerPoint.aspx", "Presentations")),
+        "PowerPoint" => Some((
+            "https://office.live.com/start/PowerPoint.aspx",
+            "Presentations",
+        )),
         "OneNote" => Some(("https://www.onenote.com/notebooks", "Notes")),
         "Teams" => Some(("https://teams.microsoft.com/", "Chat and meetings")),
         _ => None,
@@ -596,7 +664,8 @@ fn open_m365_app(name: String) -> Result<String, String> {
 fn create_m365_shortcuts() -> Result<String, String> {
     let home = std::env::var_os("HOME").ok_or_else(|| "HOME is not set".to_string())?;
     let directory = PathBuf::from(home).join(".local/share/applications");
-    fs::create_dir_all(&directory).map_err(|error| format!("could not create application directory: {error}"))?;
+    fs::create_dir_all(&directory)
+        .map_err(|error| format!("could not create application directory: {error}"))?;
     let mut written = 0;
     for name in ["Outlook", "Word", "Excel", "PowerPoint", "OneNote", "Teams"] {
         let (url, comment) = m365_app(name).expect("fixed M365 catalog");
@@ -607,33 +676,60 @@ fn create_m365_shortcuts() -> Result<String, String> {
             }
         }
         let entry = format!("[Desktop Entry]\nType=Application\nName={name} (Microsoft 365)\nComment={comment}\nExec=/usr/bin/xdg-open {url}\nIcon=internet-web-browser\nCategories=Office;\n");
-        fs::write(&path, entry).map_err(|error| format!("could not write {name} shortcut: {error}"))?;
+        fs::write(&path, entry)
+            .map_err(|error| format!("could not write {name} shortcut: {error}"))?;
         written += 1;
     }
-    Ok(format!("Added {written} Microsoft 365 shortcut(s) to the application menu."))
+    Ok(format!(
+        "Added {written} Microsoft 365 shortcut(s) to the application menu."
+    ))
 }
 
 fn add_pst_paths(root: &Path, depth: usize, paths: &mut Vec<String>) {
-    if depth > 5 || paths.len() >= 50 { return; }
-    let Ok(entries) = fs::read_dir(root) else { return; };
+    if depth > 5 || paths.len() >= 50 {
+        return;
+    }
+    let Ok(entries) = fs::read_dir(root) else {
+        return;
+    };
     for entry in entries.flatten() {
         let path = entry.path();
-        let Ok(metadata) = fs::symlink_metadata(&path) else { continue; };
-        if metadata.file_type().is_symlink() { continue; }
-        if metadata.is_file() && path.extension().and_then(|ext| ext.to_str()).is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "pst" | "ost")) {
+        let Ok(metadata) = fs::symlink_metadata(&path) else {
+            continue;
+        };
+        if metadata.file_type().is_symlink() {
+            continue;
+        }
+        if metadata.is_file()
+            && path
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "pst" | "ost"))
+        {
             paths.push(path.to_string_lossy().into_owned());
-        } else if metadata.is_dir() { add_pst_paths(&path, depth + 1, paths); }
+        } else if metadata.is_dir() {
+            add_pst_paths(&path, depth + 1, paths);
+        }
     }
 }
 
 #[tauri::command]
 fn pst_files() -> Vec<String> {
-    let Some(home) = std::env::var_os("HOME").map(PathBuf::from) else { return Vec::new(); };
+    let Some(home) = std::env::var_os("HOME").map(PathBuf::from) else {
+        return Vec::new();
+    };
     let mut paths = Vec::new();
-    let mut roots = vec![home.join("Documents"), home.join("Downloads"), home.join(".local/share")];
-    if let Some(user) = std::env::var_os("USER") { roots.push(PathBuf::from("/run/media").join(user)); }
-    for root in roots
-        .into_iter().filter(|path| path.is_dir()) { add_pst_paths(&root, 0, &mut paths); }
+    let mut roots = vec![
+        home.join("Documents"),
+        home.join("Downloads"),
+        home.join(".local/share"),
+    ];
+    if let Some(user) = std::env::var_os("USER") {
+        roots.push(PathBuf::from("/run/media").join(user));
+    }
+    for root in roots.into_iter().filter(|path| path.is_dir()) {
+        add_pst_paths(&root, 0, &mut paths);
+    }
     paths.sort();
     paths.dedup();
     paths
@@ -641,50 +737,114 @@ fn pst_files() -> Vec<String> {
 
 fn allowed_pst_path(path: &str) -> Result<PathBuf, String> {
     let candidate = PathBuf::from(path);
-    let canonical = candidate.canonicalize().map_err(|_| "Outlook archive was not found".to_string())?;
-    if !canonical.is_file() || !canonical.extension().and_then(|ext| ext.to_str()).is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "pst" | "ost")) {
+    let canonical = candidate
+        .canonicalize()
+        .map_err(|_| "Outlook archive was not found".to_string())?;
+    if !canonical.is_file()
+        || !canonical
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| matches!(ext.to_ascii_lowercase().as_str(), "pst" | "ost"))
+    {
         return Err("Only an existing .pst or .ost archive can be imported".to_string());
     }
-    let home = PathBuf::from(std::env::var_os("HOME").ok_or_else(|| "HOME is not set".to_string())?);
-    let mut allowed = vec![home.join("Documents"), home.join("Downloads"), home.join(".local/share")];
-    if let Some(user) = std::env::var_os("USER") { allowed.push(PathBuf::from("/run/media").join(user)); }
-    if allowed.iter().any(|root| canonical.starts_with(root)) { Ok(canonical) } else { Err("Archive must be in a user-owned migration folder".to_string()) }
+    let home =
+        PathBuf::from(std::env::var_os("HOME").ok_or_else(|| "HOME is not set".to_string())?);
+    let mut allowed = vec![
+        home.join("Documents"),
+        home.join("Downloads"),
+        home.join(".local/share"),
+    ];
+    if let Some(user) = std::env::var_os("USER") {
+        allowed.push(PathBuf::from("/run/media").join(user));
+    }
+    if allowed.iter().any(|root| canonical.starts_with(root)) {
+        Ok(canonical)
+    } else {
+        Err("Archive must be in a user-owned migration folder".to_string())
+    }
 }
 
 #[tauri::command]
 fn convert_pst(path: String) -> Result<String, String> {
     let source = allowed_pst_path(&path)?;
     if !Path::new("/usr/bin/readpst").exists() && !Path::new("/bin/readpst").exists() {
-        return Err("readpst is not installed — install it before importing Outlook archives.".to_string());
+        return Err(
+            "readpst is not installed — install it before importing Outlook archives.".to_string(),
+        );
     }
-    let home = PathBuf::from(std::env::var_os("HOME").ok_or_else(|| "HOME is not set".to_string())?);
+    let home =
+        PathBuf::from(std::env::var_os("HOME").ok_or_else(|| "HOME is not set".to_string())?);
     let destination = home.join("Documents/Outlook Import");
-    fs::create_dir_all(&destination).map_err(|error| format!("could not create import folder: {error}"))?;
+    fs::create_dir_all(&destination)
+        .map_err(|error| format!("could not create import folder: {error}"))?;
     let job = commands::job::start_job("pst", "Converting Outlook archive…")?;
-    let argv = vec!["readpst".to_string(), "-r".to_string(), "-o".to_string(), destination.to_string_lossy().into_owned(), source.to_string_lossy().into_owned()];
-    commands::job::spawn_argv_job(job.clone(), argv, std::time::Duration::from_secs(1800), |result| match result {
-        Ok(output) if output.status.success() => ("complete".to_string(), "Outlook archive converted to Documents/Outlook Import.".to_string()),
-        Ok(output) => ("failed".to_string(), commands::job::failure_detail("Outlook import", &output)),
-        Err(error) => ("failed".to_string(), format!("Could not start Outlook import: {error}")),
-    });
+    let argv = vec![
+        "readpst".to_string(),
+        "-r".to_string(),
+        "-o".to_string(),
+        destination.to_string_lossy().into_owned(),
+        source.to_string_lossy().into_owned(),
+    ];
+    commands::job::spawn_argv_job(
+        job.clone(),
+        argv,
+        std::time::Duration::from_secs(1800),
+        |result| match result {
+            Ok(output) if output.status.success() => (
+                "complete".to_string(),
+                "Outlook archive converted to Documents/Outlook Import.".to_string(),
+            ),
+            Ok(output) => (
+                "failed".to_string(),
+                commands::job::failure_detail("Outlook import", &output),
+            ),
+            Err(error) => (
+                "failed".to_string(),
+                format!("Could not start Outlook import: {error}"),
+            ),
+        },
+    );
     Ok(job)
 }
 
 #[tauri::command]
 fn focus_start(minutes: u32) -> Result<String, String> {
-    if !(1..=240).contains(&minutes) { return Err("Focus session must be between 1 and 240 minutes".to_string()); }
+    if !(1..=240).contains(&minutes) {
+        return Err("Focus session must be between 1 and 240 minutes".to_string());
+    }
     let child = std::process::Command::new("systemd-inhibit")
-        .args(["--what=idle:sleep", "--why=KythOS Focus Session", "--mode=block", "sleep", &(minutes * 60 + 60).to_string()])
-        .spawn().map_err(|error| format!("could not keep the PC awake: {error}"))?;
-    let id = format!("focus-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos());
-    focus_sessions().lock().map_err(|_| "focus session store is unavailable".to_string())?.insert(id.clone(), child);
+        .args([
+            "--what=idle:sleep",
+            "--why=KythOS Focus Session",
+            "--mode=block",
+            "sleep",
+            &(minutes * 60 + 60).to_string(),
+        ])
+        .spawn()
+        .map_err(|error| format!("could not keep the PC awake: {error}"))?;
+    let id = format!(
+        "focus-{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    );
+    focus_sessions()
+        .lock()
+        .map_err(|_| "focus session store is unavailable".to_string())?
+        .insert(id.clone(), child);
     Ok(id)
 }
 
 #[tauri::command]
 fn focus_stop(id: String) -> Result<String, String> {
-    let mut sessions = focus_sessions().lock().map_err(|_| "focus session store is unavailable".to_string())?;
-    let Some(mut child) = sessions.remove(&id) else { return Ok("Focus session already ended.".to_string()); };
+    let mut sessions = focus_sessions()
+        .lock()
+        .map_err(|_| "focus session store is unavailable".to_string())?;
+    let Some(mut child) = sessions.remove(&id) else {
+        return Ok("Focus session already ended.".to_string());
+    };
     let _ = child.kill();
     let _ = child.wait();
     Ok("Focus session ended; normal power behavior is restored.".to_string())
@@ -900,10 +1060,7 @@ fn uninstall_flatpak(app_id: String) -> Result<InstallActionLaunch, String> {
                     if output.status.success() {
                         (true, format!("Uninstalled {app_id}."))
                     } else {
-                        (
-                            false,
-                            commands::process::bounded_text(&output.stderr),
-                        )
+                        (false, commands::process::bounded_text(&output.stderr))
                     }
                 })
                 .map_err(|err| err.to_string())
@@ -918,7 +1075,11 @@ fn uninstall_flatpak(app_id: String) -> Result<InstallActionLaunch, String> {
             .unwrap()
             .insert(job_for_thread, (state.into(), detail));
     });
-    Ok(InstallActionLaunch { job, state: "running".into(), detail: pending_detail })
+    Ok(InstallActionLaunch {
+        job,
+        state: "running".into(),
+        detail: pending_detail,
+    })
 }
 
 fn privileged_flatpak_uninstall(app_id: &str) -> Result<String, String> {
@@ -959,7 +1120,11 @@ pub(crate) struct InstallStatus {
 }
 
 #[derive(serde::Serialize)]
-pub(crate) struct InstallActionLaunch { job: String, state: String, detail: String }
+pub(crate) struct InstallActionLaunch {
+    job: String,
+    state: String,
+    detail: String,
+}
 
 #[tauri::command]
 fn install_flatpak(app_id: String) -> Result<InstallActionLaunch, String> {
@@ -985,10 +1150,7 @@ fn install_flatpak(app_id: String) -> Result<InstallActionLaunch, String> {
             Ok(output) if output.status.success() => {
                 ("complete", "Installation complete.".to_string())
             }
-            Ok(output) => (
-                "failed",
-                commands::process::bounded_text(&output.stderr),
-            ),
+            Ok(output) => ("failed", commands::process::bounded_text(&output.stderr)),
             Err(err) => ("failed", format!("Could not start Flatpak: {err}")),
         };
         app_installs()
@@ -996,7 +1158,11 @@ fn install_flatpak(app_id: String) -> Result<InstallActionLaunch, String> {
             .unwrap()
             .insert(job_for_thread, (state.into(), detail));
     });
-    Ok(InstallActionLaunch { job, state: "running".into(), detail: pending_detail })
+    Ok(InstallActionLaunch {
+        job,
+        state: "running".into(),
+        detail: pending_detail,
+    })
 }
 
 #[tauri::command]
@@ -1103,7 +1269,9 @@ fn ntfs_devices() -> Vec<serde_json::Value> {
 
 #[tauri::command]
 fn migration_readiness() -> kyth_shared::system::windows_verify::WindowsParity {
-    let home = std::env::var_os("HOME").map(std::path::PathBuf::from).unwrap_or_default();
+    let home = std::env::var_os("HOME")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_default();
     kyth_shared::system::windows_verify::verify(home, std::path::Path::new("/var/home").exists())
 }
 
@@ -1146,12 +1314,19 @@ fn vpn_saved_profile() -> Option<VpnSavedProfile> {
     let protocol = values.remove("protocol")?;
     let os = values.remove("os")?;
     if !valid_vpn_profile_text(&gateway, 253)
-        || !matches!(protocol.as_str(), "gp" | "anyconnect" | "pulse" | "nc" | "f5" | "fortinet" | "array")
+        || !matches!(
+            protocol.as_str(),
+            "gp" | "anyconnect" | "pulse" | "nc" | "f5" | "fortinet" | "array"
+        )
         || !matches!(os.as_str(), "win" | "linux" | "mac")
     {
         return None;
     }
-    Some(VpnSavedProfile { gateway, protocol, os })
+    Some(VpnSavedProfile {
+        gateway,
+        protocol,
+        os,
+    })
 }
 
 #[tauri::command]
@@ -1191,6 +1366,212 @@ fn take_pending_page(state: tauri::State<PendingPage>) -> Option<String> {
     state.0.lock().unwrap().take()
 }
 
+#[derive(Serialize)]
+struct ExeHandlerInspection {
+    path: String,
+    basename: String,
+    is_rpm: bool,
+    app_name: Option<String>,
+    suggestion: String,
+    flatpak_id: Option<String>,
+    search_term: String,
+    compatibility: Option<kyth_shared::system::windows_installer::CompatibilityAssessment>,
+    sha256_prefix: Option<String>,
+    auto_bottles: bool,
+}
+
+fn exe_handler_config_path() -> PathBuf {
+    std::env::var_os("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".config")))
+        .unwrap_or_else(|| PathBuf::from(".config"))
+        .join("kyth/exe-handler.conf")
+}
+
+fn load_auto_bottles() -> bool {
+    let Ok(text) = fs::read_to_string(exe_handler_config_path()) else {
+        return false;
+    };
+    let mut in_section = false;
+    for line in text.lines() {
+        let line = line.trim();
+        if line.starts_with('[') && line.ends_with(']') {
+            in_section = line == "[exe-handler]";
+        } else if in_section
+            && line.split_once('=').is_some_and(|(key, value)| {
+                key.trim() == "auto_bottles" && value.trim().eq_ignore_ascii_case("true")
+            })
+        {
+            return true;
+        }
+    }
+    false
+}
+
+fn regular_handler_path(path: &str) -> Result<PathBuf, String> {
+    let path = PathBuf::from(path);
+    let metadata = fs::symlink_metadata(&path)
+        .map_err(|error| format!("The installer could not be read: {error}"))?;
+    if metadata.file_type().is_symlink() || !metadata.file_type().is_file() {
+        return Err("Choose a regular, non-symbolic-link installer file.".into());
+    }
+    path.canonicalize()
+        .map_err(|error| format!("The installer could not be read: {error}"))
+}
+
+#[tauri::command]
+fn exe_handler_inspect(path: String) -> Result<ExeHandlerInspection, String> {
+    let path = regular_handler_path(&path)?;
+    let basename = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("installer")
+        .to_string();
+    let is_rpm = kyth_shared::system::app_suggestions::is_rpm_installer(&basename);
+    if is_rpm {
+        return Ok(ExeHandlerInspection {
+            path: path.display().to_string(), basename: basename.clone(), is_rpm: true,
+            app_name: Some("RPM Package".into()),
+            suggestion: "This is an RPM package for traditional mutable Fedora/RHEL-style systems. On KythOS, install desktop apps from App Store or Flathub. Use Distrobox for command-line tools that need dnf. Only layer system RPMs when a KythOS guide explicitly tells you to, because base-system changes require a reboot and can complicate updates.".into(),
+            flatpak_id: None, search_term: basename.trim_end_matches(".rpm").replace(' ', "+"), compatibility: None, sha256_prefix: None, auto_bottles: false,
+        });
+    }
+    let request = kyth_shared::system::windows_installer::inspect_installer(&path)
+        .map_err(|error| error.message)?;
+    let suggestion = kyth_shared::system::app_suggestions::suggest_default(
+        &kyth_shared::system::app_suggestions::normalise_filename(&basename),
+    );
+    let app_name = suggestion.as_ref().map(|entry| entry.app_name.clone());
+    let search_term = app_name
+        .clone()
+        .unwrap_or_else(|| {
+            path.file_stem()
+                .and_then(|stem| stem.to_str())
+                .unwrap_or("Windows Application")
+                .to_string()
+        })
+        .replace(' ', "+");
+    Ok(ExeHandlerInspection {
+        path: path.display().to_string(), basename, is_rpm: false,
+        suggestion: suggestion.as_ref().map(|entry| entry.suggestion.clone()).unwrap_or_else(|| "This is a Windows application installer. KythOS runs Linux software natively. Search Flathub for a Linux equivalent, or run it inside Bottles (Wine).".into()),
+        flatpak_id: suggestion.and_then(|entry| entry.flatpak_id), app_name, search_term,
+        compatibility: Some(kyth_shared::system::windows_installer::assess_compatibility(&request)),
+        sha256_prefix: Some(request.sha256[..16].to_string()), auto_bottles: load_auto_bottles(),
+    })
+}
+
+#[tauri::command]
+fn exe_handler_set_auto_bottles(enabled: bool) -> Result<(), String> {
+    let path = exe_handler_config_path();
+    let directory = path.parent().ok_or("invalid Kyth configuration path")?;
+    fs::create_dir_all(directory).map_err(|error| format!("Could not save preference: {error}"))?;
+    fs::write(
+        path,
+        format!(
+            "[exe-handler]\nauto_bottles={}\n",
+            if enabled { "true" } else { "false" }
+        ),
+    )
+    .map_err(|error| format!("Could not save preference: {error}"))
+}
+
+#[tauri::command]
+fn exe_handler_open_flathub(search_term: String) -> Result<(), String> {
+    let query: String = url::form_urlencoded::byte_serialize(search_term.as_bytes()).collect();
+    Command::new("xdg-open")
+        .arg(format!("https://flathub.org/apps/search?q={query}"))
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| format!("Could not open Flathub: {error}"))
+}
+
+#[tauri::command]
+fn exe_handler_flatpak_installed(app_id: String) -> Result<bool, String> {
+    commands::privilege::validate_flatpak_id(&app_id)?;
+    Ok(Command::new("flatpak")
+        .args(["info", "--user", &app_id])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success()))
+}
+
+#[tauri::command]
+fn exe_handler_launch_flatpak(app_id: String) -> Result<(), String> {
+    commands::privilege::validate_flatpak_id(&app_id)?;
+    Command::new("flatpak")
+        .args(["run", "--user", &app_id])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| format!("Could not launch the Linux application: {error}"))
+}
+
+#[tauri::command]
+fn exe_handler_start_bottles(
+    path: String,
+    allow_unsupported: bool,
+) -> Result<InstallActionLaunch, String> {
+    let request =
+        kyth_shared::system::windows_installer::inspect_installer(regular_handler_path(&path)?)
+            .map_err(|error| error.message)?;
+    if matches!(
+        kyth_shared::system::windows_installer::assess_compatibility(&request).level,
+        kyth_shared::system::windows_installer::Compatibility::Unsupported
+    ) && !allow_unsupported
+    {
+        return Err(
+            "This installer has a known limitation. Confirm before trying it anyway.".into(),
+        );
+    }
+    let job = format!(
+        "exe-handler-{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    );
+    let pending_detail = "Preparing an isolated Bottles environment…".to_string();
+    app_installs()
+        .lock()
+        .unwrap()
+        .insert(job.clone(), ("running".into(), pending_detail.clone()));
+    let job_for_thread = job.clone();
+    std::thread::spawn(move || {
+        let home = std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("/tmp"));
+        let (state, detail) =
+            match kyth_shared::system::windows_installer::launch_in_bottles(&request, home) {
+                Ok(_) => (
+                    "complete",
+                    "The Windows installer is opening in its isolated environment.".to_string(),
+                ),
+                Err(error) => ("failed", error.message),
+            };
+        app_installs()
+            .lock()
+            .unwrap()
+            .insert(job_for_thread, (state.into(), detail));
+    });
+    Ok(InstallActionLaunch {
+        job,
+        state: "running".into(),
+        detail: pending_detail,
+    })
+}
+
+#[tauri::command]
+fn take_pending_exe_handler(state: tauri::State<PendingExeHandler>) -> Option<String> {
+    state.0.lock().unwrap().take()
+}
+
 /// Append a small, opt-in record for the installed-image acceptance guest.
 /// The command is inert on normal launches: the guest supplies the file path
 /// through the environment and only then does the shell write evidence. Keep
@@ -1207,7 +1588,9 @@ fn acceptance_record(event: String, detail: String) -> Result<(), String> {
     }
     if event.is_empty()
         || event.len() > 64
-        || !event.bytes().all(|byte| byte.is_ascii_lowercase() || byte == b'-')
+        || !event
+            .bytes()
+            .all(|byte| byte.is_ascii_lowercase() || byte == b'-')
     {
         return Err("invalid Hub acceptance event".into());
     }
@@ -1236,7 +1619,9 @@ fn acceptance_degraded_dashboard() -> bool {
 }
 
 fn main() {
-    let initial_page = extract_page_arg(&std::env::args().collect::<Vec<_>>());
+    let argv = std::env::args().collect::<Vec<_>>();
+    let initial_page = extract_page_arg(&argv);
+    let initial_exe_handler = extract_exe_handler_arg(&argv);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
@@ -1247,15 +1632,20 @@ fn main() {
             // so this pushes the event directly instead of going through
             // PendingPage.
             let page = extract_page_arg(&argv);
+            let exe_handler = extract_exe_handler_arg(&argv);
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.set_focus();
                 if let Some(page) = page {
                     let _ = window.emit("navigate", page);
                 }
+                if let Some(path) = exe_handler {
+                    let _ = window.emit("exe-handler", path);
+                }
             }
         }))
         .manage(PendingPage(Mutex::new(initial_page)))
+        .manage(PendingExeHandler(Mutex::new(initial_exe_handler)))
         .invoke_handler(tauri::generate_handler![
             commands::dashboard::probe_backend,
             guardian_snapshot,
@@ -1286,6 +1676,13 @@ fn main() {
             anti_cheat_table,
             compatibility_games,
             take_pending_page,
+            take_pending_exe_handler,
+            exe_handler_inspect,
+            exe_handler_set_auto_bottles,
+            exe_handler_open_flathub,
+            exe_handler_flatpak_installed,
+            exe_handler_launch_flatpak,
+            exe_handler_start_bottles,
             commands::updates::just_list,
             commands::updates::run_hub_action,
             commands::updates::hub_action_status,

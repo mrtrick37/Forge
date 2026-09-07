@@ -73,3 +73,20 @@ User-polish cutover (2026-09-07, after the 38-port baseline):
 The native `kyth-user-polish` binary is built by the shared Rust crate and
 installed at the same `/usr/bin/kyth-user-polish` path. Its Python modules are
 retained only for parity tests and rollback qualification.
+
+Executable-handler cutover (2026-09-07):
+
+| Metric | Before | After |
+| --- | ---: | ---: |
+| Active Python entries | 163 | 158 |
+| `python-runtime` active | 2 | 1 (`kyth-vm-acceptance-guest`, deferred to its acceptance gate) |
+| `python-shared-package` active | 161 | 157 |
+| Superseded entries | 94 | 98 |
+
+`kyth-exe-handler` is now a native Rust launcher that forwards a MIME-file
+launch into the existing Tauri/React Hub dialog. The Rust shared crate owns
+inspection, compatibility assessment, application suggestions, preference
+persistence, and the bounded Bottles workflow; the webview has typed commands
+only and no generic process bridge. The retired Python handler and its four
+support modules are source-only rollback/parity fixtures, not installed runtime
+paths.

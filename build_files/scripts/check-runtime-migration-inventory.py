@@ -98,7 +98,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-game-launch"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-dynamic-lock"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-proton-cachyos-update"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-rclone-update"}
-NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-sched", "kyth-user-polish"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-sched", "kyth-user-polish", "kyth-exe-handler"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }
@@ -138,6 +138,10 @@ TUNABLE_SUPERSEDED_BY = "native::kyth-tunable-rs"
 NATIVE_REPLACED_MODULES = {
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
+    "apps": "native::kyth-exe-handler",
+    "exe_handler": "native::kyth-exe-handler",
+    "qt_threads": "native::kyth-exe-handler",
+    "windows_installer": "native::kyth-exe-handler",
 }
 SUPERSEDED_TUNABLE_MODULES = frozenset({
     "aio_max", "ananicy_preset", "boot_loader", "bore_tune", "btrfs_autotune",

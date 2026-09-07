@@ -168,6 +168,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-rclone-update",
             "kyth-sched",
             "kyth-user-polish",
+            "kyth-exe-handler",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

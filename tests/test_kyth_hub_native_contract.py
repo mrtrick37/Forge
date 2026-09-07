@@ -34,6 +34,29 @@ class NativeHubContractTests(unittest.TestCase):
         for state in ("running", "complete", "failed", "unknown"):
             self.assertIn(f'"{state}"', MAIN)
 
+    def test_executable_handler_is_a_typed_tauri_workflow(self):
+        dialog = (ROOT / "src/kyth-hub-web/src/components/ExeHandlerDialog.tsx").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("PendingExeHandler", MAIN)
+        self.assertIn('"--exe-handler"', MAIN)
+        self.assertIn('"exe-handler"', MAIN)
+        live_data = (ROOT / "src/kyth-hub-web/src/services/liveData.ts").read_text(
+            encoding="utf-8"
+        )
+        for command, wrapper in (
+            ("exe_handler_inspect", "inspectExeHandler"),
+            ("exe_handler_set_auto_bottles", "setExeHandlerAutoBottles"),
+            ("exe_handler_open_flathub", "openExeHandlerFlathub"),
+            ("exe_handler_flatpak_installed", "isExeHandlerFlatpakInstalled"),
+            ("exe_handler_launch_flatpak", "launchExeHandlerFlatpak"),
+            ("exe_handler_start_bottles", "startExeHandlerBottles"),
+        ):
+            self.assertIn(command, MAIN)
+            self.assertIn(f'"{command}"', live_data)
+            self.assertIn(wrapper, dialog)
+        self.assertNotIn("plugin-shell", dialog)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
+import { ExeHandlerDialog } from "./components/ExeHandlerDialog";
 
 const Dashboard = lazy(() => import("./pages/Dashboard").then(({ Dashboard: page }) => ({ default: page })));
 const Play = lazy(() => import("./pages/Play").then(({ Play: page }) => ({ default: page })));
@@ -42,6 +43,7 @@ export function App() {
           </Suspense>
         </main>
       </div>
+      <ExeHandlerDialog />
     </>
   );
 }

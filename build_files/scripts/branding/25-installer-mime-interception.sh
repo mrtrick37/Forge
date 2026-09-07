@@ -5,7 +5,8 @@
 # native KythOS paths visible instead of teaching the wrong mutable-system model.
 # The handler is registered as the system-wide default for these installer MIME
 # types; users can override per-app via Dolphin's "Open With" dialog.
-install -m 0755 /ctx/kyth-exe-handler /usr/bin/kyth-exe-handler
+# The native launcher forwards the MIME file path into the existing
+# Rust/Tauri Hub dialog; it is installed by the image builder.
 install -m 0644 /ctx/kyth-exe-handler.desktop \
 	/usr/share/applications/kyth-exe-handler.desktop
 mkdir -p /usr/share/kyth

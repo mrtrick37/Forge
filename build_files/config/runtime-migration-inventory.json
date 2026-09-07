@@ -1178,28 +1178,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-exe-handler entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-exe-handler",
-      "owner": "fixture::build_files/kyth-exe-handler",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-exe-handler",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-exe-handler",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-exe-handler entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "data",
       "cutover": "replace installed kyth-exe-handler.desktop entry point after parity gates",
       "installed_implementation": "not-installed",
@@ -8520,9 +8498,9 @@
       "current_implementation": "python",
       "cutover": "replace installed apps entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "apps",
-      "owner": "fixture::src/kyth_shared/kyth_shared/apps.py",
+      "owner": "native::kyth-exe-handler",
       "parity_tests": [
         "tests/"
       ],
@@ -8532,10 +8510,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed apps entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
+      "runtime_scope": "test-fixture",
       "status": "queued",
+      "superseded_by": "native::kyth-exe-handler",
       "surface": "python-runtime"
     },
     {
@@ -9099,9 +9078,9 @@
       "current_implementation": "python",
       "cutover": "replace installed exe_handler entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "exe_handler",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/exe_handler.py",
+      "owner": "native::kyth-exe-handler",
       "parity_tests": [
         "tests/"
       ],
@@ -9111,10 +9090,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed exe_handler entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
+      "runtime_scope": "test-fixture",
       "status": "queued",
+      "superseded_by": "native::kyth-exe-handler",
       "surface": "python-runtime"
     },
     {
@@ -9165,9 +9145,9 @@
       "current_implementation": "python",
       "cutover": "replace installed qt_threads entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "qt_threads",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/qt_threads.py",
+      "owner": "native::kyth-exe-handler",
       "parity_tests": [
         "tests/"
       ],
@@ -9177,10 +9157,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed qt_threads entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
+      "runtime_scope": "test-fixture",
       "status": "queued",
+      "superseded_by": "native::kyth-exe-handler",
       "surface": "python-runtime"
     },
     {
@@ -9209,9 +9190,9 @@
       "current_implementation": "python",
       "cutover": "replace installed windows_installer entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "windows_installer",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/windows_installer.py",
+      "owner": "native::kyth-exe-handler",
       "parity_tests": [
         "tests/"
       ],
@@ -9221,10 +9202,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed windows_installer entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
+      "runtime_scope": "test-fixture",
       "status": "queued",
+      "superseded_by": "native::kyth-exe-handler",
       "surface": "python-runtime"
     },
     {

@@ -1,0 +1,22 @@
+---
+description: Default all new Kyth runtime features to Rust and Tauri, not Python
+alwaysApply: true
+---
+
+# Rust/Tauri Is the Default
+
+For all new Kyth product features, use Rust for runtime, service, CLI, and
+system-integration code. Use the existing Tauri/React Hub shell for desktop UI.
+
+- Do not introduce Python as a new installed runtime authority, launcher,
+  service, desktop UI, or production implementation.
+- Keep user-visible desktop workflows in the existing Tauri/React Hub when they
+  need a UI; expose only typed, narrowly scoped Rust Tauri commands.
+- New privileged behavior belongs behind the existing Rust privileged boundary;
+  do not add a generic shell or process-execution bridge.
+- Python may remain only for existing compatibility/parity fixtures, tests, or
+  an explicitly approved exception. Document any exception and its removal or
+  review condition in the relevant migration plan before adding it.
+- When replacing an existing Python runtime path, preserve its behavior with
+  Rust tests and collected `unittest.TestCase` parity coverage until the
+  approved rollback/observation window permits fixture cleanup.

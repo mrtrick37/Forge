@@ -1278,3 +1278,58 @@ export async function stopFocusSession(id: string): Promise<string> {
   if (!inTauriShell()) throw new Error("Focus sessions are available from the installed Kyth Hub.");
   return await invoke<string>("focus_stop", { id });
 }
+
+// Downloaded executable / RPM MIME-handler workflow.  The native launcher
+// supplies the path; these wrappers are deliberately narrow so the webview
+// never receives a generic process or filesystem bridge.
+export interface ExeHandlerCompatibility {
+  level: "likely" | "unknown" | "unsupported";
+  summary: string;
+  detail: string;
+}
+export interface ExeHandlerInspection {
+  path: string;
+  basename: string;
+  is_rpm: boolean;
+  app_name: string | null;
+  suggestion: string;
+  flatpak_id: string | null;
+  search_term: string;
+  compatibility: ExeHandlerCompatibility | null;
+  sha256_prefix: string | null;
+  auto_bottles: boolean;
+}
+export interface ExeHandlerJob { job: string; state: "running" | "complete" | "failed" | "unknown"; detail: string; }
+
+export async function takePendingExeHandler(): Promise<string | null> {
+  if (!inTauriShell()) return null;
+  return await invoke<string | null>("take_pending_exe_handler");
+}
+export async function inspectExeHandler(path: string): Promise<ExeHandlerInspection> {
+  if (!inTauriShell()) throw new Error("Installer help is available from the installed Kyth Hub.");
+  return await invoke<ExeHandlerInspection>("exe_handler_inspect", { path });
+}
+export async function setExeHandlerAutoBottles(enabled: boolean): Promise<void> {
+  if (!inTauriShell()) throw new Error("Installer help is available from the installed Kyth Hub.");
+  await invoke("exe_handler_set_auto_bottles", { enabled });
+}
+export async function openExeHandlerFlathub(searchTerm: string): Promise<void> {
+  if (!inTauriShell()) throw new Error("Installer help is available from the installed Kyth Hub.");
+  await invoke("exe_handler_open_flathub", { searchTerm });
+}
+export async function isExeHandlerFlatpakInstalled(appId: string): Promise<boolean> {
+  if (!inTauriShell()) return false;
+  return await invoke<boolean>("exe_handler_flatpak_installed", { appId });
+}
+export async function launchExeHandlerFlatpak(appId: string): Promise<void> {
+  if (!inTauriShell()) throw new Error("Installer help is available from the installed Kyth Hub.");
+  await invoke("exe_handler_launch_flatpak", { appId });
+}
+export async function startExeHandlerFlatpakInstall(appId: string): Promise<ExeHandlerJob> {
+  if (!inTauriShell()) throw new Error("Installer help is available from the installed Kyth Hub.");
+  return await invoke<ExeHandlerJob>("install_flatpak", { appId });
+}
+export async function startExeHandlerBottles(path: string, allowUnsupported: boolean): Promise<ExeHandlerJob> {
+  if (!inTauriShell()) throw new Error("Installer help is available from the installed Kyth Hub.");
+  return await invoke<ExeHandlerJob>("exe_handler_start_bottles", { path, allowUnsupported });
+}

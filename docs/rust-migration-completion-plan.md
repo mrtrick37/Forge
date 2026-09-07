@@ -8,13 +8,12 @@ points (see
 and [Installer Migration Plan](installer-migration-plan.md)). What remains is
 a smaller, previously uncatalogued surface: 41 standalone launcher scripts
 under `build_files/kyth-*` that `ujust` recipes and systemd units invoke
-directly. Of those 41, **39 are ported and committed**, **2 are permanent,
-already-decided deferrals** (`kyth-vm-acceptance-guest`, gated on an existing
-Hub-plan release gate; `kyth-exe-handler`, a Qt GUI dialog with no Rust UI
-target — see below for both). The full non-deferred Python launcher scope is
-now complete, including the final `kyth-user-polish` daemon. Phase 3 stays
-blocked on the Hub plan's own post-cutover observation window (not yet
-started, not agent-schedulable).
+directly. Of those 41, **40 are ported and committed**. The remaining
+`kyth-vm-acceptance-guest` launcher is deferred to an existing Hub-plan
+release gate. `kyth-exe-handler` is now a packaged native Rust launcher with
+its user interface in the existing **Tauri/React Hub**. Phase 3 stays blocked
+on the Hub plan's own post-cutover observation window (not yet started, not
+agent-schedulable).
 
 **Scope:** This plan completes the **Python** runtime authority — the 41
 `python-runtime` launchers plus the classifier fix that makes the
@@ -217,10 +216,10 @@ dead code nobody flagged as dead.
 
 ## Phase 1 — User-session writer launchers (28 items)
 
-**Status: complete.** All 27 non-deferred items below are ported and
-committed; `kyth-exe-handler` is permanently deferred (see "Deferred:
-`kyth-exe-handler`" below) and was never counted toward this phase's
-completion.
+**Status: complete.** All 28 items below are ported and committed.
+`kyth-exe-handler` is a native Rust launcher with its user-visible workflow
+implemented as a Tauri/React Hub dialog (see "Completed Tauri migration:
+`kyth-exe-handler`" below).
 
 Risk-classified `user-session-writer` by the checker's own `WRITER_NAMES` set
 or its default fallback for `kind == "python"`. These apply a single
@@ -246,7 +245,7 @@ blast radius of the remaining launcher set.
 | `kyth-apply-vrr` | |
 | `kyth-apply-window-snap` | |
 | `kyth-driver-switch` | Not caught by any `risk_for` bucket today; falls through to the generic `python`→`user-session-writer` default. Review whether GPU/driver selection deserves its own risk tier before treating it as equivalent to the `kyth-apply-*` group. |
-| `kyth-exe-handler` | **Deferred, not done** — see "Deferred: `kyth-exe-handler`" below. Not counted toward this phase's completion. |
+| `kyth-exe-handler` | **Complete — native Rust launcher + Tauri/React Hub dialog.** See "Completed Tauri migration: `kyth-exe-handler`" below. |
 | `kyth-kali-desktop-fixup` | |
 | `kyth-ntfs-repair` | Named in the checker's later privileged-writer branch, but `WRITER_NAMES` matches first, so it currently reports as `user-session-writer`. Confirm that's intentional before porting; NTFS repair is filesystem-mutating. |
 | `kyth-performance-mode` | |
@@ -375,31 +374,45 @@ from this beyond the correction itself: do not add it as a phase, and do not
 reclassify the launcher's `NATIVE_BINARIES` status until the Hub/installer
 plans' own acceptance-gate work replaces the `run` path.
 
-## Deferred: `kyth-exe-handler` is a Qt GUI, not a launcher port
+## Completed Tauri migration: `kyth-exe-handler`
 
 `kyth-exe-handler` was bucketed into Phase 1 by the checker's
 `WRITER_NAMES` set, but it does not apply a configuration and exit: it is a
 470-line PySide6 dialog (`desktop/exe_handler.py`) — the registered MIME
 handler for Windows executables and RPMs — with Bottles workflow threads.
-There is no Rust UI stack to port it to, and a headless native shim would
-silently drop the dialog, which is the launcher's entire user-visible
-behavior. The assessment backend it leans on is already Rust-owned
-(`system::exe_compat`: hashing, offline lookup, Steam rewriting).
+The assessment backend it leans on is already Rust-owned
+(`system::exe_compat`: hashing, offline lookup, Steam rewriting). A headless
+native shim would silently drop the dialog, which is the launcher's entire
+user-visible behavior.
 
-Decision (2026-09-08): keep the launcher Python and queued in the
-inventory; revisit only with a UI-stack decision (e.g. a Tauri dialog
-under the Hub plan). Do not count it toward Phase 1 completion, and do
-not "port" it by deleting the dialog.
+**Decision and implementation (2026-09-07): use the existing Tauri/React Hub.** The replacement
+is a focused Hub dialog/window, not a new GUI toolkit or a second standalone
+UI. The Rust Tauri command layer owns typed assessment and workflow requests;
+the React UI owns presentation, confirmation, progress, and actionable error
+states. It must preserve all current MIME-handler behavior: RPM guidance,
+offline Linux-app suggestions, Flathub search, installed-Flatpak launch,
+explicit Bottles install/run workflow, compatibility warnings, and the
+per-user auto-Bottles preference.
 
-Note this is a deliberate choice of `queued` over `NOT_PORTED`: unlike the
-`NOT_PORTED` exceptions in the Decision section above (third-party or
-declarative build/runtime items nobody expects to revisit), this one has a
-concrete, if unscheduled, unblock condition — a Rust UI-stack decision — so
-it stays visibly `queued` rather than being filed away as closed. It is
-still, functionally, a second permanent deferral alongside
-`kyth-vm-acceptance-guest` for the purposes of this plan's completion count
-(see "Definition of done" below): neither is expected to close under this
-plan.
+Completed implementation:
+
+1. The remaining Python business logic is behind typed Rust APIs, reusing
+   `system::exe_compat` and `system::app_suggestions`; add a bounded Rust
+   workflow layer for Bottles/Flatpak operations rather than exposing generic
+   process execution to the webview.
+2. Narrowly scoped Tauri commands in `src/kyth-hub-web/src-tauri/` and a
+   Hub React dialog that preserves the current interaction and confirmation
+   behavior. Do not add a new Tauri application or an unrestricted shell,
+   filesystem, or command bridge.
+3. The `kyth-exe-handler.desktop` entry point now uses the packaged
+   Rust/Tauri handler only after parity tests cover successful, declined,
+   unsupported, malformed-file, and workflow-failure paths. Regenerate the
+   inventory/report and retain the Python implementation as a rollback fixture
+   until the approved observation window closes.
+
+`kyth-exe-handler` is listed in `NATIVE_BINARIES`, so it is no longer an
+active Python runtime authority. Its Python implementation remains source-only
+rollback/parity material until the approved observation window closes.
 
 ## Phase 3 — Retire superseded `kyth_shared` fixture material
 
@@ -409,7 +422,7 @@ register, row 7 — begins after promoted-image acceptance, not yet started).
 The tunable compatibility module is explicitly "retained only as a rollback
 fixture" pending that window. Phase 0's reclassification changes the
 *count* — dead modules stop being reported as `active` — but does not change
-the *files on disk*. Do not delete or move the 93 superseded tunable worker
+the *files on disk*. Do not delete or move the 98 superseded worker/fixture
 modules (or the `gaming_master.py`/`perf_audit.py` equivalents, once Phase 0
 confirms which of their workers are superseded) until that observation window
 closes. Once it does, this becomes mechanical: modules confirmed superseded
@@ -422,9 +435,9 @@ deliberate rollback fixture ahead of its own release gate.
 
 ## Phase 4 — Convention change
 
-**Complete after `kyth-user-polish` landed.** Phase 1 is already complete (its one
-gap, `kyth-exe-handler`, is a permanent deferral, not pending work); Phase 2
-closes to 12/12 the moment `kyth-user-polish` is committed. At that point
+**Complete after `kyth-user-polish` landed.** Phase 2 closes to 12/12 with
+`kyth-user-polish`; the contributor convention applies while the VM acceptance
+gate remains open. At that point
 "Phase 1/2 demonstrate the replacement shape is stable" is satisfied and this
 becomes the immediate next item — cheap, and it's what stops new Python
 arriving in `kyth_shared` by convention while Phase 3 stays blocked.
@@ -443,16 +456,11 @@ arriving in `kyth_shared` by convention while Phase 3 stays blocked.
 - `active_python_entries` in the generated report reflects only Python that
   is reachable from a real launcher/unit/harness — no entry is active solely
   because of a path-prefix rule.
-- Of the 41 currently-listed `python-runtime` launchers: 39 are ported to
-  native Rust entry points (`NATIVE_BINARIES`) as of 2026-09-07. The other 2
-  are permanent, already-decided deferrals and are not
-  expected to close under this plan: `kyth-vm-acceptance-guest`, deferred to
-  the Hub plan's post-cutover acceptance gate (see "Not a phase" above), and
-  `kyth-exe-handler`, a Qt GUI dialog with no Rust UI target (see "Deferred"
-  above) — kept `queued` rather than moved to `NOT_PORTED` since its unblock
-  condition (a UI-stack decision) is concrete, just unscheduled. An earlier
-  version of this bullet said "40 ported ... or in `NOT_PORTED`," which
-  didn't account for `kyth-exe-handler`'s separate deferral; corrected here.
+- Of the 41 currently-listed `python-runtime` launchers: 40 are ported to
+  native Rust entry points (`NATIVE_BINARIES`) as of 2026-09-07. Only
+  `kyth-vm-acceptance-guest` remains deferred to the Hub plan's post-cutover
+  acceptance gate (see "Not a phase" above). The runtime ledger reaches zero
+  only after that independently controlled gate has closed.
 - Every port has a `unittest.TestCase`-based parity test collected by
   `python3 -m unittest discover -s tests -b`.
 - The inventory and report are regenerated and pass `just validate` after

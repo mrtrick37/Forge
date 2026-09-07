@@ -2,15 +2,6 @@
   "active_python": [
     {
       "migration_priority": 2,
-      "name": "kyth-exe-handler",
-      "owner": "fixture::build_files/kyth-exe-handler",
-      "path": "build_files/kyth-exe-handler",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-vm-acceptance-guest",
       "owner": "fixture::build_files/kyth-vm-acceptance-guest",
       "path": "build_files/kyth-vm-acceptance-guest",
@@ -77,15 +68,6 @@
       "name": "app_presets",
       "owner": "fixture::src/kyth_shared/kyth_shared/app_presets.py",
       "path": "src/kyth_shared/kyth_shared/app_presets.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "apps",
-      "owner": "fixture::src/kyth_shared/kyth_shared/apps.py",
-      "path": "src/kyth_shared/kyth_shared/apps.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -254,15 +236,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "exe_handler",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/exe_handler.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/exe_handler.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "plasma",
       "owner": "fixture::src/kyth_shared/kyth_shared/desktop/plasma.py",
       "path": "src/kyth_shared/kyth_shared/desktop/plasma.py",
@@ -281,27 +254,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "qt_threads",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/qt_threads.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/qt_threads.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "shortcut",
       "owner": "fixture::src/kyth_shared/kyth_shared/desktop/shortcut.py",
       "path": "src/kyth_shared/kyth_shared/desktop/shortcut.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "windows_installer",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/windows_installer.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/windows_installer.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -2781,27 +2736,27 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 2,
-      "python-shared-package": 161,
+      "python-runtime": 1,
+      "python-shared-package": 157,
       "rust-dispatcher": 16,
       "rust-service": 20,
       "shell-orchestration": 161
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 161,
+      "standalone": 157,
       "system-service": 35,
-      "user-session": 163
+      "user-session": 162
     },
-    "active_entries": 360,
-    "active_python_entries": 163,
-    "entries": 615,
+    "active_entries": 355,
+    "active_python_entries": 158,
+    "entries": 614,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 130,
-      "queued": 230
+      "queued": 225
     },
-    "superseded_entries": 94
+    "superseded_entries": 98
   },
   "superseded": [
     {
@@ -2823,6 +2778,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "apps",
+      "owner": "native::kyth-exe-handler",
+      "path": "src/kyth_shared/kyth_shared/apps.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "queued",
+      "superseded_by": "native::kyth-exe-handler"
     },
     {
       "migration_priority": 3,
@@ -2893,6 +2858,36 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "exe_handler",
+      "owner": "native::kyth-exe-handler",
+      "path": "src/kyth_shared/kyth_shared/desktop/exe_handler.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "queued",
+      "superseded_by": "native::kyth-exe-handler"
+    },
+    {
+      "migration_priority": 3,
+      "name": "qt_threads",
+      "owner": "native::kyth-exe-handler",
+      "path": "src/kyth_shared/kyth_shared/desktop/qt_threads.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "queued",
+      "superseded_by": "native::kyth-exe-handler"
+    },
+    {
+      "migration_priority": 3,
+      "name": "windows_installer",
+      "owner": "native::kyth-exe-handler",
+      "path": "src/kyth_shared/kyth_shared/desktop/windows_installer.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "queued",
+      "superseded_by": "native::kyth-exe-handler"
     },
     {
       "migration_priority": 3,
