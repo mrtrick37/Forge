@@ -82,6 +82,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-ntfs-repair"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-performance-mode"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-refresh-boot-splash-initramfs"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-refresh-taskbar-pins"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-report-issue"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }

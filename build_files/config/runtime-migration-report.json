@@ -83,15 +83,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-report-issue",
-      "owner": "fixture::build_files/kyth-report-issue",
-      "path": "build_files/kyth-report-issue",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-save-sync",
       "owner": "fixture::build_files/kyth-save-sync",
       "path": "build_files/kyth-save-sync",
@@ -2961,7 +2952,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 20,
+      "python-runtime": 19,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 12,
@@ -2971,15 +2962,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 181
+      "user-session": 180
     },
-    "active_entries": 380,
-    "active_python_entries": 183,
-    "entries": 633,
+    "active_entries": 379,
+    "active_python_entries": 182,
+    "entries": 632,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 122,
-      "queued": 258
+      "queued": 257
     },
     "superseded_entries": 92
   },
