@@ -202,6 +202,10 @@ path = "src/role_preset_apply_bin.rs"
 name = "kyth-apply-scaling"
 path = "src/scaling_apply_bin.rs"
 
+[[bin]]
+name = "kyth-apply-tailscale"
+path = "src/tailscale_apply_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

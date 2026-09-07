@@ -142,6 +142,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-apply-rgb",
             "kyth-apply-role-preset",
             "kyth-apply-scaling",
+            "kyth-apply-tailscale",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

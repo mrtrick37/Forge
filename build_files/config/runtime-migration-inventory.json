@@ -429,28 +429,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-apply-tailscale entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-apply-tailscale",
-      "owner": "fixture::build_files/kyth-apply-tailscale",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-apply-tailscale",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-apply-tailscale",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-apply-tailscale entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "shell",
       "cutover": "replace installed kyth-apply-update entry point after parity gates",
       "installed_implementation": "shell",
