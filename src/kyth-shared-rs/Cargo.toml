@@ -242,6 +242,10 @@ path = "src/taskbar_pins_refresh_bin.rs"
 name = "kyth-report-issue"
 path = "src/report_issue_bin.rs"
 
+[[bin]]
+name = "kyth-session-snapshot"
+path = "src/session_snapshot_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

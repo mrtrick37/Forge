@@ -3761,28 +3761,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-session-snapshot entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-session-snapshot",
-      "owner": "fixture::build_files/kyth-session-snapshot",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-session-snapshot",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-session-snapshot",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-session-snapshot entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "shell",
       "cutover": "replace installed kyth-session-splash-guard entry point after parity gates",
       "installed_implementation": "shell",

@@ -125,6 +125,7 @@ pub mod vrr;
 pub mod window_snap;
 pub mod performance_mode;
 pub mod issue_draft;
+pub mod session_snapshot;
 pub mod extended_preferences;
 pub mod desktop_preferences;
 pub mod desktop_shortcuts;

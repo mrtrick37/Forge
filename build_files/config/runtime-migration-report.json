@@ -101,15 +101,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-session-snapshot",
-      "owner": "fixture::build_files/kyth-session-snapshot",
-      "path": "build_files/kyth-session-snapshot",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-setup-devcontainer",
       "owner": "fixture::build_files/kyth-setup-devcontainer",
       "path": "build_files/kyth-setup-devcontainer",
@@ -2952,7 +2943,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 19,
+      "python-runtime": 18,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 12,
@@ -2962,15 +2953,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 180
+      "user-session": 179
     },
-    "active_entries": 379,
-    "active_python_entries": 182,
-    "entries": 632,
+    "active_entries": 378,
+    "active_python_entries": 181,
+    "entries": 631,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 122,
-      "queued": 257
+      "queued": 256
     },
     "superseded_entries": 92
   },

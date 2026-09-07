@@ -13,7 +13,8 @@ chmod +x /etc/skel/Templates/"Shell Script.sh"
 chmod +x /etc/skel/Templates/"Python Script.py"
 
 install -m 0755 /ctx/kyth-rclone-update /usr/bin/kyth-rclone-update
-install -m 0755 /ctx/kyth-session-snapshot /usr/bin/kyth-session-snapshot
+# kyth-session-snapshot is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 # kyth-report-issue is the native Rust binary copied from the
 # hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-proton-cachyos-update /usr/bin/kyth-proton-cachyos-update
