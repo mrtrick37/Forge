@@ -17,9 +17,15 @@ fn main() -> std::process::ExitCode {
     let devices = load(config_path(None::<&Path>));
     let dest = Path::new(XORG_CONF_DEST);
     if let Some(parent) = dest.parent() {
-        let _ = std::fs::create_dir_all(parent);
+        if let Err(error) = std::fs::create_dir_all(parent) {
+            eprintln!("kyth-apply-input: failed: {error}");
+            return std::process::ExitCode::FAILURE;
+        }
     }
-    let _ = atomic_write_text(dest, &render_xorg_conf(&devices), None);
+    if let Err(error) = atomic_write_text(dest, &render_xorg_conf(&devices), None) {
+        eprintln!("kyth-apply-input: failed: {error}");
+        return std::process::ExitCode::FAILURE;
+    }
     if let Ok(now) = SystemTime::now().duration_since(UNIX_EPOCH) {
         let _ = std::fs::write(TTL_PATH, (now.as_secs() + TTL_SECS).to_string());
     }

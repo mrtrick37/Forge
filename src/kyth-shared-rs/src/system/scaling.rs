@@ -76,6 +76,64 @@ pub fn save(path: impl AsRef<Path>, outputs: &ScalingConfig) -> std::io::Result<
     crate::atomic_io::atomic_write_text(path, &format!("{}\n", lines.join("\n")), Some(0o600))
 }
 
+pub const ICC_DEST_DIR: &str = "/usr/share/color/icc/kyth";
+pub const TTL_PATH: &str = "/run/kyth-scaling-ttl";
+pub const TTL_SECS: u64 = 30;
+
+/// Mirrors Python `f"{scale:.2f}".rstrip("0").rstrip(".")` (`1.25`, `2`).
+pub fn scale_arg(scale: f64) -> String {
+    let text = format!("{scale:.2}");
+    text.trim_end_matches('0').trim_end_matches('.').to_string()
+}
+
+/// Mirrors the output-name gate shared with the HDR launcher.
+pub fn is_output_name_valid(name: &str) -> bool {
+    !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
+}
+
+pub fn scale_argv(conn: &str, scale: &str) -> Vec<String> {
+    vec!["kscreen-doctor".to_string(), format!("output.{conn}.scale.{scale}")]
+}
+
+/// Mirrors `os.access(dir, os.W_OK)`: root can write anywhere; otherwise a
+/// write bit must be set.
+pub fn dir_writable(path: &Path) -> bool {
+    let Ok(metadata) = std::fs::metadata(path) else { return false };
+    if !metadata.is_dir() {
+        return false;
+    }
+    if unsafe { libc::geteuid() } == 0 {
+        return true;
+    }
+    use std::os::unix::fs::PermissionsExt;
+    metadata.permissions().mode() & 0o222 != 0
+}
+
+/// Outcome of the per-output ICC step, mirroring the Python note branches.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IccOutcome {
+    Deployed(String),
+    NotDeployed(String),
+    Failed(String),
+    Skipped,
+}
+
+pub fn icc_outcome(conn: &str, icc: &str, dest_dir: &Path) -> IccOutcome {
+    let icc = icc.trim();
+    if icc.is_empty() || !Path::new(icc).is_file() {
+        return IccOutcome::Skipped;
+    }
+    if !dir_writable(dest_dir) {
+        return IccOutcome::NotDeployed(format!("{conn}.icc={icc} (not deployed — needs root icc dir)"));
+    }
+    let file_name = Path::new(icc).file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
+    let dest = dest_dir.join(file_name);
+    match std::fs::read(icc).and_then(|bytes| std::fs::write(&dest, bytes).map(|_| dest)) {
+        Ok(dest) => IccOutcome::Deployed(format!("{conn}.icc={}", dest.display())),
+        Err(error) => IccOutcome::Failed(format!("{conn}.icc failed: {error}")),
+    }
+}
+
 pub fn kwin_config(outputs: &ScalingConfig) -> Value {
     json!({
         "outputs": outputs.iter().map(|(name, output)| json!({
@@ -99,6 +157,35 @@ mod tests {
         let config = load(&path);
         assert_eq!(config["DP-1"].scale, 3.0);
         assert_eq!(kwin_config(&config)["outputs"][0]["name"], "DP-1");
+    }
+
+    #[test]
+    fn formats_scale_args_like_python() {
+        assert_eq!(scale_arg(1.25), "1.25");
+        assert_eq!(scale_arg(2.0), "2");
+        assert_eq!(scale_arg(1.5), "1.5");
+        assert_eq!(scale_argv("DP-1", "1.25"), vec!["kscreen-doctor", "output.DP-1.scale.1.25"]);
+        assert!(is_output_name_valid("DP-1"));
+        assert!(!is_output_name_valid("DP 1"));
+    }
+
+    #[test]
+    fn icc_notes_cover_all_branches() {
+        let dir = tempdir().unwrap();
+        let profile = dir.path().join("display.icc");
+        std::fs::write(&profile, b"icc-bytes").unwrap();
+        let profile = profile.to_string_lossy().into_owned();
+        assert_eq!(icc_outcome("DP-1", "  ", Path::new("/nonexistent")), IccOutcome::Skipped);
+        assert_eq!(
+            icc_outcome("DP-1", &profile, Path::new("/nonexistent-icc-dir")),
+            IccOutcome::NotDeployed(format!("DP-1.icc={profile} (not deployed — needs root icc dir)"))
+        );
+        let dest_dir = dir.path().join("icc");
+        std::fs::create_dir(&dest_dir).unwrap();
+        match icc_outcome("DP-1", &profile, &dest_dir) {
+            IccOutcome::Deployed(note) => assert!(note.starts_with("DP-1.icc=")),
+            other => panic!("unexpected {other:?}"),
+        }
     }
 
     #[test]
