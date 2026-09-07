@@ -46,10 +46,39 @@ pub fn save(path: impl AsRef<Path>, config: &SaveCloudConfig) -> std::io::Result
     crate::atomic_io::atomic_write_text(path, &text, Some(0o600))
 }
 
+/// Compat `drive_c` directories under every Steam compatdata prefix, mirroring
+/// the `compatdata/*/pfx/drive_c` glob. Only existing paths are returned.
+pub fn compat_drive_cs(home: &Path) -> Vec<PathBuf> {
+    let mut found = Vec::new();
+    let Ok(prefixes) = std::fs::read_dir(home.join(".local/share/Steam/steamapps/compatdata")) else {
+        return found;
+    };
+    for prefix in prefixes.flatten() {
+        let candidate = prefix.path().join("pfx/drive_c");
+        if candidate.exists() {
+            found.push(candidate);
+        }
+    }
+    found.sort();
+    found
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
     use tempfile::tempdir;
+
+    #[test]
+    fn finds_only_existing_compat_drive_c_paths() {
+        let home = tempdir().unwrap();
+        let compatdata = home.path().join(".local/share/Steam/steamapps/compatdata");
+        fs::create_dir_all(compatdata.join("123/pfx/drive_c")).unwrap();
+        fs::create_dir_all(compatdata.join("456/pfx")).unwrap();
+        fs::create_dir_all(compatdata.join("789")).unwrap();
+        assert_eq!(compat_drive_cs(home.path()), vec![compatdata.join("123/pfx/drive_c")]);
+        assert!(compat_drive_cs(&home.path().join("missing-home")).is_empty());
+    }
 
     #[test]
     fn defaults_when_config_is_missing() {
