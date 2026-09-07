@@ -15,9 +15,8 @@ elif [[ -f /usr/bin/kyth-game-boost ]]; then
 	ln -sf /usr/bin/kyth-game-boost /usr/bin/game-performance
 fi
 
-if [[ -f /ctx/kyth-game-launch ]]; then
-	install -Dm0755 /ctx/kyth-game-launch /usr/bin/kyth-game-launch
-fi
+# kyth-game-launch is the native Rust binary copied from the hub-web-builder;
+# no Python launcher remains in the source tree.
 
 if [[ -f /ctx/kyth-shader-prune ]]; then
 	install -Dm0755 /ctx/kyth-shader-prune /usr/bin/kyth-shader-prune

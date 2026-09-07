@@ -20,15 +20,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-game-launch",
-      "owner": "fixture::build_files/kyth-game-launch",
-      "path": "build_files/kyth-game-launch",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-proton-cachyos-update",
       "owner": "fixture::build_files/kyth-proton-cachyos-update",
       "path": "build_files/kyth-proton-cachyos-update",
@@ -2853,7 +2844,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 8,
+      "python-runtime": 7,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 15,
@@ -2863,15 +2854,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 169
+      "user-session": 168
     },
-    "active_entries": 368,
-    "active_python_entries": 171,
-    "entries": 621,
+    "active_entries": 367,
+    "active_python_entries": 170,
+    "entries": 620,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 125,
-      "queued": 243
+      "queued": 242
     },
     "superseded_entries": 92
   },

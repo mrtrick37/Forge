@@ -1407,28 +1407,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-game-launch entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-game-launch",
-      "owner": "fixture::build_files/kyth-game-launch",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-game-launch",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-game-launch",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-game-launch entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "shell",
       "cutover": "replace installed kyth-gamescope entry point after parity gates",
       "installed_implementation": "shell",

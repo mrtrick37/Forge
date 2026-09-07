@@ -4,6 +4,7 @@
 //! module ports the policy boundary only: service/process detection,
 //! gamemode.ini rewriting, and activation remain caller-owned.
 
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
@@ -11,6 +12,8 @@ use std::time::Duration;
 
 pub const DEFAULT_CONFIG_PATH: &str = "/etc/kyth/sched-arbiter.toml";
 pub const DEFAULT_FLAG_PATH: &str = "/run/kyth/sched-arbiter.json";
+pub const KERNEL_FLAVOR_PATH: &str = "/usr/share/kyth/kernel-flavor";
+pub const DEFAULT_GAMEMODE_INI: &str = "/etc/gamemode.ini";
 
 const VALID_CHOICES: [&str; 4] = ["auto", "scx_rusty", "bore", "balanced"];
 
@@ -167,6 +170,70 @@ pub fn flag_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     PathBuf::from(DEFAULT_FLAG_PATH)
 }
 
+/// True when the kernel flavor marks a BORE-capable kernel.
+pub fn bore_available_in(path: &Path) -> bool {
+    match std::fs::read_to_string(path) {
+        Ok(text) => matches!(text.trim().to_ascii_lowercase().as_str(), "cachy" | "cachyos"),
+        Err(_) => false,
+    }
+}
+
+pub fn bore_available() -> bool {
+    bore_available_in(Path::new(KERNEL_FLAVOR_PATH))
+}
+
+/// Desired state from the default config and live detection, mirroring
+/// `_desired_state()` with no arguments.
+pub fn current_desired_state() -> DesiredState {
+    let config = ArbiterConfig::load(config_path(None::<PathBuf>));
+    desired_state(&config, detect_scx_active(), bore_available())
+}
+
+/// Sync one gamemode.ini `pin_cores` line to the arbiter decision, touching
+/// only `[cpu]`-section content like the Python rewrite. Returns true when
+/// the file was rewritten.
+pub fn sync_gamemode_pin(ini: &Path, pin: bool) -> bool {
+    if !ini.is_file() {
+        return false;
+    }
+    let Ok(text) = std::fs::read_to_string(ini) else { return false };
+    let desired = if pin { "yes" } else { "no" };
+    let Ok(pin_line) = Regex::new(r"(?m)^\s*pin_cores\s*=.*$") else { return false };
+    let matched = pin_line.is_match(&text);
+    let updated = if matched {
+        pin_line.replace_all(&text, format!("pin_cores = {desired}")).into_owned()
+    } else if text.contains("[cpu]") {
+        text.replacen("[cpu]", &format!("[cpu]\npin_cores = {desired}"), 1)
+    } else {
+        return false;
+    };
+    if updated == text {
+        return false;
+    }
+    std::fs::write(ini, updated).is_ok()
+}
+
+/// Regenerate the flag file and sync gamemode.ini, mirroring
+/// `generate_arbiter()`. Errors propagate; game-launch swallows them.
+pub fn generate_arbiter_to(flag: &Path, gamemode_ini: &Path) -> std::io::Result<PathBuf> {
+    let state = current_desired_state();
+    if let Some(parent) = flag.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let mut text = serde_json::to_string_pretty(&state.as_value())
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::InvalidData, error))?;
+    text.push('\n');
+    let tmp = flag.with_extension("tmp");
+    std::fs::write(&tmp, text)?;
+    std::fs::rename(&tmp, flag)?;
+    sync_gamemode_pin(gamemode_ini, state.gamemode_pin);
+    Ok(flag.to_path_buf())
+}
+
+pub fn generate_arbiter() -> std::io::Result<PathBuf> {
+    generate_arbiter_to(&flag_path(None::<PathBuf>), Path::new(DEFAULT_GAMEMODE_INI))
+}
+
 pub fn save_config(path: impl AsRef<Path>, config: &ArbiterConfig) -> std::io::Result<()> {
     crate::atomic_io::atomic_write_text(path, &config.to_toml(), Some(0o600))
 }
@@ -192,6 +259,27 @@ fn toml_to_json(value: &toml::Value) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn detects_bore_flavor_and_syncs_gamemode_pin() {
+        let dir = tempfile::tempdir().unwrap();
+        let flavor = dir.path().join("kernel-flavor");
+        std::fs::write(&flavor, "CachyOS\n").unwrap();
+        assert!(bore_available_in(&flavor));
+        std::fs::write(&flavor, "fedora\n").unwrap();
+        assert!(!bore_available_in(&flavor));
+        assert!(!bore_available_in(&dir.path().join("missing")));
+        let ini = dir.path().join("gamemode.ini");
+        std::fs::write(&ini, "[general]\nrenice = 10\n[cpu]\n  pin_cores = yes\n").unwrap();
+        assert!(sync_gamemode_pin(&ini, false));
+        let text = std::fs::read_to_string(&ini).unwrap();
+        assert!(text.contains("pin_cores = no"));
+        assert!(!sync_gamemode_pin(&ini, false));
+        std::fs::write(&ini, "[general]\n[cpu]\n").unwrap();
+        assert!(sync_gamemode_pin(&ini, true));
+        assert!(std::fs::read_to_string(&ini).unwrap().contains("[cpu]\npin_cores = yes"));
+        assert!(!sync_gamemode_pin(&dir.path().join("missing.ini"), true));
+    }
 
     #[test]
     fn normalizes_legacy_and_unknown_choices() {
