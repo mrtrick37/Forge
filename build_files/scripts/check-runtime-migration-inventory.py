@@ -68,7 +68,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-scx-loader"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-runtime"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-ai-dev"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-boot-health"}
-NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-hardware-policy", "kyth-qualify", "kyth-memory-tune"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-hardware-policy", "kyth-qualify", "kyth-memory-tune", "kyth-sysctl-compose"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-desktop-layout"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-display-hdr"}
@@ -171,6 +171,7 @@ NATIVE_REPLACED_MODULES = {
     "qualification": "native::kyth-qualify",
     "perf_gate": "native::kyth-perf-gate-rs",
     "memory_tune": "native::kyth-memory-tune",
+    "sysctl_compose": "native::kyth-sysctl-compose",
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
     "apps": "native::kyth-exe-handler",
@@ -205,7 +206,7 @@ SUPERSEDED_TUNABLE_MODULES = frozenset({
 # from shell (build_files/scripts/*.sh, check-*.py) rather than any launcher.
 # These must never be marked superseded, even if a dispatch table names them.
 SHELL_HARNESS_MODULES = frozenset({
-    "sysctl_compose", "network_preset",
+    "network_preset",
     "snapshot_timeline", "gaming_resolve",
     "sched_arbiter",
 })

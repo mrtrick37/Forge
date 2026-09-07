@@ -83,15 +83,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "sysctl_compose",
-      "owner": "fixture::src/kyth_shared/kyth_shared/sysctl_compose.py",
-      "path": "src/kyth_shared/kyth_shared/sysctl_compose.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "__init__",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/__init__.py",
       "path": "src/kyth_shared/kyth_shared/system/__init__.py",
@@ -2700,26 +2691,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 21,
+      "python-shared-package": 20,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 21,
+      "standalone": 20,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 206,
-    "active_python_entries": 21,
+    "active_entries": 205,
+    "active_python_entries": 20,
     "entries": 860,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 21
+      "queued": 20
     },
-    "superseded_entries": 104
+    "superseded_entries": 105
   },
   "superseded": [
     {
@@ -3441,6 +3432,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "sysctl_compose",
+      "owner": "native::kyth-sysctl-compose",
+      "path": "src/kyth_shared/kyth_shared/sysctl_compose.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-sysctl-compose"
     },
     {
       "migration_priority": 3,

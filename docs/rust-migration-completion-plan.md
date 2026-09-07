@@ -36,7 +36,7 @@ Rust-ownership requirement explicit for non-Hub shell callers as well.
 
 ## Why this plan exists, and why it is not "port every package file"
 
-`build_files/config/runtime-migration-report.json` now lists 21 active Python
+`build_files/config/runtime-migration-report.json` now lists 20 active Python
 package entries. Before the reachability pass, all 157 non-superseded
 `src/kyth_shared/kyth_shared/*.py` files were stamped active by a single
 blanket rule in `check-runtime-migration-inventory.py`:
@@ -220,8 +220,8 @@ runtime behavior must have a Rust owner.
   terminal compatibility fixtures rather than queued runtime work.
 - [x] Add regression coverage for surviving Python entry points, direct
   shell/build harnesses, and the native hardware-policy boundary. The
-  checked-in inventory/report now show 21 active Python package entries (down
-  from 157 non-superseded package files) and 128 unreachable shared-package
+  checked-in inventory/report now show 20 active Python package entries (down
+  from 157 non-superseded package files) and 129 unreachable shared-package
   fixtures.
 - [x] Same defect, different file: `tests/test_kyth_doctor_native.py` used
   bare `def test_*():` module-level functions, not `unittest.TestCase`
@@ -447,7 +447,7 @@ rollback/parity material until the approved observation window closes.
 
 ## Item 1 — Reachable shared-package modules
 
-**Status: in progress (6/46 complete).** This is the remaining Python half of
+**Status: in progress (7/46 complete).** This is the remaining Python half of
 the Rust migration. The reachability audit limits the work to modules that
 are still called by a supported console entry point, shell/build harness, or
 documented dynamic catalog. Each cutover must own the complete behavior,
@@ -478,7 +478,10 @@ rollback—not just read-only planning.
 - [x] memory_tune — packaged `kyth-memory-tune` owns RAM-tier selection,
   sysctl/zram/runtime-env persistence, root enforcement, and sysctl apply
   failure semantics. The systemd fragment remains packaging/service glue.
-- [ ] sysctl_compose, network_preset,
+- [x] sysctl_compose — packaged `kyth-sysctl-compose` owns TOML loading,
+  duplicate validation, tier writes, legacy-file deletion, and BBR module-file
+  persistence. The sysconfig fragment is now a native caller.
+- [ ] network_preset,
   snapshot_timeline, sched_arbiter, gaming_resolve, containers, repos,
   telemetry, and the remaining reachable support modules.
 
