@@ -147,6 +147,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-apply-window-snap",
             "kyth-driver-switch",
             "kyth-kali-desktop-fixup",
+            "kyth-ntfs-repair",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

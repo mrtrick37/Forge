@@ -23,9 +23,8 @@ if [[ -f /ctx/kyth-shader-prune ]]; then
 	install -Dm0755 /ctx/kyth-shader-prune /usr/bin/kyth-shader-prune
 fi
 
-if [[ -f /ctx/kyth-ntfs-repair ]]; then
-	install -Dm0755 /ctx/kyth-ntfs-repair /usr/bin/kyth-ntfs-repair
-fi
+# kyth-ntfs-repair is the native Rust binary copied from the hub-web-builder;
+# no Python launcher remains in the source tree.
 
 if [[ -f /ctx/kyth-shader-preheat ]]; then
 	install -Dm0755 /ctx/kyth-shader-preheat /usr/bin/kyth-shader-preheat
@@ -122,7 +121,7 @@ systemctl enable kyth-bluetooth-enable.service 2>/dev/null || true
 # Left in place they'd ship as duplicate content outside any package/kyth
 # rechunk group, landing in the churny "unpackaged" catch-all on every build
 # that touches one of these small scripts.
-rm -f /ctx/kyth-vscode-wallet /ctx/game-performance /ctx/kyth-ntfs-repair \
+rm -f /ctx/kyth-vscode-wallet /ctx/game-performance \
 	/ctx/kyth-shader-preheat \
 	/ctx/kyth-sched-arbiter /ctx/kyth-power-arbiter /ctx/kyth-power-arbiter.service /ctx/kyth-storage-gate \
 	/ctx/kyth-readahead-hint /ctx/kyth-game-launch /ctx/kyth-shader-prune
