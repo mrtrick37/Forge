@@ -1,7 +1,0 @@
-#!/usr/bin/env python3
-"""Compatibility launcher for packaged Plymouth/initramfs refresh logic."""
-
-from kyth_shared.plymouth import main
-
-if __name__ == "__main__":
-    raise SystemExit(main())

@@ -156,6 +156,16 @@ class PythonPackagingTests(unittest.TestCase):
                 self.assertIn(f"/build/{entry_point} /usr/bin/{entry_point}", dockerfile)
                 self.assertFalse((ROOT / "build_files" / entry_point).exists())
 
+        # libexec-installed native launcher (systemd unit ExecStart): same
+        # contract, different install prefix.
+        with self.subTest(entry_point="kyth-refresh-boot-splash-initramfs"):
+            self.assertIn('name = "kyth-refresh-boot-splash-initramfs"', cargo)
+            self.assertIn(
+                "/build/kyth-refresh-boot-splash-initramfs /usr/libexec/kyth-refresh-boot-splash-initramfs",
+                dockerfile,
+            )
+            self.assertFalse((ROOT / "build_files" / "kyth-refresh-boot-splash-initramfs").exists())
+
         helper_copy = next(
             line
             for line in dockerfile.splitlines()

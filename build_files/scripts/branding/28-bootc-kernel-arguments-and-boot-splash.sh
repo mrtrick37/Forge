@@ -59,7 +59,8 @@ WantedBy=multi-user.target
 BOOTBRANDINGPATHEOF
 systemctl enable kyth-boot-branding.path 2>/dev/null || true
 
-install -m 0755 /ctx/kyth-refresh-boot-splash-initramfs /usr/libexec/kyth-refresh-boot-splash-initramfs
+# kyth-refresh-boot-splash-initramfs is the native Rust binary copied from
+# the hub-web-builder stage; no Python launcher remains in the source tree.
 
 write_config /usr/lib/systemd/system/kyth-boot-splash-initramfs.service <<'SPLASHINITRDEOF'
 [Unit]

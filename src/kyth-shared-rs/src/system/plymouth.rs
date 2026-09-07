@@ -17,6 +17,30 @@ pub const REQUIRED_ENTRIES: &[&str] = &[
 ];
 pub const PLYMOUTH_CONFIG: &str =
     "[Daemon]\nTheme=kyth\nShowDelay=0\nDeviceTimeout=8\nUseFirmwareBackground=false\n";
+pub const DRACUT_CONF_PATH: &str = "/etc/dracut.conf.d/99-kyth.conf";
+pub const STATE_DIR: &str = "/var/lib/kyth";
+pub const FINGERPRINT_FILE: &str = "/var/lib/kyth/boot-splash-initramfs.sha256";
+pub const MARKER_FILE: &str = "/var/lib/kyth/boot-splash-initramfs-v17";
+pub const FINGERPRINT_INPUTS: &[&str] = &[
+    "/usr/lib/dracut/modules.d/99kyth-plymouth/module-setup.sh",
+    "/usr/libexec/kyth-plymouth-branding-guard",
+    "/etc/dracut.conf.d/99-kyth.conf",
+    "/etc/plymouth/plymouthd.conf",
+    "/usr/share/plymouth/plymouthd.defaults",
+    "/usr/share/kyth/branding/transparent-watermark.png",
+    "/usr/share/pixmaps/system-logo-white.png",
+    "/usr/share/plymouth/themes/kyth/kyth.plymouth",
+    "/usr/share/plymouth/themes/kyth/kyth.script",
+    "/usr/share/plymouth/themes/kyth/kyth-logo.png",
+];
+pub const THEMES_SOURCE: &str = "/usr/share/plymouth/themes/kyth";
+pub const WATERMARK_SOURCE: &str = "/usr/share/kyth/branding/transparent-watermark.png";
+/// Transparent 1x1 PNG fallback, byte-identical to the Python base64 blob.
+pub const TRANSPARENT_PNG: &[u8] = &[
+    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4,
+    0, 0, 0, 181, 28, 12, 2, 0, 0, 0, 11, 73, 68, 65, 84, 120, 218, 99, 96, 96, 0, 0, 0, 3, 0,
+    1, 43, 9, 77, 132, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+];
 
 /// Return the stable Plymouth fingerprint used to decide whether a refresh is
 /// needed. Missing files are represented explicitly.
@@ -119,6 +143,127 @@ pub fn inspect_listing(
     errors
 }
 
+/// Pure dracut-conf reconciliation, mirroring `ensure_dracut_config`.
+pub fn reconcile_dracut_config(current: Option<&str>) -> String {
+    let mut text = current.unwrap_or("add_dracutmodules+=\" ostree drm plymouth kyth-plymouth \"\n").to_string();
+    if !text.contains("add_dracutmodules") || !text.contains("kyth-plymouth") {
+        text += "\nadd_dracutmodules+=\" kyth-plymouth \"\n";
+    }
+    let after_force = text.find("force_add_dracutmodules").map(|index| &text[index..]).unwrap_or("");
+    if !text.contains("force_add_dracutmodules") || !after_force.contains("kyth-plymouth") {
+        text += "force_add_dracutmodules+=\" kyth-plymouth \"\n";
+    }
+    text
+}
+
+pub fn ensure_dracut_config(path: &Path) -> std::io::Result<()> {
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let current = std::fs::read_to_string(path).ok();
+    crate::atomic_io::atomic_write_text(path, &reconcile_dracut_config(current.as_deref()), None)
+}
+
+fn copy_tree(source: &Path, dest: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dest)?;
+    for entry in std::fs::read_dir(source)? {
+        let entry = entry?;
+        let target = dest.join(entry.file_name());
+        let file_type = entry.file_type()?;
+        if file_type.is_symlink() {
+            let link = std::fs::read_link(entry.path())?;
+            std::os::unix::fs::symlink(link, &target)?;
+        } else if file_type.is_dir() {
+            copy_tree(&entry.path(), &target)?;
+        } else {
+            std::fs::copy(entry.path(), &target)?;
+            std::fs::set_permissions(&target, entry.metadata()?.permissions())?;
+        }
+    }
+    Ok(())
+}
+
+/// Builds the dracut include tree under `root`, mirroring `_prepare_include`.
+pub fn prepare_include(root: &Path) -> std::io::Result<()> {
+    let config = root.join("etc/plymouth/plymouthd.conf");
+    let defaults = root.join("usr/share/plymouth/plymouthd.defaults");
+    let logo = root.join("usr/share/pixmaps/system-logo-white.png");
+    let themes = root.join("usr/share/plymouth/themes");
+    for path in [&config, &defaults, &logo] {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+    }
+    std::fs::create_dir_all(&themes)?;
+    std::fs::write(&config, PLYMOUTH_CONFIG)?;
+    std::fs::copy(&config, &defaults)?;
+    let watermark = Path::new(WATERMARK_SOURCE);
+    if watermark.is_file() {
+        std::fs::copy(watermark, &logo)?;
+    } else {
+        std::fs::write(&logo, TRANSPARENT_PNG)?;
+    }
+    copy_tree(Path::new(THEMES_SOURCE), &themes.join("kyth"))?;
+    std::os::unix::fs::symlink("kyth/kyth.plymouth", themes.join("default.plymouth"))?;
+    Ok(())
+}
+
+pub fn dracut_image_argv(image: &Path, include: &Path) -> (Vec<String>, String) {
+    let base = image.file_name().and_then(|name| name.to_str()).unwrap_or_default().to_string();
+    let kernel = base.strip_prefix("initramfs-").unwrap_or(&base);
+    let kernel = kernel.strip_suffix(".img").unwrap_or(kernel).to_string();
+    let include_str = include.to_string_lossy().into_owned();
+    let image_str = image.to_string_lossy().into_owned();
+    (
+        vec![
+            "dracut".to_string(),
+            "--tmpdir".to_string(),
+            "/var/tmp".to_string(),
+            "--no-hostonly".to_string(),
+            "--kver".to_string(),
+            kernel.clone(),
+            "--reproducible".to_string(),
+            "--force".to_string(),
+            "--add".to_string(),
+            "drm plymouth ostree kyth-plymouth".to_string(),
+            "--include".to_string(),
+            format!("{include_str}/etc/plymouth"),
+            "/etc/plymouth".to_string(),
+            "--include".to_string(),
+            format!("{include_str}/usr/share/plymouth"),
+            "/usr/share/plymouth".to_string(),
+            "--include".to_string(),
+            format!("{include_str}/usr/share/pixmaps/system-logo-white.png"),
+            "/usr/share/pixmaps/system-logo-white.png".to_string(),
+            image_str,
+            kernel.clone(),
+        ],
+        kernel,
+    )
+}
+
+pub fn dracut_regenerate_all_argv(include: &Path) -> Vec<String> {
+    let include_str = include.to_string_lossy().into_owned();
+    vec![
+        "dracut".to_string(),
+        "--tmpdir".to_string(),
+        "/var/tmp".to_string(),
+        "--regenerate-all".to_string(),
+        "--force".to_string(),
+        "--add".to_string(),
+        "drm plymouth ostree kyth-plymouth".to_string(),
+        "--include".to_string(),
+        format!("{include_str}/etc/plymouth"),
+        "/etc/plymouth".to_string(),
+        "--include".to_string(),
+        format!("{include_str}/usr/share/plymouth"),
+        "/usr/share/plymouth".to_string(),
+        "--include".to_string(),
+        format!("{include_str}/usr/share/pixmaps/system-logo-white.png"),
+        "/usr/share/pixmaps/system-logo-white.png".to_string(),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -147,6 +292,31 @@ mod tests {
         std::fs::write(boot.join("initramfs-no-module.img"), b"").unwrap();
         std::fs::write(boot.join("ostree/rev/initramfs-6.1.img"), b"").unwrap();
         assert_eq!(collect_images(&boot, &modules).len(), 2);
+    }
+
+    #[test]
+    fn dracut_config_reconciliation_matches_python() {
+        assert_eq!(
+            reconcile_dracut_config(None),
+            "add_dracutmodules+=\" ostree drm plymouth kyth-plymouth \"\nforce_add_dracutmodules+=\" kyth-plymouth \"\n"
+        );
+        let current = "add_dracutmodules+=\" ostree \"\n";
+        let reconciled = reconcile_dracut_config(Some(current));
+        assert!(reconciled.contains("add_dracutmodules+=\" kyth-plymouth \""));
+        assert!(reconciled.contains("force_add_dracutmodules+=\" kyth-plymouth \""));
+        let stable = "add_dracutmodules+=\" ostree kyth-plymouth \"\nforce_add_dracutmodules+=\" kyth-plymouth \"\n";
+        assert_eq!(reconcile_dracut_config(Some(stable)), stable);
+    }
+
+    #[test]
+    fn dracut_image_argv_orders_flags_like_python() {
+        let (argv, kernel) = dracut_image_argv(Path::new("/boot/initramfs-6.1.img"), Path::new("/tmp/inc"));
+        assert_eq!(kernel, "6.1");
+        assert_eq!(argv[0], "dracut");
+        assert!(argv.contains(&"--kver".to_string()));
+        assert_eq!(argv[argv.len() - 2], "/boot/initramfs-6.1.img");
+        assert_eq!(argv[argv.len() - 1], "6.1");
+        assert_eq!(dracut_regenerate_all_argv(Path::new("/tmp/inc"))[3], "--regenerate-all");
     }
 
     #[test]

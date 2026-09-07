@@ -83,15 +83,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-refresh-boot-splash-initramfs",
-      "owner": "fixture::build_files/kyth-refresh-boot-splash-initramfs",
-      "path": "build_files/kyth-refresh-boot-splash-initramfs",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-refresh-taskbar-pins",
       "owner": "fixture::build_files/kyth-refresh-taskbar-pins",
       "path": "build_files/kyth-refresh-taskbar-pins",
@@ -2979,7 +2970,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 22,
+      "python-runtime": 21,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 11,
@@ -2989,15 +2980,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 183
+      "user-session": 182
     },
-    "active_entries": 382,
-    "active_python_entries": 185,
-    "entries": 635,
+    "active_entries": 381,
+    "active_python_entries": 184,
+    "entries": 634,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 262
+      "queued": 261
     },
     "superseded_entries": 92
   },
