@@ -6,7 +6,9 @@
 # Native Rust compatibility-named utilities are copied into /usr/bin by the
 # Dockerfile builder stage; no Python diagnostic entry points are installed.
 install -m 0755 /ctx/kyth-creator-check /usr/bin/kyth-creator-check
-install -m 0755 /ctx/kyth-qualify /usr/bin/kyth-qualify
+# kyth-qualify is already copied from the Rust builder into /usr/bin by the
+# Dockerfile. The former /ctx/kyth-qualify build-context fixture was removed
+# with the Python implementation and must not be reintroduced here.
 install -m 0644 /ctx/config/qualification-budgets.json /usr/share/kyth/qualification-budgets.json
 install -m 0755 /ctx/kyth-vm-acceptance-guest /usr/libexec/kyth-vm-acceptance-guest
 install -m 0644 /ctx/kyth-vm-acceptance.service /usr/lib/systemd/system/kyth-vm-acceptance.service

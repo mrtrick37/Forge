@@ -77,6 +77,10 @@ class QualityContractsTests(unittest.TestCase):
         self.assertIn("--bin kyth-build-support", dockerfile)
         self.assertIn("/usr/bin/kyth-build-support", dockerfile)
 
+        diagnostics = (ROOT / "build_files/scripts/branding/35-diagnostic-script-installs.sh").read_text()
+        self.assertNotIn("install -m 0755 /ctx/kyth-qualify", diagnostics)
+        self.assertIn("/usr/bin/kyth-qualify", dockerfile)
+
     def test_validation_tool_archives_do_not_require_archive_owners(self):
         installer = (ROOT / "build_files/scripts/install-validation-tools.sh").read_text()
         self.assertIn("--no-same-owner", installer)
