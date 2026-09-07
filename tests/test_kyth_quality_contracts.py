@@ -27,6 +27,13 @@ class QualityContractsTests(unittest.TestCase):
         self.assertIn("if: always()", workflow)
         self.assertIn("coverage.xml", workflow)
 
+    def test_validation_job_configures_rust_for_runtime_compile_tests(self):
+        workflow = (ROOT / ".github/workflows/validation.yml").read_text()
+        validation_job = workflow.split("  validation:\n", 1)[1].split("\n  quality:\n", 1)[0]
+        self.assertIn("rustup toolchain install stable", validation_job)
+        self.assertIn("rustup default stable", validation_job)
+        self.assertIn("cargo --version", validation_job)
+
     def test_pre_push_runs_the_same_quality_gate_as_ci(self):
         preflight = (ROOT / "build_files/scripts/ci-preflight.sh").read_text()
         self.assertIn("./build_files/scripts/run-quality.sh", preflight)

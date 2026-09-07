@@ -73,6 +73,18 @@ jobs:
           sudo apt-get install -y --no-install-recommends file systemd
         shell: bash --noprofile --norc -euo pipefail {0}
 
+      # The validation runner image provides rustup but does not guarantee a
+      # configured default toolchain. The repository test suite compiles the
+      # shared Rust runtime directly, so establish the same stable toolchain
+      # used by the Hub and installer shell jobs before running validate.sh.
+      - name: Install Rust (stable)
+        run: |
+          rustup toolchain install stable
+          rustup default stable
+          rustc --version
+          cargo --version
+        shell: bash --noprofile --norc -euo pipefail {0}
+
       - name: Check Dockerfile build rules
         run: |
           if command -v docker >/dev/null 2>&1; then
