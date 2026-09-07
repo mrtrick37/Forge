@@ -1,28 +1,56 @@
 #!/usr/bin/bash
 set -euo pipefail
 
+# Fast, bounded relabel of the /var/home paths PAM and dbus-broker actually
+# stat during login. Deliberately non-recursive into user data (Documents,
+# Games, container storage, ...) so runtime is bounded by the number of local
+# accounts, not by home directory size — see kyth-selinux-relabel-home-full
+# for the exhaustive background pass. Gated Before=plasmalogin.service, so
+# this must never scale with how much a user has stored in their home.
+
 STAMP_DIR=/var/lib/kyth
 STAMP_FILE="${STAMP_DIR}/selinux-relabel-home.stamp"
 
 deployment_id=""
 if command -v ostree >/dev/null 2>&1; then
-    deployment_id="$(ostree admin status 2>/dev/null \
-        | awk '/^\* /{print $2" "$3; exit}')"
+	# `|| true`: under set -e/pipefail, a nonzero `ostree admin status` (e.g.
+	# sysroot busy) would otherwise abort the script here instead of falling
+	# through to the /proc/cmdline and stat(1) fallbacks below — exactly the
+	# silent, no-output exit seen in the field (status=1/FAILURE, no script
+	# output logged at all).
+	deployment_id="$(ostree admin status 2>/dev/null |
+		awk '/^\* /{print $2" "$3; exit}')" || true
 fi
 if [ -z "$deployment_id" ] && [ -r /proc/cmdline ]; then
-    deployment_id="$(tr ' ' '\n' < /proc/cmdline | grep '^ostree=' || true)"
+	deployment_id="$(tr ' ' '\n' </proc/cmdline | grep '^ostree=' || true)"
 fi
 if [ -z "$deployment_id" ]; then
-    deployment_id="fallback-$(stat -c %Y /usr 2>/dev/null || echo 0)"
+	deployment_id="fallback-$(stat -c %Y /usr 2>/dev/null || echo 0)"
 fi
 
 if [ -r "$STAMP_FILE" ] && [ "$(cat "$STAMP_FILE")" = "$deployment_id" ]; then
-    echo "kyth-selinux-relabel-home: already relabeled for this deployment, skipping"
-    exit 0
+	echo "kyth-selinux-relabel-home: already relabeled login-critical paths for this deployment, skipping"
+	exit 0
 fi
 
-echo "kyth-selinux-relabel-home: relabeling /var/home for deployment ${deployment_id}"
-/sbin/restorecon -RF -T0 /var/home
+echo "kyth-selinux-relabel-home: relabeling login-critical /var/home paths for deployment ${deployment_id}"
+
+if ! /sbin/restorecon -F /var/home; then
+	echo "kyth-selinux-relabel-home: warning: restorecon failed for /var/home" >&2
+fi
+
+shopt -s nullglob
+for home in /var/home/*/; do
+	home="${home%/}"
+	[ -d "$home" ] || continue
+	paths=("$home")
+	for sub in .cache .config .local .local/share .ssh; do
+		[ -e "$home/$sub" ] && paths+=("$home/$sub")
+	done
+	if ! /sbin/restorecon -F "${paths[@]}"; then
+		echo "kyth-selinux-relabel-home: warning: restorecon failed for ${home}" >&2
+	fi
+done
 
 mkdir -p "$STAMP_DIR"
-printf '%s' "$deployment_id" > "$STAMP_FILE"
+printf '%s' "$deployment_id" >"$STAMP_FILE"

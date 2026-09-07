@@ -20,9 +20,71 @@ ENROLL_SCRIPT = ROOT / "build_files/tests/secureboot-enrollment.sh"
 
 class BootStabilityUnitTests(unittest.TestCase):
     def test_selinux_home_relabel_is_capped_and_still_before_greeter(self) -> None:
+        """The login-critical relabel must stay bounded and gate the greeter;
+        the exhaustive full-tree pass must run separately, in the background,
+        and must never be able to delay login. Before 27ca9887 these were one
+        oneshot with a single 300s cap around a full `restorecon -RF`, which
+        scales with home directory size — on a large home it can run past the
+        cap, the completion stamp is never written, and every subsequent boot
+        repeats the same doomed relabel instead of it costing once.
+        """
         body = SELINUX_UNIT.read_text(encoding="utf-8")
-        self.assertIn("Before=plasmalogin.service", body)
-        self.assertIn("TimeoutStartSec=300", body)
+        fast_unit = body.split("RELABELEOF", 1)[1].split("RELABELEOF", 1)[0]
+        full_unit = body.split("RELABELFULLEOF", 1)[1].split("RELABELFULLEOF", 1)[0]
+        # StartLimitIntervalSec/StartLimitBurst are only recognized in
+        # [Unit] — systemd silently logs "Unknown key ... in section
+        # [Service], ignoring" and drops both if they land in [Service].
+        # Split each unit at its own [Service] header so the assertions
+        # below actually pin *which* section a key lives in, instead of
+        # matching anywhere in the file.
+        # Split on the section *header line*, not a bare substring match —
+        # both units' comments quote systemd's own "in section [Service]"
+        # log message, which would otherwise split the string early.
+        fast_unit_sec, fast_service_sec = fast_unit.split("\n[Service]\n", 1)
+        full_unit_sec, full_service_sec = full_unit.split("\n[Service]\n", 1)
+
+        self.assertIn("Before=plasmalogin.service display-manager.service", fast_unit)
+        self.assertIn("TimeoutStartSec=60", fast_service_sec)
+        self.assertIn("StartLimitIntervalSec=300", fast_unit_sec)
+        self.assertIn("StartLimitBurst=5", fast_unit_sec)
+        self.assertNotIn("StartLimit", fast_service_sec)
+        self.assertNotIn("restorecon -RF -T0 /var/home", body.split("RELABELFULLEOF")[0])
+
+        self.assertNotIn("Before=plasmalogin", full_unit)
+        self.assertNotIn("Before=display-manager", full_unit)
+        self.assertIn("Conflicts=shutdown.target", full_unit_sec)
+        self.assertIn("IOSchedulingClass=idle", full_service_sec)
+        self.assertIn("TimeoutStartSec=3600", full_service_sec)
+        self.assertIn("StartLimitIntervalSec=3600", full_unit_sec)
+        self.assertIn("StartLimitBurst=3", full_unit_sec)
+        self.assertNotIn("StartLimit", full_service_sec)
+        self.assertIn("kyth-selinux-relabel-home-full", body)
+
+        fast_script = (
+            SELINUX_UNIT.parents[1] / "kyth-selinux-relabel-home"
+        ).read_text(encoding="utf-8")
+        full_script = (
+            SELINUX_UNIT.parents[1] / "kyth-selinux-relabel-home-full"
+        ).read_text(encoding="utf-8")
+        # The login-critical script must never recurse into a user's bulk
+        # data — that would reintroduce the same size-dependent stall.
+        self.assertNotIn("restorecon -RF", fast_script)
+        self.assertNotIn("restorecon -RF -T0 /var/home", fast_script)
+        self.assertIn("restorecon -RF -T0 /var/home", full_script)
+        self.assertIn("selinux-relabel-home-full.stamp", full_script)
+        self.assertIn("selinux-relabel-home.stamp", fast_script)
+        # Both scripts run under set -euo pipefail; a failing `ostree admin
+        # status` (seen in the field as a silent status=1/FAILURE with no
+        # script output at all) must fall through to the /proc/cmdline and
+        # stat(1) fallbacks below it, not abort the script outright.
+        for script in (fast_script, full_script):
+            deployment_block = script.split("deployment_id=\"\"", 1)[1].split(
+                "if [ -z \"$deployment_id\" ] && [ -r /proc/cmdline ]", 1
+            )[0]
+            self.assertIn("awk '/^\\* /{print $2\" \"$3; exit}')\" || true", deployment_block)
+        # The top-level restorecon must not be able to hard-fail the whole
+        # script the way the per-home loop below it is already guarded.
+        self.assertNotIn("\n/sbin/restorecon -F /var/home\n", fast_script)
 
     def test_boot_mutators_have_timeouts_and_path_trigger_limit(self) -> None:
         body = BOOT_SPLASH.read_text(encoding="utf-8")

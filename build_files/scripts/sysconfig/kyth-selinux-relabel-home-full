@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+# Exhaustive background relabel of the rest of /var/home (game installs,
+# container storage, build caches, ...) that kyth-selinux-relabel-home
+# deliberately skips to stay bounded before the greeter. This unit is NOT
+# Before=plasmalogin.service — it must never be able to delay login — and
+# runs at idle I/O/CPU priority (see the .service file) so it does not starve
+# a session that's already running.
+
+STAMP_DIR=/var/lib/kyth
+STAMP_FILE="${STAMP_DIR}/selinux-relabel-home-full.stamp"
+
+deployment_id=""
+if command -v ostree >/dev/null 2>&1; then
+	# See kyth-selinux-relabel-home: `|| true` keeps a failing `ostree admin
+	# status` from aborting the script under set -e/pipefail before it can
+	# fall through to the /proc/cmdline and stat(1) fallbacks below.
+	deployment_id="$(ostree admin status 2>/dev/null |
+		awk '/^\* /{print $2" "$3; exit}')" || true
+fi
+if [ -z "$deployment_id" ] && [ -r /proc/cmdline ]; then
+	deployment_id="$(tr ' ' '\n' </proc/cmdline | grep '^ostree=' || true)"
+fi
+if [ -z "$deployment_id" ]; then
+	deployment_id="fallback-$(stat -c %Y /usr 2>/dev/null || echo 0)"
+fi
+
+if [ -r "$STAMP_FILE" ] && [ "$(cat "$STAMP_FILE")" = "$deployment_id" ]; then
+	echo "kyth-selinux-relabel-home-full: already relabeled full tree for this deployment, skipping"
+	exit 0
+fi
+
+echo "kyth-selinux-relabel-home-full: relabeling /var/home (full tree, background) for deployment ${deployment_id}"
+/sbin/restorecon -RF -T0 /var/home
+
+mkdir -p "$STAMP_DIR"
+printf '%s' "$deployment_id" >"$STAMP_FILE"
