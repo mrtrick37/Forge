@@ -1073,28 +1073,6 @@
     },
     {
       "current_implementation": "python",
-      "cutover": "replace installed kyth-driver-switch entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-driver-switch",
-      "owner": "fixture::build_files/kyth-driver-switch",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-driver-switch",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-driver-switch",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-driver-switch entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
-      "current_implementation": "python",
       "cutover": "replace installed kyth-duperemove entry point after parity gates",
       "installed_implementation": "python",
       "migration_priority": 2,

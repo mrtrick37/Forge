@@ -29,15 +29,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-driver-switch",
-      "owner": "fixture::build_files/kyth-driver-switch",
-      "path": "build_files/kyth-driver-switch",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-duperemove",
       "owner": "fixture::build_files/kyth-duperemove",
       "path": "build_files/kyth-duperemove",
@@ -3015,7 +3006,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 26,
+      "python-runtime": 25,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 11,
@@ -3025,15 +3016,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 187
+      "user-session": 186
     },
-    "active_entries": 386,
-    "active_python_entries": 189,
-    "entries": 639,
+    "active_entries": 385,
+    "active_python_entries": 188,
+    "entries": 638,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 266
+      "queued": 265
     },
     "superseded_entries": 92
   },
