@@ -18,6 +18,32 @@ fn parse_entry(value: &toml::Value) -> RgbPreset {
     RgbPreset { effect: table.and_then(|t| t.get("effect")).and_then(toml::Value::as_str).unwrap_or("rainbow").into(), brightness, color: table.and_then(|t| t.get("color")).and_then(toml::Value::as_str).unwrap_or("#ffffff").into() }
 }
 
+/// Best-effort device argv, exactly as the Python launcher ordered them.
+/// Every invocation is fire-and-forget upstream (`except Exception: pass`).
+pub fn openrgb_argv(device: &str, preset: &RgbPreset) -> Vec<String> {
+    vec![
+        "openrgb".to_string(),
+        "--device".to_string(),
+        device.to_string(),
+        "--mode".to_string(),
+        preset.effect.clone(),
+        "--brightness".to_string(),
+        preset.brightness.to_string(),
+    ]
+}
+
+pub fn liquidctl_argv(device: &str, preset: &RgbPreset) -> Vec<String> {
+    vec![
+        "liquidctl".to_string(),
+        "--match".to_string(),
+        device.to_string(),
+        "set".to_string(),
+        "led".to_string(),
+        "color".to_string(),
+        preset.color.clone(),
+    ]
+}
+
 pub fn load(path: impl AsRef<Path>) -> BTreeMap<String, RgbPreset> {
     let Ok(raw) = std::fs::read_to_string(path) else { return BTreeMap::new(); };
     let Ok(value) = raw.parse::<toml::Value>() else { return BTreeMap::new(); };
@@ -41,6 +67,19 @@ pub fn save(path: impl AsRef<Path>, devices: &BTreeMap<String, RgbPreset>) -> st
 mod tests {
     use super::*;
     use tempfile::tempdir;
+
+    #[test]
+    fn projects_device_argv() {
+        let preset = RgbPreset { effect: "static".into(), brightness: 50, color: "#ff0000".into() };
+        assert_eq!(
+            openrgb_argv("0", &preset),
+            vec!["openrgb", "--device", "0", "--mode", "static", "--brightness", "50"]
+        );
+        assert_eq!(
+            liquidctl_argv("0", &preset),
+            vec!["liquidctl", "--match", "0", "set", "led", "color", "#ff0000"]
+        );
+    }
 
     #[test]
     fn clamps_brightness_and_defaults_missing_values() {

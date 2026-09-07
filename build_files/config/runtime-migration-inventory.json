@@ -430,28 +430,6 @@
     },
     {
       "current_implementation": "python",
-      "cutover": "replace installed kyth-apply-rgb entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-apply-rgb",
-      "owner": "fixture::build_files/kyth-apply-rgb",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-apply-rgb",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-apply-rgb",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-apply-rgb entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
-      "current_implementation": "python",
       "cutover": "replace installed kyth-apply-role-preset entry point after parity gates",
       "installed_implementation": "python",
       "migration_priority": 2,
@@ -3562,7 +3540,7 @@
         "/usr/bin/kyth-apply-rgb"
       ],
       "installed_implementation": "data",
-      "migration_priority": 2,
+      "migration_priority": 1,
       "name": "kyth-rgb",
       "owner": "fixture::build_files/kyth-rgb.service",
       "parity_tests": [
@@ -3575,7 +3553,7 @@
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-rgb entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
       "status": "queued",
       "surface": "systemd-unit"
