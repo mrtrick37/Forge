@@ -83,6 +83,41 @@ pub fn rewrite_steam_desktop(content: &str) -> Option<SteamDesktopRewrite> {
     Some(SteamDesktopRewrite { appid, name, icon, content: format!("{}\n", lines.join("\n")) })
 }
 
+/// Filename globs the launcher scans, mirroring `categorize_web_apps`.
+pub const WEB_APP_GLOBS: &[&str] = &[
+    "chrome-*.desktop",
+    "chromium-*.desktop",
+    "brave-*.desktop",
+    "msedge-*.desktop",
+    "com.google.Chrome.flextop.*.desktop",
+    "org.chromium.Chromium.flextop.*.desktop",
+    "com.brave.Browser.flextop.*.desktop",
+    "com.microsoft.Edge.flextop.*.desktop",
+];
+
+/// Match a launcher filename against one `*`-glob (no `/` crossing, as
+/// with `pathlib` glob on flat filenames).
+pub fn matches_web_app_name(name: &str, pattern: &str) -> bool {
+    if !pattern.contains('*') {
+        return name == pattern;
+    }
+    let segments: Vec<&str> = pattern.split('*').collect();
+    let Some((first, tail)) = segments.split_first() else { return true };
+    if !name.starts_with(first) {
+        return false;
+    }
+    let mut rest = &name[first.len()..];
+    let Some((last, middle)) = tail.split_last() else { return true };
+    for part in middle {
+        if part.is_empty() {
+            continue;
+        }
+        let Some(index) = rest.find(part) else { return false };
+        rest = &rest[index + part.len()..];
+    }
+    last.is_empty() || rest.ends_with(last)
+}
+
 /// Insert the Kyth web-app category when a desktop file is an app launcher.
 /// `None` means no change is needed.
 pub fn categorize_web_app(content: &str) -> Option<String> {
@@ -166,6 +201,21 @@ mod tests {
         assert!(fixed.contains("Exec=kyth-distrobox-root-launch --root kali /usr/bin/zenmap"));
         assert!(fixed.contains("TryExec=kyth-distrobox-root-launch"));
         assert!(rewrite_zenmap_desktop("Exec=/usr/bin/other\n").is_none());
+    }
+
+    #[test]
+    fn web_app_globs_match_launcher_names() {
+        for pattern in WEB_APP_GLOBS {
+            assert!(pattern.ends_with(".desktop"), "{pattern}");
+        }
+        assert!(matches_web_app_name("brave-example.desktop", "brave-*.desktop"));
+        assert!(matches_web_app_name(
+            "com.brave.Browser.flextop.abc123.desktop",
+            "com.brave.Browser.flextop.*.desktop"
+        ));
+        assert!(!matches_web_app_name("brave-example.desktop", "chrome-*.desktop"));
+        assert!(!matches_web_app_name("chrome-note.txt", "chrome-*.desktop"));
+        assert!(!matches_web_app_name("xbrave-y.desktop", "brave-*.desktop"));
     }
 
     #[test]

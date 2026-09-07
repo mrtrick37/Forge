@@ -4891,28 +4891,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-web-app-categorize entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-web-app-categorize",
-      "owner": "fixture::build_files/kyth-web-app-categorize",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-web-app-categorize",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-web-app-categorize",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-web-app-categorize entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "data",
       "cutover": "replace installed kyth-web-apps.directory entry point after parity gates",
       "installed_implementation": "not-installed",

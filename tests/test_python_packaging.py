@@ -155,6 +155,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-setup-devcontainer",
             "kyth-setup-transfer",
             "kyth-vscode-wallet",
+            "kyth-web-app-categorize",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

@@ -4,7 +4,8 @@
 # classify those launchers and drops them into Lost and Found. Add a custom
 # category only when the browser did not provide one, preserving any category a
 # user assigns later with the menu editor.
-install -m 0755 /ctx/kyth-web-app-categorize /usr/bin/kyth-web-app-categorize
+# kyth-web-app-categorize is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 
 mkdir -p /etc/systemd/user/default.target.wants
 write_config /etc/systemd/user/kyth-web-app-categorize.service <<'WEBAPPSERVICEEOF'
