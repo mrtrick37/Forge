@@ -36,6 +36,35 @@ pub fn load(path: impl AsRef<Path>) -> BTreeMap<String, InputPreset> {
     value.get("devices").and_then(toml::Value::as_table).map(|items| items.iter().map(|(key, value)| (key.clone(), parse_entry(value))).collect()).unwrap_or_default()
 }
 
+pub const XORG_CONF_DEST: &str = "/etc/X11/xorg.conf.d/50-kyth-input.conf";
+pub const TTL_PATH: &str = "/run/kyth-input-ttl";
+pub const TTL_SECS: u64 = 30;
+
+/// Mirrors Python `str(float)`: integral values keep one decimal (`0.0`,
+/// not Rust's `0`); the line is informational (xorg ignores comments).
+pub fn py_float(value: f64) -> String {
+    if value.fract() == 0.0 && value.is_finite() {
+        format!("{value:.1}")
+    } else {
+        format!("{value}")
+    }
+}
+
+/// Renders the `50-kyth-input.conf` body exactly as the Python launcher did,
+/// including the leading spaces and trailing newline.
+pub fn render_xorg_conf(devices: &BTreeMap<String, InputPreset>) -> String {
+    let mut lines = vec![
+        "Section \"InputClass\"".to_string(),
+        " Identifier \"kyth-input\"".to_string(),
+        " MatchIsPointer \"on\"".to_string(),
+    ];
+    for (name, preset) in devices {
+        lines.push(format!(" # {name} accel {} speed {}", preset.accel_profile, py_float(preset.accel_speed)));
+    }
+    lines.push("EndSection".to_string());
+    format!("{}\n", lines.join("\n"))
+}
+
 pub fn save(path: impl AsRef<Path>, devices: &BTreeMap<String, InputPreset>) -> std::io::Result<()> {
     let quote = |value: &str| toml::Value::String(value.to_string()).to_string();
     let mut lines = vec!["# Kyth input per-device libinput".to_string()];
@@ -61,6 +90,19 @@ mod tests {
         let path = dir.path().join("input.toml");
         std::fs::write(&path, "[devices.mouse]\naccel_profile = \"bad\"\naccel_speed = 4\ntap_to_click = true\n").unwrap();
         assert_eq!(load(&path)["mouse"], InputPreset { accel_profile: "adaptive".into(), accel_speed: 1.0, tap_to_click: true, ..Default::default() });
+    }
+
+    #[test]
+    fn renders_xorg_conf_like_python_launcher() {
+        let mut devices = BTreeMap::new();
+        devices.insert("mouse".into(), InputPreset { accel_profile: "flat".into(), accel_speed: 0.5, ..Default::default() });
+        devices.insert("pad".into(), InputPreset::default());
+        assert_eq!(
+            render_xorg_conf(&devices),
+            "Section \"InputClass\"\n Identifier \"kyth-input\"\n MatchIsPointer \"on\"\n # mouse accel flat speed 0.5\n # pad accel adaptive speed 0.0\nEndSection\n"
+        );
+        assert_eq!(render_xorg_conf(&BTreeMap::new()), "Section \"InputClass\"\n Identifier \"kyth-input\"\n MatchIsPointer \"on\"\nEndSection\n");
+        assert_eq!(py_float(-1.0), "-1.0");
     }
 
     #[test]

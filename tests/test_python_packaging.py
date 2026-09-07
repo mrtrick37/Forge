@@ -134,6 +134,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-apply-explorer",
             "kyth-apply-desktop-layout",
             "kyth-apply-display-hdr",
+            "kyth-apply-input",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
