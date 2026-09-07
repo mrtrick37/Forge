@@ -131,6 +131,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-game-boost",
             "kyth-doctor",
             "kyth-apply-scx-preset",
+            "kyth-apply-explorer",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

@@ -1,7 +1,0 @@
-#!/usr/bin/env python3
-"""kyth-apply-explorer — apply explorer.toml (offline)."""
-from kyth_shared.explorer_preset import apply_explorer
-import sys
-applied=apply_explorer()
-print(f"kyth-apply-explorer: {len(applied)}")
-sys.exit(0)

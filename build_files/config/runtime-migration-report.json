@@ -20,15 +20,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-apply-explorer",
-      "owner": "fixture::build_files/kyth-apply-explorer",
-      "path": "build_files/kyth-apply-explorer",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-apply-input",
       "owner": "fixture::build_files/kyth-apply-input",
       "path": "build_files/kyth-apply-input",
@@ -3970,7 +3961,7 @@
   "summary": {
     "active_by_authority": {
       "data-or-config": 8,
-      "python-runtime": 40,
+      "python-runtime": 39,
       "python-shared-package": 255,
       "rust-dispatcher": 16,
       "rust-service": 10,
@@ -3980,15 +3971,15 @@
       "installer": 1,
       "standalone": 255,
       "system-service": 35,
-      "user-session": 209
+      "user-session": 208
     },
-    "active_entries": 500,
-    "active_python_entries": 295,
-    "entries": 653,
+    "active_entries": 499,
+    "active_python_entries": 294,
+    "entries": 652,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 380
+      "queued": 379
     }
   }
 }
