@@ -119,6 +119,7 @@ pub mod display_policy;
 pub mod network_services;
 pub mod network_preset;
 pub mod pipewire_latency;
+pub mod plasma_drift;
 pub mod extended_preferences;
 pub mod desktop_preferences;
 pub mod desktop_shortcuts;

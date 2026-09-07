@@ -1,7 +1,0 @@
-#!/usr/bin/env python3
-"""kyth-apply-plasma — apply plasma.toml drift (offline)."""
-from kyth_shared.plasma_drift import apply_plasma
-import sys
-applied=apply_plasma()
-print(f"kyth-apply-plasma: {len(applied)} keys")
-sys.exit(0)
