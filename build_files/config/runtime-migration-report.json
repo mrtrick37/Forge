@@ -11,15 +11,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-proton-cachyos-update",
-      "owner": "fixture::build_files/kyth-proton-cachyos-update",
-      "path": "build_files/kyth-proton-cachyos-update",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-rclone-update",
       "owner": "fixture::build_files/kyth-rclone-update",
       "path": "build_files/kyth-rclone-update",
@@ -2835,25 +2826,25 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 6,
+      "python-runtime": 5,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
-      "rust-service": 16,
-      "shell-orchestration": 165
+      "rust-service": 17,
+      "shell-orchestration": 164
     },
     "active_by_scope": {
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 167
+      "user-session": 166
     },
-    "active_entries": 366,
-    "active_python_entries": 169,
-    "entries": 619,
+    "active_entries": 365,
+    "active_python_entries": 168,
+    "entries": 618,
     "p0_open_entries": 0,
     "status_by_active_entry": {
-      "done-native": 126,
-      "queued": 240
+      "done-native": 128,
+      "queued": 237
     },
     "superseded_entries": 92
   },

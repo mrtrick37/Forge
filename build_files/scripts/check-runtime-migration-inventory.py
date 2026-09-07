@@ -96,6 +96,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-save-sync"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-backup"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-game-launch"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-dynamic-lock"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-proton-cachyos-update"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }

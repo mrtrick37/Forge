@@ -2893,73 +2893,53 @@
       "surface": "systemd-unit"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-proton-cachyos-update entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-proton-cachyos-update",
-      "owner": "fixture::build_files/kyth-proton-cachyos-update",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-proton-cachyos-update",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-proton-cachyos-update",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-proton-cachyos-update entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "data",
       "cutover": "replace installed kyth-proton-cachyos-update entry point after parity gates",
       "exec_start": [
         "/usr/bin/kyth-proton-cachyos-update"
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-proton-cachyos-update",
-      "owner": "fixture::build_files/kyth-proton-cachyos-update.service",
+      "owner": "native::kyth-proton-cachyos-update",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-proton-cachyos-update.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-proton-cachyos-update.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-proton-cachyos-update entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-proton-cachyos-update entry point after parity gates",
       "exec_start": [],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-proton-cachyos-update",
-      "owner": "fixture::build_files/kyth-proton-cachyos-update.timer",
+      "owner": "native::kyth-proton-cachyos-update",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-proton-cachyos-update.timer",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-proton-cachyos-update.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-proton-cachyos-update entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {

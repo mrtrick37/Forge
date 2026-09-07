@@ -149,6 +149,7 @@ pub mod ai_dev;
 pub mod perf_policy;
 pub mod scheduler_arbiter;
 pub mod dynamic_lock;
+pub mod release_fetch;
 pub mod gaming_cgroup;
 pub mod gaming_truth;
 pub mod gaming_versions;
