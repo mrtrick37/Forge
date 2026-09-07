@@ -53,12 +53,13 @@ Phase 0 reclassification (2026-09-07, inventory schema 4):
 | `p0_open_entries` | 0 | 0 |
 
 Reachability audit: the checker now computes a transitive AST import closure
-from the two surviving Python console-script roots (`hardware_policy`,
-and `qualification`), scans direct `build_files/scripts`
-imports, preserves explicit shell-harness channels, and expands the
-documented `hardware_quirks` importlib catalog. The resulting 40 active
-package modules remain queued; 111 unreachable shared-package modules are
-classified as source-only compatibility fixtures. The first reachable module,
+from the surviving Python console-script root (`qualification`), scans direct
+`build_files/scripts` imports, and preserves explicit shell-harness channels.
+The native `kyth-hardware-policy` boundary owns the former hardware-policy and
+hardware-quirk catalog paths, so those Python files are no longer reachability
+roots. The resulting 28 active package modules remain queued; 121 unreachable
+shared-package modules are classified as source-only compatibility fixtures.
+The first reachable module,
 `ai_dev`, is now owned by the packaged `kyth-ai-dev` Rust binary; its Python
 source is retained as an inactive rollback/parity fixture. All 94 tunable
 registry aliases remain verified against `tunable_registry.rs` with 0 missing,
@@ -111,9 +112,9 @@ Reachable-package cutover (2026-09-07):
 
 | Metric | Before | After |
 | --- | ---: | ---: |
-| Active Python package entries | 45 | 40 |
-| Native shared-package owners | 1 | 2 (`kyth-ai-dev`, `kyth-boot-health`) |
-| Superseded native rollback fixtures | 99 | 100 |
+| Active Python package entries | 45 | 28 |
+| Native shared-package owners | 2 | 3 (`kyth-ai-dev`, `kyth-boot-health`, `kyth-hardware-policy`) |
+| Superseded native rollback fixtures | 99 | 101 |
 
 `kyth-ai-dev` now owns setup, status, enter, start, stop, model pull, and
 destructive box removal. Its Rust controller retains bounded execution,
@@ -125,6 +126,13 @@ rollback qualification.
 quarantine transitions, destructive bootc rollback, rollback retry, and
 explicit quarantine clearing. Its Python implementation remains only for
 parity and rollback qualification.
+
+`kyth-hardware-policy` now owns hardware inventory, policy evaluation and
+validation, expiry reporting, modprobe configuration, scheduler selection,
+NVIDIA akmods/kernel transitions, atomic state/report persistence, and failure
+semantics. The validation shell harness and remaining Python probe callers use
+the native binary; the Python policy and per-quirk modules remain only as
+parity/rollback fixtures.
 
 The package is still installed for compatibility and rollback tooling, but a
 package path alone is no longer evidence of runtime authority. The checked-in

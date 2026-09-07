@@ -1,8 +1,9 @@
 """Canonical hardware view — single Evaluation truth for Hub and boot policy.
 
-`hardware_policy.py` is the only place that understands `hardware-profiles.toml`
-matching. `services/hardware/*` previously re-parsed `lspci`/`lsusb` for the
-same GPU/hybrid decision, so the Hub could disagree with `kyth-hw-setup`.
+`kyth-hardware-policy` is the only component that understands
+`hardware-profiles.toml` matching. `services/hardware/*` previously re-parsed
+`lspci`/`lsusb` for the same GPU/hybrid decision, so the Hub could disagree
+with `kyth-hw-setup`.
 
 This module is the single re-export the Hub should import for
 “what hardware do we have” — it returns the typed `Evaluation` plus the
@@ -15,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from kyth_shared.hardware_policy import Evaluation, Inventory, evaluate_system, read_applied_state
+from kyth_shared.system.hardware_native import status as native_status
 from kyth_shared.system.probe import probe_cached
 
 _HARDWARE_VIEW_TTL = 30.0
@@ -23,26 +24,32 @@ _HARDWARE_VIEW_TTL = 30.0
 
 @dataclass(frozen=True, slots=True)
 class HardwareView:
-    evaluation: Evaluation
+    evaluation: Any
     applied: dict[str, Any]
     has_nvidia: bool
     is_hybrid: bool
 
 
-def _has_nvidia_from_inventory(inv: Inventory) -> bool:
-    return any(dev.vendor == "10de" and dev.class_code.startswith(("03",)) for dev in inv.pci)
+def _has_nvidia_from_inventory(inv: dict[str, Any]) -> bool:
+    return any(
+        device.get("vendor") == "10de"
+        and str(device.get("class_code", "")).startswith("03")
+        for device in inv.get("pci", [])
+        if isinstance(device, dict)
+    )
 
 
-def _is_hybrid_from_evaluation(eval_: Evaluation) -> bool:
-    caps = set(eval_.capabilities)
+def _is_hybrid_from_evaluation(eval_: dict[str, Any]) -> bool:
+    caps = set(eval_.get("capabilities", []))
     return "gpu.hybrid" in caps or "gpu.offload" in caps
 
 
 def get_hardware_view() -> HardwareView:
     def _fetch() -> HardwareView:
-        evaluation = evaluate_system()
-        applied = read_applied_state()
-        has_nvidia = _has_nvidia_from_inventory(evaluation.inventory)
+        payload = native_status()
+        evaluation = payload["evaluation"]
+        applied = payload.get("applied", {})
+        has_nvidia = _has_nvidia_from_inventory(evaluation.get("inventory", {}))
         is_hybrid = _is_hybrid_from_evaluation(evaluation)
         return HardwareView(evaluation, applied, has_nvidia, is_hybrid)
 
@@ -54,11 +61,3 @@ def invalidate_hardware_view() -> None:
     from kyth_shared.system.probe import invalidate_probe_caches
 
     invalidate_probe_caches(["hardware-view", "hardware-summary"])
-    # Also clear inventory cache so sysfs is re-scanned
-    try:
-        from kyth_shared.hardware_policy import invalidate_inventory_cache
-
-        invalidate_inventory_cache()
-    except (OSError, ValueError, RuntimeError) as exc:
-        import logging; logging.getLogger(__name__).debug("handled %s: %s", "hardware_view.py", exc, exc_info=True)
-        pass

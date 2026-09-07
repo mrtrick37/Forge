@@ -8,6 +8,16 @@ kyth_deprioritize_on_desktop "$@"
 
 cd "${repo_root}"
 
+if [[ -x /usr/bin/kyth-hardware-policy ]]; then
+	hardware_policy_cmd=(/usr/bin/kyth-hardware-policy)
+elif [[ -x src/kyth-shared-rs/target/release/kyth-hardware-policy ]]; then
+	hardware_policy_cmd=(src/kyth-shared-rs/target/release/kyth-hardware-policy)
+elif [[ -x src/kyth-shared-rs/target/debug/kyth-hardware-policy ]]; then
+	hardware_policy_cmd=(src/kyth-shared-rs/target/debug/kyth-hardware-policy)
+else
+	hardware_policy_cmd=(cargo run --quiet --manifest-path src/kyth-shared-rs/Cargo.toml --bin kyth-hardware-policy --)
+fi
+
 tool_bin="$(./build_files/scripts/install-validation-tools.sh | tail -n 1)"
 export PATH="${tool_bin}:${PATH}"
 
@@ -131,16 +141,16 @@ while IFS= read -r -d '' file; do
 	jq empty "${file}"
 done < <(git ls-files -z '*.json')
 python3 build_files/scripts/validate-toml-syntax.py
-PYTHONPATH=build_files/kyth_shared python3 -m kyth_shared.hardware_policy \
+"${hardware_policy_cmd[@]}" \
 	--policy build_files/config/hardware-profiles.toml validate --fail-expired
 hardware_matrix="${test_home}/hardware-support-matrix.md"
-PYTHONPATH=build_files/kyth_shared python3 -m kyth_shared.hardware_policy \
+"${hardware_policy_cmd[@]}" \
 	--policy build_files/config/hardware-profiles.toml matrix --output "${hardware_matrix}"
 if ! cmp --silent "${hardware_matrix}" docs/hardware-support-matrix.md; then
 	echo "Hardware support matrix is stale — docs/hardware-support-matrix.md" >&2
 	echo "diff vs generated (build_files/config/hardware-profiles.toml):" >&2
 	diff -u docs/hardware-support-matrix.md "${hardware_matrix}" >&2 || true
-	echo "Fix: PYTHONPATH=build_files/kyth_shared python3 -m kyth_shared.hardware_policy --policy build_files/config/hardware-profiles.toml matrix --output docs/hardware-support-matrix.md" >&2
+	echo "Fix: kyth-hardware-policy --policy build_files/config/hardware-profiles.toml matrix --output docs/hardware-support-matrix.md" >&2
 	exit 1
 fi
 

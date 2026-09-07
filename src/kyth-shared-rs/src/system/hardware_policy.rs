@@ -344,6 +344,16 @@ fn current_date_utc() -> String {
     format!("{year:04}-{month:02}-{day:02}")
 }
 
+pub fn expired_quirks(policy: &Policy) -> Vec<String> {
+    let today = current_date_utc();
+    policy
+        .quirks
+        .iter()
+        .filter(|quirk| !quirk.expires_on.is_empty() && quirk.expires_on < today)
+        .map(|quirk| quirk.id.clone())
+        .collect()
+}
+
 pub fn evaluate(policy: &Policy, policy_digest: &str, inventory: Inventory) -> Evaluation {
     let mut profiles: Vec<&Profile> = policy.profiles.iter().filter(|profile| matches(&inventory, &profile.selector)).collect();
     profiles.sort_by_key(|profile| (profile.priority, profile.id.clone()));

@@ -38,7 +38,7 @@ def _score() -> tuple[int, list[str], list[str]]:
     else:
         try:
             view = get_hardware_view()
-            checks.append(f"v3: {view.evaluation.capabilities[:2]}")
+            checks.append(f"v3: {view.evaluation.get('capabilities', [])[:2]}")
             score += 20
         except (OSError, ValueError, RuntimeError, AttributeError, KeyError):  # noqa: BLE001 -- narrow: best-effort production path
             checks.append("v3: unknown")

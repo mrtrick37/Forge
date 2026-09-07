@@ -11,24 +11,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "akmods_lock",
-      "owner": "fixture::src/kyth_shared/kyth_shared/akmods_lock.py",
-      "path": "src/kyth_shared/kyth_shared/akmods_lock.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "atomic_io",
-      "owner": "fixture::src/kyth_shared/kyth_shared/atomic_io.py",
-      "path": "src/kyth_shared/kyth_shared/atomic_io.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "commands",
       "owner": "fixture::src/kyth_shared/kyth_shared/commands.py",
       "path": "src/kyth_shared/kyth_shared/commands.py",
@@ -50,105 +32,6 @@
       "name": "gaming_resolve",
       "owner": "fixture::src/kyth_shared/kyth_shared/gaming_resolve.py",
       "path": "src/kyth_shared/kyth_shared/gaming_resolve.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "hardware_policy",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_policy.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_policy.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "__init__",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/__init__.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/__init__.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "amdgpu_gaming_memory",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_gaming_memory.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_gaming_memory.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "amdgpu_psr_disable",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_psr_disable.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_psr_disable.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "asus_tuf_amd_cachy_stability",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/asus_tuf_amd_cachy_stability.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/asus_tuf_amd_cachy_stability.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "bluetooth_usb_autosuspend",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/bluetooth_usb_autosuspend.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/bluetooth_usb_autosuspend.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "catalog",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/catalog.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/catalog.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "intel_i915_media",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/intel_i915_media.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/intel_i915_media.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "intel_wifi_association_power",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/intel_wifi_association_power.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/intel_wifi_association_power.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "mediatek_pcie_wifi_aspm",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/mediatek_pcie_wifi_aspm.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/mediatek_pcie_wifi_aspm.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "nvidia_wayland_suspend",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/nvidia_wayland_suspend.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_quirks/nvidia_wayland_suspend.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -302,6 +185,15 @@
       "name": "controllers",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/controllers.py",
       "path": "src/kyth_shared/kyth_shared/system/controllers.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "standalone",
+      "status": "queued"
+    },
+    {
+      "migration_priority": 2,
+      "name": "hardware_native",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/hardware_native.py",
+      "path": "src/kyth_shared/kyth_shared/system/hardware_native.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -1718,6 +1610,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "akmods_lock",
+      "owner": "fixture::src/kyth_shared/kyth_shared/akmods_lock.py",
+      "path": "src/kyth_shared/kyth_shared/akmods_lock.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "app_presets",
       "owner": "fixture::src/kyth_shared/kyth_shared/app_presets.py",
       "path": "src/kyth_shared/kyth_shared/app_presets.py",
@@ -1739,6 +1640,15 @@
       "name": "atomic",
       "owner": "fixture::src/kyth_shared/kyth_shared/atomic.py",
       "path": "src/kyth_shared/kyth_shared/atomic.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "atomic_io",
+      "owner": "fixture::src/kyth_shared/kyth_shared/atomic_io.py",
+      "path": "src/kyth_shared/kyth_shared/atomic_io.py",
       "runtime_authority": "source-only",
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported"
@@ -2072,6 +1982,96 @@
       "name": "hardware_policy_parse",
       "owner": "fixture::src/kyth_shared/kyth_shared/hardware_policy_parse.py",
       "path": "src/kyth_shared/kyth_shared/hardware_policy_parse.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "__init__",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/__init__.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/__init__.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "amdgpu_gaming_memory",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_gaming_memory.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_gaming_memory.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "amdgpu_psr_disable",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_psr_disable.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/amdgpu_psr_disable.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "asus_tuf_amd_cachy_stability",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/asus_tuf_amd_cachy_stability.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/asus_tuf_amd_cachy_stability.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "bluetooth_usb_autosuspend",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/bluetooth_usb_autosuspend.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/bluetooth_usb_autosuspend.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "catalog",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/catalog.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/catalog.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "intel_i915_media",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/intel_i915_media.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/intel_i915_media.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "intel_wifi_association_power",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/intel_wifi_association_power.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/intel_wifi_association_power.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "mediatek_pcie_wifi_aspm",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/mediatek_pcie_wifi_aspm.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/mediatek_pcie_wifi_aspm.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "nvidia_wayland_suspend",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_quirks/nvidia_wayland_suspend.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_quirks/nvidia_wayland_suspend.py",
       "runtime_authority": "source-only",
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported"
@@ -2727,26 +2727,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 40,
+      "python-shared-package": 28,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 40,
+      "standalone": 28,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 225,
-    "active_python_entries": 40,
-    "entries": 859,
+    "active_entries": 213,
+    "active_python_entries": 28,
+    "entries": 860,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 40
+      "queued": 28
     },
-    "superseded_entries": 100
+    "superseded_entries": 101
   },
   "superseded": [
     {
@@ -3018,6 +3018,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "hardware_policy",
+      "owner": "native::kyth-hardware-policy",
+      "path": "src/kyth_shared/kyth_shared/hardware_policy.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-hardware-policy"
     },
     {
       "migration_priority": 3,

@@ -439,13 +439,13 @@ def _collect_controllers() -> dict[str, Any]:
 
 def _collect_display() -> dict[str, Any]:
     try:
-        from kyth_shared.hardware_policy import evaluate_system
+        from kyth_shared.system.hardware_native import status
 
-        ev = evaluate_system()
+        ev = status()["evaluation"]
         return {
             "display-detect": {
-                "capabilities": ev.capabilities[:8],
-                "profiles": [profile["id"] for profile in ev.profiles[:3]],
+                "capabilities": ev.get("capabilities", [])[:8],
+                "profiles": [profile["id"] for profile in ev.get("profiles", [])[:3]],
             }
         }
     except (OSError, ValueError, RuntimeError, AttributeError, KeyError, TypeError):  # noqa: BLE001 -- narrow: display probe is best-effort
@@ -457,6 +457,16 @@ def _collect_hardware_view() -> dict[str, Any]:
 
     try:
         view = get_hardware_view()
+        capabilities = (
+            view.evaluation.get("capabilities", [])
+            if isinstance(view.evaluation, dict)
+            else getattr(view.evaluation, "capabilities", [])
+        )
+        profiles = (
+            view.evaluation.get("profiles", [])
+            if isinstance(view.evaluation, dict)
+            else getattr(view.evaluation, "profiles", [])
+        )
         # Emit a JSON-safe projection, never the HardwareView itself: this
         # value is written to the shared probe cache file, and the dataclass
         # graph behind it (Evaluation, Inventory) is not serializable.
@@ -464,8 +474,8 @@ def _collect_hardware_view() -> dict[str, Any]:
             "hardware-summary": {
                 "has_nvidia": bool(view.has_nvidia),
                 "is_hybrid": bool(view.is_hybrid),
-                "capabilities": list(view.evaluation.capabilities[:8]),
-                "profiles": [profile["id"] for profile in view.evaluation.profiles[:3]],
+                "capabilities": list(capabilities[:8]),
+                "profiles": [profile["id"] for profile in profiles[:3]],
             }
         }
     except (OSError, ValueError, RuntimeError, AttributeError, KeyError, TypeError):  # noqa: BLE001 -- narrow: probe best-effort

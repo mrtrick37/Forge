@@ -36,7 +36,7 @@ Rust-ownership requirement explicit for non-Hub shell callers as well.
 
 ## Why this plan exists, and why it is not "port every package file"
 
-`build_files/config/runtime-migration-report.json` now lists 46 active Python
+`build_files/config/runtime-migration-report.json` now lists 28 active Python
 package entries. Before the reachability pass, all 157 non-superseded
 `src/kyth_shared/kyth_shared/*.py` files were stamped active by a single
 blanket rule in `check-runtime-migration-inventory.py`:
@@ -52,8 +52,10 @@ elif surface == "python-runtime":
 Every `.py` file under `src/kyth_shared/kyth_shared/` that wasn't in
 `kyth-welcome` was stamped active/queued, regardless of whether anything still
 called it. The checker now builds a transitive AST import closure from the
-surviving Python console scripts, scans direct `build_files/scripts` harness
-imports, and expands the documented hardware-quirk dynamic catalog. The
+surviving Python console scripts and scans direct `build_files/scripts` harness
+imports. The native `kyth-hardware-policy` boundary owns the former
+hardware-policy and hardware-quirk paths; their Python files are compatibility
+fixtures rather than reachability roots. The
 result is a conservative, reviewable boundary between active Python behavior
 and retained source fixtures:
 
@@ -217,9 +219,9 @@ runtime behavior must have a Rust owner.
   invocations, and explicit dynamic catalogs; unreachable package modules are
   terminal compatibility fixtures rather than queued runtime work.
 - [x] Add regression coverage for surviving Python entry points, direct
-  shell/build harnesses, and the `hardware_quirks` importlib catalog. The
-  checked-in inventory/report now show 46 active Python package entries (down
-  from 157 non-superseded package files) and 111 unreachable shared-package
+  shell/build harnesses, and the native hardware-policy boundary. The
+  checked-in inventory/report now show 28 active Python package entries (down
+  from 157 non-superseded package files) and 121 unreachable shared-package
   fixtures.
 - [x] Same defect, different file: `tests/test_kyth_doctor_native.py` used
   bare `def test_*():` module-level functions, not `unittest.TestCase`
@@ -445,7 +447,7 @@ rollback/parity material until the approved observation window closes.
 
 ## Item 1 — Reachable shared-package modules
 
-**Status: in progress (2/46 complete).** This is the remaining Python half of
+**Status: in progress (3/46 complete).** This is the remaining Python half of
 the Rust migration. The reachability audit limits the work to modules that
 are still called by a supported console entry point, shell/build harness, or
 documented dynamic catalog. Each cutover must own the complete behavior,
@@ -459,7 +461,12 @@ rollback—not just read-only planning.
   quarantine transitions, required checks, rollback execution, retry, and
   quarantine clearing. The Python module remains an inactive parity/rollback
   fixture.
-- [ ] hardware_policy and its dynamic hardware-quirk apply path.
+- [x] hardware_policy and its dynamic hardware-quirk apply path — packaged
+  `kyth-hardware-policy` owns inventory, matching, policy validation, expiry
+  reporting, modprobe writes, scheduler transitions, NVIDIA akmods/kernel
+  transitions, state/report persistence, and failure semantics. The Python
+  policy and per-quirk modules remain inactive parity fixtures; probe callers
+  consume the native status JSON boundary.
 - [ ] qualification and the acceptance/report execution path.
 - [ ] memory_tune, sysctl_compose, perf_gate, network_preset,
   snapshot_timeline, sched_arbiter, gaming_resolve, containers, repos,

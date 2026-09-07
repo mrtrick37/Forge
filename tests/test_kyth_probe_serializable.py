@@ -84,7 +84,8 @@ class SectionSerializabilityTests(unittest.TestCase):
         evaluation.profiles = [{"id": "amd-desktop"}]
 
         with mock.patch(
-            "kyth_shared.hardware_policy.evaluate_system", return_value=evaluation
+            "kyth_shared.system.hardware_native.status",
+            return_value={"evaluation": {"capabilities": evaluation.capabilities, "profiles": evaluation.profiles}},
         ):
             section = probe._collect_display()
 

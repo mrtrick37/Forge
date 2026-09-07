@@ -159,7 +159,7 @@ class InventoryTest(unittest.TestCase):
 
         # The surviving Python console scripts are roots; their transitive
         # imports remain active until a native entry point replaces them.
-        for module in ("hardware_policy", "qualification"):
+        for module in ("qualification",):
             path = f"src/kyth_shared/kyth_shared/{module}.py"
             self.assertIn(f"kyth_shared.{module}", reachable)
             self.assertTrue(by_path[path]["runtime_active"], path)
@@ -179,6 +179,12 @@ class InventoryTest(unittest.TestCase):
         self.assertFalse(boot_health["runtime_active"])
         self.assertEqual(boot_health["superseded_by"], "native::kyth-boot-health")
         self.assertEqual(boot_health["status"], "explicitly-not-ported")
+
+        hardware_policy = by_path["src/kyth_shared/kyth_shared/hardware_policy.py"]
+        self.assertNotIn("kyth_shared.hardware_policy", reachable)
+        self.assertFalse(hardware_policy["runtime_active"])
+        self.assertEqual(hardware_policy["superseded_by"], "native::kyth-hardware-policy")
+        self.assertEqual(hardware_policy["status"], "explicitly-not-ported")
 
         # This source file is present in the installed compatibility package,
         # but no supported launcher or harness reaches it after the native
@@ -202,22 +208,23 @@ class InventoryTest(unittest.TestCase):
             self.assertIn(f"kyth_shared.{name}", reachable, name)
             self.assertTrue(by_name[name]["runtime_active"], name)
 
-        # hardware_quirks.catalog imports the managed modules through its
-        # explicit importlib table; the reachability graph must retain them.
+        # The native hardware-policy engine owns the TOML policy and quirk
+        # catalog now. The old per-quirk Python modules remain fixtures only.
         for name in (
             "amdgpu_gaming_memory", "amdgpu_psr_disable", "asus_tuf_amd_cachy_stability",
             "bluetooth_usb_autosuspend", "intel_i915_media", "intel_wifi_association_power",
             "mediatek_pcie_wifi_aspm", "nvidia_wayland_suspend",
         ):
             module = f"kyth_shared.hardware_quirks.{name}"
-            self.assertIn(module, reachable, module)
-            self.assertTrue(by_name[name]["runtime_active"], name)
+            self.assertNotIn(module, reachable, module)
+            self.assertFalse(by_name[name]["runtime_active"], name)
 
     def test_surviving_python_console_entry_point_is_not_silently_retired(self):
         checker = load_checker()
         roots = checker._python_console_roots()
         self.assertNotIn("kyth_shared.ai_dev", roots)
         self.assertNotIn("kyth_shared.boot_health", roots)
+        self.assertNotIn("kyth_shared.hardware_policy", roots)
         self.assertNotIn("kyth_shared.guardian", roots)
         item = next(
             item for item in load_inventory()["entries"]
