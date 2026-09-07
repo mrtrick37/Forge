@@ -294,6 +294,22 @@ from this beyond the correction itself: do not add it as a phase, and do not
 reclassify the launcher's `NATIVE_BINARIES` status until the Hub/installer
 plans' own acceptance-gate work replaces the `run` path.
 
+## Deferred: `kyth-exe-handler` is a Qt GUI, not a launcher port
+
+`kyth-exe-handler` was bucketed into Phase 1 by the checker's
+`WRITER_NAMES` set, but it does not apply a configuration and exit: it is a
+470-line PySide6 dialog (`desktop/exe_handler.py`) — the registered MIME
+handler for Windows executables and RPMs — with Bottles workflow threads.
+There is no Rust UI stack to port it to, and a headless native shim would
+silently drop the dialog, which is the launcher's entire user-visible
+behavior. The assessment backend it leans on is already Rust-owned
+(`system::exe_compat`: hashing, offline lookup, Steam rewriting).
+
+Decision (2026-09-08): keep the launcher Python and queued in the
+inventory; revisit only with a UI-stack decision (e.g. a Tauri dialog
+under the Hub plan). Do not count it toward Phase 1 completion, and do
+not "port" it by deleting the dialog.
+
 ## Phase 3 — Retire superseded `kyth_shared` fixture material
 
 **Gated on the Hub finalization plan's own open item:** "Run a post-cutover
