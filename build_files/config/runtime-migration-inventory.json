@@ -3194,28 +3194,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-sched entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-sched",
-      "owner": "fixture::build_files/kyth-sched",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-sched",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-sched",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-sched entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "alias",
       "cutover": "replace installed kyth-sched-arbiter entry point after parity gates",
       "installed_implementation": "rust",
@@ -3245,7 +3223,7 @@
         "/usr/bin/kyth-sched-arbiter apply"
       ],
       "installed_implementation": "data",
-      "migration_priority": 2,
+      "migration_priority": 1,
       "name": "kyth-sched-arbiter",
       "owner": "fixture::build_files/kyth-sched-arbiter.service",
       "parity_tests": [
@@ -3258,7 +3236,7 @@
       "risk_tier": "daemon",
       "rollback": "restore previous installed kyth-sched-arbiter entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
       "status": "queued",
       "surface": "systemd-unit"
@@ -3384,23 +3362,24 @@
       "exec_start": [
         "/usr/bin/kyth-sched"
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-sched",
-      "owner": "fixture::build_files/kyth-sched.service",
+      "owner": "native::kyth-sched",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-sched.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-sched.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-sched entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {

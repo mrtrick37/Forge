@@ -166,6 +166,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-dynamic-lock",
             "kyth-proton-cachyos-update",
             "kyth-rclone-update",
+            "kyth-sched",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
@@ -188,9 +189,12 @@ class PythonPackagingTests(unittest.TestCase):
             for line in dockerfile.splitlines()
             if line.startswith("COPY build_files/game-performance ")
         )
+        staged = helper_copy.split()
         for entry_point in entry_points:
             with self.subTest(host_copy_entry_point=entry_point):
-                self.assertNotIn(f"build_files/{entry_point}", helper_copy)
+                # Whole-token match: sibling fixtures such as
+                # build_files/kyth-sched-arbiter must not trip this.
+                self.assertNotIn(f"build_files/{entry_point}", staged)
 
     def test_tunable_dispatcher_uses_native_subset_before_static_sysconfig(self):
         dockerfile = (ROOT / "Dockerfile").read_text()

@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 # ── KythOS performance daemons ────────────────────────────────────────────────
-install -m 0755 /ctx/kyth-sched /usr/bin/kyth-sched
+# kyth-sched is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0644 /ctx/kyth-sched.service /usr/lib/systemd/user/kyth-sched.service
 
 # kyth-telem is the native Rust MangoHud writer copied from hub-web-builder;
