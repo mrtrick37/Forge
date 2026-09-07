@@ -1,8 +1,10 @@
-//! Read-only Plasma launcher discovery and command projections.
+//! Plasma desktop-layout preset: discovery, command projections, and the
+//! apply gate shared with the native `kyth-apply-desktop-layout` binary.
 //!
-//! These helpers cover the non-mutating half of `desktop.plasma`: callers
-//! supply filesystem roots or execute the returned argv themselves.  Rust
-//! never invokes `kwriteconfig`, `qdbus`, or a Plasma script here.
+//! Discovery helpers and argv projections are side-effect free: callers
+//! supply filesystem roots or execute the returned argv themselves.  Only
+//! the `*_bin.rs` entry point invokes `kreadconfig`/`kwriteconfig`, `qdbus`,
+//! or a Plasma script.
 
 use std::path::{Path, PathBuf};
 
@@ -13,6 +15,182 @@ pub enum LauncherChoice {
 }
 
 pub const LAYOUT_VERSION: &str = "kyth-comfort-v4";
+pub const CONFIG_FILE: &str = "plasma-org.kde.plasma.desktop-appletsrc";
+
+pub const TRAY_ITEMS: [&str; 9] = [
+    "org.kde.plasma.networkmanagement",
+    "org.kde.plasma.volume",
+    "org.kde.plasma.bluetooth",
+    "org.kde.plasma.battery",
+    "org.kde.plasma.notifications",
+    "org.kde.plasma.clipboard",
+    "org.kde.plasma.devicenotifier",
+    "org.kde.plasma.printmanager",
+    "org.kde.kdeconnect",
+];
+
+pub const HIDDEN_TRAY_ITEMS: [&str; 2] = [
+    "org.kde.plasma.keyboardindicator",
+    "org.kde.plasma.mediacontroller",
+];
+
+/// Mirrors `apply_desktop_layout`'s version gate: an already-stamped layout
+/// (current or legacy marker) is current unless `--force` is given.
+pub fn is_layout_current(current: Option<&str>, legacy: Option<&str>) -> bool {
+    matches!(current, Some("kyth-comfort-v4" | "kyth-comfort-v2" | "kyth-comfort-v3"))
+        || legacy == Some("windows-familiar-v1")
+}
+
+/// Outcome of the launcher gate before any Plasma mutation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LayoutDecision {
+    AlreadyCurrent,
+    Refused,
+    Apply,
+}
+
+/// Mirrors the Python launcher's exit codes: `0` when the stamped layout is
+/// already current, `64` when neither `--force` nor `--initial` was passed,
+/// otherwise proceed to the qdbus apply step.
+pub fn decide_layout(force: bool, initial: bool, current: Option<&str>, legacy: Option<&str>) -> LayoutDecision {
+    if !force && is_layout_current(current, legacy) {
+        LayoutDecision::AlreadyCurrent
+    } else if !force && !initial {
+        LayoutDecision::Refused
+    } else {
+        LayoutDecision::Apply
+    }
+}
+
+/// Renders the Plasma evaluate-script for the given launcher/tray CSVs,
+/// byte-identical in shape to the Python `js_template.format(...)` output.
+pub fn render_layout_script(launchers_csv: &str, tray_csv: &str, hidden_csv: &str) -> String {
+    format!(
+        "var launchers = \"{launchers_csv}\";\nvar trayItems = \"{tray_csv}\";\nvar hiddenTrayItems = \"{hidden_csv}\";\n{LAYOUT_SCRIPT_TAIL}"
+    )
+}
+
+const LAYOUT_SCRIPT_TAIL: &str = r#"
+function safeSet(object, key, value) {
+    try {
+        object[key] = value;
+    } catch (e) {
+    }
+}
+
+function writeConfig(object, groups, values) {
+    try {
+        object.currentConfigGroup = groups;
+        for (var key in values) {
+            object.writeConfig(key, values[key]);
+        }
+        object.reloadConfig();
+    } catch (e) {
+    }
+}
+
+function removeExistingPanels() {
+    var ids = [];
+    for (var i = 0; i < panelIds.length; ++i) {
+        ids.push(panelIds[i]);
+    }
+    for (var i = 0; i < ids.length; ++i) {
+        var panel = panelById(ids[i]);
+        if (panel) {
+            panel.remove();
+        }
+    }
+}
+
+function uniqueScreens() {
+    var seen = [];
+    var desktopsArray = desktops();
+    for (var i = 0; i < desktopsArray.length; ++i) {
+        var screen = desktopsArray[i].screen;
+        if (seen.indexOf(screen) === -1) {
+            seen.push(screen);
+        }
+    }
+    if (seen.length === 0) {
+        seen.push(0);
+    }
+    return seen;
+}
+
+function configureDesktops() {
+    var desktopsArray = desktops();
+    for (var i = 0; i < desktopsArray.length; ++i) {
+        var desktop = desktopsArray[i];
+        desktop.wallpaperPlugin = "org.kde.image";
+        writeConfig(desktop, ["Wallpaper", "org.kde.image", "General"], {
+            "Image": "/usr/share/wallpapers/kyth/contents/images/1920x1080.svg"
+        });
+        writeConfig(desktop, ["General"], {
+            "ToolBoxButtonState": "topcenter"
+        });
+    }
+}
+
+function addKythDefaultPanel(screen) {
+    var panel = new Panel;
+    safeSet(panel, "screen", screen);
+    panel.location = "bottom";
+    panel.height = 42;
+    safeSet(panel, "alignment", "left");
+    safeSet(panel, "floating", false);
+    safeSet(panel, "floatingApplets", false);
+
+    var kickoff = panel.addWidget("org.kde.plasma.kickoff");
+    writeConfig(kickoff, ["General"], {
+        "icon": "kyth-kickoff",
+        "favoritesPortedToKAstats": true,
+        "alphaSort": true,
+        "showActionButtonCaptions": true
+    });
+
+    var tasks = panel.addWidget("org.kde.plasma.icontasks");
+    writeConfig(tasks, ["General"], {
+        "launchers": launchers,
+        "showOnlyCurrentDesktop": false,
+        "showOnlyCurrentScreen": false,
+        "showOnlyCurrentActivity": false,
+        "groupingStrategy": 1,
+        "maxStripes": 1,
+        "showToolTips": true,
+        "wheelEnabled": "AllTask",
+        "indicateAudioStreams": true,
+        "highlightWindows": true,
+        "middleClickAction": "NewInstance"
+    });
+
+    panel.addWidget("org.kde.plasma.marginsseparator");
+    panel.addWidget("org.kde.plasma.panelspacer");
+
+    var tray = panel.addWidget("org.kde.plasma.systemtray");
+    writeConfig(tray, ["General"], {
+        "extraItems": trayItems,
+        "hiddenItems": hiddenTrayItems,
+        "knownItems": trayItems + "," + hiddenTrayItems,
+        "showAllItems": false
+    });
+
+    var clock = panel.addWidget("org.kde.plasma.digitalclock");
+    writeConfig(clock, ["Appearance"], {
+        "showDate": false,
+        "dateFormat": "shortDate",
+        "showSeconds": false
+    });
+
+    panel.addWidget("org.kde.plasma.showdesktop");
+}
+
+removeExistingPanels();
+configureDesktops();
+var screens = uniqueScreens();
+for (var i = 0; i < screens.length; ++i) {
+    addKythDefaultPanel(screens[i]);
+}
+"#;
 
 pub fn desktop_name(value: &str) -> &str {
     value.strip_prefix("applications:").unwrap_or(value)
@@ -103,5 +281,37 @@ mod tests {
         assert_eq!(qdbus_candidates(), ["qdbus6", "qdbus-qt6", "qdbus"]);
         assert_eq!(desktop_name("applications:foo.desktop"), "foo.desktop");
         assert_eq!(LAYOUT_VERSION, "kyth-comfort-v4");
+    }
+
+    #[test]
+    fn layout_gate_mirrors_python_exit_codes() {
+        // Already stamped: exit 0 without --force.
+        assert_eq!(decide_layout(false, false, Some("kyth-comfort-v4"), None), LayoutDecision::AlreadyCurrent);
+        assert_eq!(decide_layout(false, false, Some("kyth-comfort-v2"), None), LayoutDecision::AlreadyCurrent);
+        assert_eq!(decide_layout(false, false, Some("kyth-comfort-v3"), None), LayoutDecision::AlreadyCurrent);
+        assert_eq!(decide_layout(false, false, None, Some("windows-familiar-v1")), LayoutDecision::AlreadyCurrent);
+        // No stamp, no flags: exit 64.
+        assert_eq!(decide_layout(false, false, None, None), LayoutDecision::Refused);
+        assert_eq!(decide_layout(false, false, Some("other"), None), LayoutDecision::Refused);
+        // --force or --initial proceeds.
+        assert_eq!(decide_layout(true, false, Some("kyth-comfort-v4"), None), LayoutDecision::Apply);
+        assert_eq!(decide_layout(false, true, None, None), LayoutDecision::Apply);
+        // Stamp check runs before the flag check: --initial on a stamped
+        // layout still exits 0 unless --force is given.
+        assert_eq!(decide_layout(false, true, Some("kyth-comfort-v4"), None), LayoutDecision::AlreadyCurrent);
+    }
+
+    #[test]
+    fn layout_script_matches_python_template_shape() {
+        let script = render_layout_script("a,b", "t1", "h1");
+        // Pinned against the Python js_template.format() output (3383 chars):
+        // any brace, blank-line, or widget drift changes the length.
+        assert_eq!(script.len(), 3383);
+        assert!(script.starts_with("var launchers = \"a,b\";\nvar trayItems = \"t1\";\nvar hiddenTrayItems = \"h1\";\n\nfunction safeSet"));
+        assert!(script.ends_with("addKythDefaultPanel(screens[i]);\n}\n"));
+        assert!(!script.contains("{{") && !script.contains("}}"));
+        for marker in ["org.kde.plasma.kickoff", "org.kde.plasma.icontasks", "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop", "/usr/share/wallpapers/kyth/contents/images/1920x1080.svg", "kyth-kickoff"] {
+            assert!(script.contains(marker), "{marker}");
+        }
     }
 }

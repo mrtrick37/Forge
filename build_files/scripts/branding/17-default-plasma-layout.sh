@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 # ── KythOS default Plasma layout preset ───────────────────────────────────────
-install -m 0755 /ctx/kyth-apply-desktop-layout /usr/bin/kyth-apply-desktop-layout
+# kyth-apply-desktop-layout is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-refresh-taskbar-pins /usr/bin/kyth-refresh-taskbar-pins
 install -m 0644 /ctx/kyth-scripts/kyth-refresh-taskbar-pins.service \
 	/usr/lib/systemd/user/kyth-refresh-taskbar-pins.service

@@ -2,15 +2,6 @@
   "active_python": [
     {
       "migration_priority": 2,
-      "name": "kyth-apply-desktop-layout",
-      "owner": "fixture::build_files/kyth-apply-desktop-layout",
-      "path": "build_files/kyth-apply-desktop-layout",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-apply-display-hdr",
       "owner": "fixture::build_files/kyth-apply-display-hdr",
       "path": "build_files/kyth-apply-display-hdr",
@@ -3132,7 +3123,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 39,
+      "python-runtime": 38,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 10,
@@ -3142,15 +3133,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 200
+      "user-session": 199
     },
-    "active_entries": 399,
-    "active_python_entries": 202,
-    "entries": 652,
+    "active_entries": 398,
+    "active_python_entries": 201,
+    "entries": 651,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 279
+      "queued": 278
     },
     "superseded_entries": 92
   },
