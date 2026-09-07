@@ -151,6 +151,65 @@ class InventoryTest(unittest.TestCase):
             self.assertNotIn("superseded_by", item, name)
         self.assertFalse(set(checker.SUPERSEDED_TUNABLE_MODULES) & set(checker.SHELL_HARNESS_MODULES))
 
+    def test_python_package_queue_uses_reachability_not_path_prefix(self):
+        checker = load_checker()
+        reachable = checker.python_reachable_modules()
+        entries = load_inventory()["entries"]
+        by_path = {item["path"]: item for item in entries}
+
+        # The surviving Python console scripts are roots; their transitive
+        # imports remain active until a native entry point replaces them.
+        for module in ("ai_dev", "boot_health", "hardware_policy", "qualification"):
+            path = f"src/kyth_shared/kyth_shared/{module}.py"
+            self.assertIn(f"kyth_shared.{module}", reachable)
+            self.assertTrue(by_path[path]["runtime_active"], path)
+            self.assertEqual(by_path[path]["status"], "queued")
+
+        # This source file is present in the installed compatibility package,
+        # but no supported launcher or harness reaches it after the native
+        # cutovers. It must not inflate the migration queue.
+        accounts = by_path["src/kyth_shared/kyth_shared/accounts.py"]
+        self.assertNotIn("kyth_shared.accounts", reachable)
+        self.assertFalse(accounts["runtime_active"])
+        self.assertEqual(accounts["runtime_authority"], "source-only")
+        self.assertEqual(accounts["status"], "explicitly-not-ported")
+        self.assertEqual(accounts["installed_implementation"], "python-fixture")
+
+    def test_direct_harness_and_dynamic_catalog_edges_are_preserved(self):
+        checker = load_checker()
+        reachable = checker.python_reachable_modules()
+        entries = load_inventory()["entries"]
+        by_name = {item["name"]: item for item in entries if item["surface"] == "python-runtime"}
+
+        # These modules are invoked from build/acceptance harnesses rather than
+        # from an installed console script.
+        for name in ("memory_tune", "sysctl_compose", "perf_gate", "qualification"):
+            self.assertIn(f"kyth_shared.{name}", reachable, name)
+            self.assertTrue(by_name[name]["runtime_active"], name)
+
+        # hardware_quirks.catalog imports the managed modules through its
+        # explicit importlib table; the reachability graph must retain them.
+        for name in (
+            "amdgpu_gaming_memory", "amdgpu_psr_disable", "asus_tuf_amd_cachy_stability",
+            "bluetooth_usb_autosuspend", "intel_i915_media", "intel_wifi_association_power",
+            "mediatek_pcie_wifi_aspm", "nvidia_wayland_suspend",
+        ):
+            module = f"kyth_shared.hardware_quirks.{name}"
+            self.assertIn(module, reachable, module)
+            self.assertTrue(by_name[name]["runtime_active"], name)
+
+    def test_surviving_python_console_entry_point_is_not_silently_retired(self):
+        checker = load_checker()
+        roots = checker._python_console_roots()
+        self.assertIn("kyth_shared.ai_dev", roots)
+        self.assertNotIn("kyth_shared.guardian", roots)
+        item = next(
+            item for item in load_inventory()["entries"]
+            if item["path"] == "src/kyth_shared/kyth_shared/ai_dev.py"
+        )
+        self.assertTrue(item["runtime_active"])
+        self.assertEqual(item["status"], "queued")
+
     def test_data_or_config_is_terminal_not_queued(self):
         entries = load_inventory()["entries"]
         data = [item for item in entries if item["runtime_authority"] == "data-or-config"]

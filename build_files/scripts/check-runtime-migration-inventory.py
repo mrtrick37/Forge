@@ -17,9 +17,11 @@ shell-harness invocation — count toward ``active_python``.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
+from importlib.util import resolve_name
 from pathlib import Path
 
 
@@ -199,6 +201,167 @@ SHELL_HARNESS_MODULES = frozenset({
     "sched_arbiter",
 })
 
+# Python console scripts are installed before the native image layer copies
+# over any same-named Rust binaries.  Derive the surviving Python roots from
+# the package metadata rather than maintaining a second hand-written list.
+# This keeps a newly added console script visible until its installed entry
+# point is explicitly replaced by a native binary.
+PYTHON_PACKAGE = ROOT / "src/kyth_shared"
+PYTHON_MODULE_ROOT = PYTHON_PACKAGE / "kyth_shared"
+PYTHON_PACKAGE_METADATA = PYTHON_PACKAGE / "pyproject.toml"
+
+
+def python_module_name(path: Path) -> str | None:
+    """Return the import name for a shared-package source file."""
+    try:
+        relative = path.resolve().relative_to(PYTHON_MODULE_ROOT.resolve())
+    except ValueError:
+        return None
+    if relative.suffix != ".py":
+        return None
+    parts = list(relative.with_suffix("").parts)
+    if parts[-1] == "__init__":
+        parts.pop()
+    return ".".join(("kyth_shared", *parts))
+
+
+def python_module_paths() -> dict[str, Path]:
+    """Index importable shared-package modules without importing user code."""
+    result: dict[str, Path] = {}
+    for path in sorted(PYTHON_PACKAGE.rglob("*.py")):
+        name = python_module_name(path)
+        if name is not None:
+            result[name] = path
+    return result
+
+
+def _relative_import_name(current: str, path: Path, level: int, module: str | None) -> str | None:
+    if level == 0:
+        return module
+    package = current if path.name == "__init__.py" else current.rpartition(".")[0]
+    if not package:
+        return None
+    try:
+        return resolve_name("." * level + (module or ""), package)
+    except (ImportError, ValueError):
+        return None
+
+
+def _imports_from_module(path: Path, current: str, known: dict[str, Path]) -> set[str]:
+    """Collect statically resolvable imports from one package module."""
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, SyntaxError):
+        return set()
+    imports: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                candidate = alias.name
+                # An import of a package may resolve to its __init__.py; trim
+                # unavailable trailing names until the package index matches.
+                while candidate and candidate not in known:
+                    candidate = candidate.rpartition(".")[0]
+                if candidate in known:
+                    imports.add(candidate)
+        elif isinstance(node, ast.ImportFrom):
+            base = _relative_import_name(current, path, node.level, node.module)
+            if base and base in known:
+                imports.add(base)
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                candidate = f"{base}.{alias.name}" if base else alias.name
+                if candidate in known:
+                    imports.add(candidate)
+    # The catalog deliberately imports one module per managed hardware quirk
+    # through importlib.  Its tuple is the documented dynamic-dispatch table;
+    # include all of the table's source modules when the catalog is reachable.
+    if current in {"kyth_shared.hardware_quirks", "kyth_shared.hardware_quirks.catalog"}:
+        imports.update(
+            name for name in known
+            if name.startswith("kyth_shared.hardware_quirks.")
+            and name.rpartition(".")[-1] not in {"__init__", "catalog"}
+        )
+    return imports
+
+
+def _python_console_roots() -> set[str]:
+    """Find Python entry-point modules that remain installed after cutover."""
+    try:
+        import tomllib
+
+        with PYTHON_PACKAGE_METADATA.open("rb") as stream:
+            metadata = tomllib.load(stream)
+    except (OSError, tomllib.TOMLDecodeError):
+        return set()
+    scripts = metadata.get("project", {}).get("scripts", {})
+    roots: set[str] = set()
+    for command, target in scripts.items():
+        if command in PACKAGED_NATIVE_LAUNCHERS:
+            continue
+        module = str(target).partition(":")[0]
+        if module:
+            roots.add(module)
+    return roots
+
+
+def _python_harness_roots() -> set[str]:
+    """Find direct shared-package imports in active build/test harnesses.
+
+    These are intentionally separate from console-script roots.  VM
+    acceptance, validation, image assembly, and performance gates can invoke
+    a module directly even when no installed launcher points at it.
+    """
+    roots: set[str] = set()
+    search_roots = (ROOT / "build_files/scripts",)
+    for search_root in search_roots:
+        if not search_root.exists():
+            continue
+        paths = search_root.rglob("*") if search_root.is_dir() else ()
+        for path in paths:
+            if not path.is_file() or path.suffix not in {".py", ".sh", ".bash", ""}:
+                continue
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            for match in re.finditer(r"(?:python3?|python)\s+(?:[^\n]*?\s)?-m\s+kyth_shared(?:\.([A-Za-z0-9_.]+))?", text):
+                if match.group(1):
+                    roots.add(f"kyth_shared.{match.group(1)}")
+            for match in re.finditer(r"(?:from|import)\s+kyth_shared\.([A-Za-z0-9_.]+)", text):
+                roots.add(f"kyth_shared.{match.group(1)}")
+    # These are explicit, direct harness channels even when formatting or a
+    # shell continuation prevents the simple patterns above from matching.
+    roots.update(f"kyth_shared.{name}" for name in SHELL_HARNESS_MODULES)
+    return roots
+
+
+def python_reachable_modules() -> set[str]:
+    """Return the transitive runtime/build reachability closure.
+
+    The result is deliberately source-derived and conservative: an import
+    that cannot be resolved is ignored, but documented dynamic dispatch tables
+    and direct shell harnesses are added explicitly.  Unreachable package
+    files are retained in the tree as compatibility fixtures and removed from
+    the migration queue.
+    """
+    known = python_module_paths()
+    pending = [
+        module for module in (*_python_console_roots(), *_python_harness_roots())
+        if module in known
+    ]
+    reachable: set[str] = set()
+    while pending:
+        current = pending.pop()
+        if current in reachable:
+            continue
+        reachable.add(current)
+        for imported in _imports_from_module(known[current], current, known):
+            if imported not in reachable:
+                pending.append(imported)
+    return reachable
+
 
 def rel(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
@@ -375,7 +538,14 @@ def runtime_metadata(
     }
 
 
-def entry(path: Path, *, surface: str, implementation: str | None = None, name: str | None = None) -> dict:
+def entry(
+    path: Path,
+    *,
+    surface: str,
+    implementation: str | None = None,
+    name: str | None = None,
+    reachable_python_modules: set[str] | None = None,
+) -> dict:
     item_name = name or name_for(path)
     kind = implementation or launcher_kind(path)
     is_tunable_alias = surface == "launcher" and path.is_symlink() and path.resolve() == ROOT / "build_files/kyth-tunable"
@@ -454,6 +624,27 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
             "migration_priority": 3,
             "superseded_by": TUNABLE_SUPERSEDED_BY,
         })
+    module_name = python_module_name(path) if surface == "python-runtime" else None
+    if (
+        module_name
+        and reachable_python_modules is not None
+        and module_name not in reachable_python_modules
+        and not result.get("superseded_by")
+    ):
+        # The package is installed for compatibility and rollback tooling, but
+        # this module is not reachable from an installed Python entry point or
+        # an active shell/build harness.  Keep the source in the tree without
+        # presenting it as an open Rust migration target.
+        result.update({
+            "status": "explicitly-not-ported",
+            "installed_implementation": "python-fixture",
+            "runtime_authority": "source-only",
+            "runtime_scope": "test-fixture",
+            "runtime_active": False,
+            "migration_priority": 3,
+            "owner": f"fixture::{rel(path)}",
+            "reason": "retained shared-package compatibility module is unreachable from active entry points and harnesses",
+        })
     if metadata["runtime_authority"] == "source-only":
         result.update({
             "status": "explicitly-not-ported",
@@ -477,6 +668,7 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
 
 def discover() -> list[dict]:
     items: list[dict] = []
+    reachable_python_modules = python_reachable_modules()
     for path in sorted(ROOT.glob("build_files/kyth-*")):
         if path.suffix not in UNIT_SUFFIXES:
             items.append(entry(path, surface="launcher"))
@@ -553,7 +745,13 @@ def discover() -> list[dict]:
             items.append(unit)
     for root, surface in ((ROOT / "src/kyth_shared", "python-runtime"), (ROOT / "src/kyth-welcome", "python-runtime"), (ROOT / "src/kyth-installer", "installer-runtime")):
         for path in sorted(root.rglob("*.py")):
-            items.append(entry(path, surface=surface, implementation="python", name=path.stem))
+            items.append(entry(
+                path,
+                surface=surface,
+                implementation="python",
+                name=path.stem,
+                reachable_python_modules=reachable_python_modules,
+            ))
     active_just_paths = active_just_imports()
     for path in sorted((ROOT / "build_files/just/kyth").rglob("*.just")):
         item = entry(path, surface="ujust-recipe", implementation="recipe", name=path.stem)

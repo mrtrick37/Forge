@@ -40,24 +40,27 @@ P0 interpretation:
 - Rust binaries, Rust services, and Rust dispatchers are counted separately
   from their retained Python source counterparts.
 
-Phase 0 reclassification (2026-09-07, inventory schema 2 → 3):
+Phase 0 reclassification (2026-09-07, inventory schema 4):
 
 | Metric | Before | After |
 | --- | --- | --- |
-| Active entries | 499 | 399 |
-| Active Python entries | 294 | 202 (−92) |
-| `python-shared-package` active | 255 | 163 (−92 superseded fixtures) |
-| `python-runtime` active | 39 | 39 (unchanged — the real Phase 1/2 ledger) |
+| Active entries | 499 | 231 |
+| Active Python entries | 294 | 46 |
+| `python-shared-package` active | 255 | 46 (reachability-derived) |
+| `python-runtime` active | 39 | 0 (all installed launcher entries are native) |
 | `data-or-config` active | 8 | 0 (terminal `not-applicable`) |
-| Superseded entries | n/a | 92 (`superseded_by: native::kyth-tunable-rs`) |
+| Superseded entries | n/a | 98 (native rollback fixtures) |
 | `p0_open_entries` | 0 | 0 |
 
-Reachability audit behind the 92: transitive static-import closure over the
-39 queued launchers plus a `build_files/scripts` harness scan. Only
-`sched_arbiter` (imported by `build_files/kyth-game-launch`) and `perf_gate`
-(used by `build_files/scripts/check-perf-gate.py`) remain reachable and stay
-active; all 94 tunable registry aliases verified present in
-`tunable_registry.rs` with 0 missing.
+Reachability audit: the checker now computes a transitive AST import closure
+from the four surviving Python console-script roots (`ai_dev`, `boot_health`,
+`hardware_policy`, and `qualification`), scans direct `build_files/scripts`
+imports, preserves explicit shell-harness channels, and expands the
+documented `hardware_quirks` importlib catalog. The resulting 46 active
+package modules remain queued; 111 unreachable shared-package modules are
+classified as source-only compatibility fixtures. All 94 tunable registry
+aliases remain verified against `tunable_registry.rs` with 0 missing, and the
+98 native rollback fixtures remain inactive.
 
 User-polish cutover (2026-09-07, after the 38-port baseline):
 
@@ -90,3 +93,20 @@ persistence, and the bounded Bottles workflow; the webview has typed commands
 only and no generic process bridge. The retired Python handler and its four
 support modules are source-only rollback/parity fixtures, not installed runtime
 paths.
+
+Reachability closure (2026-09-07):
+
+| Metric | Result |
+| --- | ---: |
+| Inventory entries | 859 |
+| Active entries | 231 |
+| Active Python package entries | 46 |
+| Unreachable shared-package fixtures | 111 |
+| Active shell entries | 104 |
+| Open priority-0 entries | 0 |
+
+The package is still installed for compatibility and rollback tooling, but a
+package path alone is no longer evidence of runtime authority. The checked-in
+inventory records `source-only` plus an explicit reason for each unreachable
+module, while active package modules retain their fixture owner and retirement
+condition until their Rust cutover is complete.

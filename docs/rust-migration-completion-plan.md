@@ -12,13 +12,16 @@ native Rust launcher with its user interface in the existing **Tauri/React
 Hub**.
 
 This revision expands the plan to include the runtime-relevant
-`shell-orchestration` surface. After the Phase 5 inventory pass, the generated
-inventory contains 100 shell entries already backed by native implementations,
-65 queued runtime entries, and one reviewed external `rclone@` interface. The
-queued entries are now named function-level migration targets rather than an
-undecided future surface. Phase 3 remains blocked on the Hub plan's
-post-cutover observation window, but that gate does not exempt shell functions
-from the Rust ownership target.
+`shell-orchestration` surface. After the Phase 6 inventory pass, the generated
+inventory contains 104 active shell entries, all backed by native
+implementations or the Rust runtime dispatcher, and 46 queued Python package
+modules. The Python queue is now a reachability-derived set: it includes only
+modules reached from surviving Python console entry points, direct build/
+acceptance harnesses, or documented dynamic-dispatch tables. Unreachable
+package files are retained as explicitly classified compatibility fixtures,
+not presented as open migration work. Phase 3 remains blocked on the Hub
+plan's post-cutover observation window, but that gate does not exempt shell
+functions from the Rust ownership target.
 
 **Scope:** This plan now covers every supported runtime function currently
 represented by `python-runtime` or `shell-orchestration`, including read-only,
@@ -31,13 +34,12 @@ documented external interface whose behavior is owned by Rust. This plan
 supersedes no existing Hub or installer safety contract; it makes their
 Rust-ownership requirement explicit for non-Hub shell callers as well.
 
-## Why this plan exists, and why it is not "port 255 modules"
+## Why this plan exists, and why it is not "port every package file"
 
-`build_files/config/runtime-migration-report.json` currently lists 296 active
-Python entries: 41 tagged `python-runtime` and 255 tagged
-`python-shared-package`. Read literally, that suggests hundreds of modules
-still need porting. They don't. The `python-shared-package` tag comes from a
-single blanket rule in `check-runtime-migration-inventory.py`:
+`build_files/config/runtime-migration-report.json` now lists 46 active Python
+package entries. Before the reachability pass, all 157 non-superseded
+`src/kyth_shared/kyth_shared/*.py` files were stamped active by a single
+blanket rule in `check-runtime-migration-inventory.py`:
 
 ```python
 elif surface == "python-runtime":
@@ -47,10 +49,13 @@ elif surface == "python-runtime":
         authority, scope, active, priority = "python-shared-package", "standalone", True, 2
 ```
 
-Every `.py` file under `src/kyth_shared/kyth_shared/` that isn't in
-`kyth-welcome` gets stamped active/queued, regardless of whether anything still
-calls it. Verification for this plan found that a large share of that package
-is already dead in the runtime sense:
+Every `.py` file under `src/kyth_shared/kyth_shared/` that wasn't in
+`kyth-welcome` was stamped active/queued, regardless of whether anything still
+called it. The checker now builds a transitive AST import closure from the
+surviving Python console scripts, scans direct `build_files/scripts` harness
+imports, and expands the documented hardware-quirk dynamic catalog. The
+result is a conservative, reviewable boundary between active Python behavior
+and retained source fixtures:
 
 - `tunable.py`'s `_BUILTIN_TUNABLES` registry has 94 entries dynamically
   dispatching to 93 distinct worker modules (`aio_max.py`, `ananicy_preset.py`,
@@ -70,7 +75,8 @@ is already dead in the runtime sense:
   call — those are the ones still counted active in `python-shared-package`.
 - `gaming_master.py` and `perf_audit.py` use the same `__import__(f"kyth_shared.{mod}", ...)`
   pattern for their own worker sets, which is why a plain static-import
-  closure from the 41 real launchers only reaches ~42 of the 255 modules —
+  closure from the former launcher set only reached a small subset of the
+  package —
   the dynamic dispatch tables hide the rest of the true dependency graph in
   both directions (some hidden edges are real, most in this case turned out
   to be dead).
@@ -83,16 +89,17 @@ is already dead in the runtime sense:
   shell-harness invocation — alongside launcher static imports and documented
   dynamic-dispatch tables.
 
-Because of this, a `python-shared-package` tag currently conflates three very
+Because of this, a `python-shared-package` tag previously conflated three very
 different things: still-imported implementation, rollback-only fixture
-material superseded by Rust, and genuinely dead code nobody deleted yet. Phase
-0 below fixes that distinction; it is the highest-leverage single item in this
-plan because it is what will make the inventory numbers trustworthy for every
-plan after this one, not just this one.
+material superseded by Rust, and genuinely dead code nobody deleted yet. The
+reachability graph now separates those states: reachable modules remain
+queued, native replacements carry `superseded_by`, and unreachable package
+files are terminal `source-only`/`explicitly-not-ported` fixtures. This makes
+the inventory numbers trustworthy for every later phase.
 
 ## The shell and orchestration surface
 
-The report's `active_by_authority` currently lists `shell-orchestration: 161`
+The report's `active_by_authority` currently lists `shell-orchestration: 104`
 active entries, with five additional entries intentionally classified as
 explicit exceptions. This is not a blanket claim that every `.just`, unit,
 desktop file, or build fragment should become a Rust binary. It is a claim
@@ -204,6 +211,16 @@ runtime behavior must have a Rust owner.
   it before relying on it to catch a Phase 0 regression.
   (Done 2026-09-07: converted to `unittest.TestCase`, collected by
   `unittest discover`, plus Phase 0 invariant tests.)
+- [x] Replace the package-wide `python-shared-package` default with a
+  source-derived reachability closure. The checker now roots the closure in
+  surviving Python console entry points, direct `build_files/scripts`
+  invocations, and explicit dynamic catalogs; unreachable package modules are
+  terminal compatibility fixtures rather than queued runtime work.
+- [x] Add regression coverage for surviving Python entry points, direct
+  shell/build harnesses, and the `hardware_quirks` importlib catalog. The
+  checked-in inventory/report now show 46 active Python package entries (down
+  from 157 non-superseded package files) and 111 unreachable shared-package
+  fixtures.
 - [x] Same defect, different file: `tests/test_kyth_doctor_native.py` used
   bare `def test_*():` module-level functions, not `unittest.TestCase`
   methods, so `python3 -m unittest tests.test_kyth_doctor_native -v` reports

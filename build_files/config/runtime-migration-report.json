@@ -11,24 +11,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "accounts",
-      "owner": "fixture::src/kyth_shared/kyth_shared/accounts.py",
-      "path": "src/kyth_shared/kyth_shared/accounts.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "ai_assist",
-      "owner": "fixture::src/kyth_shared/kyth_shared/ai_assist.py",
-      "path": "src/kyth_shared/kyth_shared/ai_assist.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "ai_dev",
       "owner": "fixture::src/kyth_shared/kyth_shared/ai_dev.py",
       "path": "src/kyth_shared/kyth_shared/ai_dev.py",
@@ -38,36 +20,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "ai_perf_daemon",
-      "owner": "fixture::src/kyth_shared/kyth_shared/ai_perf_daemon.py",
-      "path": "src/kyth_shared/kyth_shared/ai_perf_daemon.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "akmods_lock",
       "owner": "fixture::src/kyth_shared/kyth_shared/akmods_lock.py",
       "path": "src/kyth_shared/kyth_shared/akmods_lock.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "app_presets",
-      "owner": "fixture::src/kyth_shared/kyth_shared/app_presets.py",
-      "path": "src/kyth_shared/kyth_shared/app_presets.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "appstore_cache",
-      "owner": "fixture::src/kyth_shared/kyth_shared/appstore_cache.py",
-      "path": "src/kyth_shared/kyth_shared/appstore_cache.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -92,81 +47,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "attest",
-      "owner": "fixture::src/kyth_shared/kyth_shared/attest.py",
-      "path": "src/kyth_shared/kyth_shared/attest.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "backup_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/backup_preset.py",
-      "path": "src/kyth_shared/kyth_shared/backup_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "battery",
-      "owner": "fixture::src/kyth_shared/kyth_shared/battery.py",
-      "path": "src/kyth_shared/kyth_shared/battery.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "bluetooth_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/bluetooth_preset.py",
-      "path": "src/kyth_shared/kyth_shared/bluetooth_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "boot_health",
       "owner": "fixture::src/kyth_shared/kyth_shared/boot_health.py",
       "path": "src/kyth_shared/kyth_shared/boot_health.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "cgroup_slice",
-      "owner": "fixture::src/kyth_shared/kyth_shared/cgroup_slice.py",
-      "path": "src/kyth_shared/kyth_shared/cgroup_slice.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "clip_quick",
-      "owner": "fixture::src/kyth_shared/kyth_shared/clip_quick.py",
-      "path": "src/kyth_shared/kyth_shared/clip_quick.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "cloud_idempotent",
-      "owner": "fixture::src/kyth_shared/kyth_shared/cloud_idempotent.py",
-      "path": "src/kyth_shared/kyth_shared/cloud_idempotent.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "cloud_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/cloud_preset.py",
-      "path": "src/kyth_shared/kyth_shared/cloud_preset.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -182,225 +65,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "config",
-      "owner": "fixture::src/kyth_shared/kyth_shared/config.py",
-      "path": "src/kyth_shared/kyth_shared/config.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "containers",
       "owner": "fixture::src/kyth_shared/kyth_shared/containers.py",
       "path": "src/kyth_shared/kyth_shared/containers.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "controller_hotplug",
-      "owner": "fixture::src/kyth_shared/kyth_shared/controller_hotplug.py",
-      "path": "src/kyth_shared/kyth_shared/controller_hotplug.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "daemon",
-      "owner": "fixture::src/kyth_shared/kyth_shared/daemon.py",
-      "path": "src/kyth_shared/kyth_shared/daemon.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "__init__",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/__init__.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/__init__.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "plasma",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/plasma.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/plasma.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "polish_manifest",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/polish_manifest.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/polish_manifest.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "shortcut",
-      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/shortcut.py",
-      "path": "src/kyth_shared/kyth_shared/desktop/shortcut.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "devcontainers",
-      "owner": "fixture::src/kyth_shared/kyth_shared/devcontainers.py",
-      "path": "src/kyth_shared/kyth_shared/devcontainers.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "diagnostics",
-      "owner": "fixture::src/kyth_shared/kyth_shared/diagnostics.py",
-      "path": "src/kyth_shared/kyth_shared/diagnostics.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "diagnostics_scrub",
-      "owner": "fixture::src/kyth_shared/kyth_shared/diagnostics_scrub.py",
-      "path": "src/kyth_shared/kyth_shared/diagnostics_scrub.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "disk_utils",
-      "owner": "fixture::src/kyth_shared/kyth_shared/disk_utils.py",
-      "path": "src/kyth_shared/kyth_shared/disk_utils.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "display_hdr",
-      "owner": "fixture::src/kyth_shared/kyth_shared/display_hdr.py",
-      "path": "src/kyth_shared/kyth_shared/display_hdr.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "display_live_apply",
-      "owner": "fixture::src/kyth_shared/kyth_shared/display_live_apply.py",
-      "path": "src/kyth_shared/kyth_shared/display_live_apply.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "doctor",
-      "owner": "fixture::src/kyth_shared/kyth_shared/doctor.py",
-      "path": "src/kyth_shared/kyth_shared/doctor.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "driver_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/driver_preset.py",
-      "path": "src/kyth_shared/kyth_shared/driver_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "etc_overlay",
-      "owner": "fixture::src/kyth_shared/kyth_shared/etc_overlay.py",
-      "path": "src/kyth_shared/kyth_shared/etc_overlay.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "exe_compat",
-      "owner": "fixture::src/kyth_shared/kyth_shared/exe_compat.py",
-      "path": "src/kyth_shared/kyth_shared/exe_compat.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "explorer_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/explorer_preset.py",
-      "path": "src/kyth_shared/kyth_shared/explorer_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "fan_curve",
-      "owner": "fixture::src/kyth_shared/kyth_shared/fan_curve.py",
-      "path": "src/kyth_shared/kyth_shared/fan_curve.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "flatpak_overrides",
-      "owner": "fixture::src/kyth_shared/kyth_shared/flatpak_overrides.py",
-      "path": "src/kyth_shared/kyth_shared/flatpak_overrides.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "fonts_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/fonts_preset.py",
-      "path": "src/kyth_shared/kyth_shared/fonts_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "gaming",
-      "owner": "fixture::src/kyth_shared/kyth_shared/gaming.py",
-      "path": "src/kyth_shared/kyth_shared/gaming.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "truth_engine",
-      "owner": "fixture::src/kyth_shared/kyth_shared/gaming/truth_engine.py",
-      "path": "src/kyth_shared/kyth_shared/gaming/truth_engine.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "gaming_per_game",
-      "owner": "fixture::src/kyth_shared/kyth_shared/gaming_per_game.py",
-      "path": "src/kyth_shared/kyth_shared/gaming_per_game.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -416,54 +83,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "gaming_scan_atomic",
-      "owner": "fixture::src/kyth_shared/kyth_shared/gaming_scan_atomic.py",
-      "path": "src/kyth_shared/kyth_shared/gaming_scan_atomic.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "gaming_snapshot",
-      "owner": "fixture::src/kyth_shared/kyth_shared/gaming_snapshot.py",
-      "path": "src/kyth_shared/kyth_shared/gaming_snapshot.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "guardian",
-      "owner": "fixture::src/kyth_shared/kyth_shared/guardian.py",
-      "path": "src/kyth_shared/kyth_shared/guardian.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "guardian_actions",
-      "owner": "fixture::src/kyth_shared/kyth_shared/guardian_actions.py",
-      "path": "src/kyth_shared/kyth_shared/guardian_actions.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "hardware_policy",
       "owner": "fixture::src/kyth_shared/kyth_shared/hardware_policy.py",
       "path": "src/kyth_shared/kyth_shared/hardware_policy.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "hardware_policy_parse",
-      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_policy_parse.py",
-      "path": "src/kyth_shared/kyth_shared/hardware_policy_parse.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -569,42 +191,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "input_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/input_preset.py",
-      "path": "src/kyth_shared/kyth_shared/input_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "installer_validation",
-      "owner": "fixture::src/kyth_shared/kyth_shared/installer_validation.py",
-      "path": "src/kyth_shared/kyth_shared/installer_validation.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "locale_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/locale_preset.py",
-      "path": "src/kyth_shared/kyth_shared/locale_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "maintenance",
-      "owner": "fixture::src/kyth_shared/kyth_shared/maintenance.py",
-      "path": "src/kyth_shared/kyth_shared/maintenance.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "memory_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/memory_tune.py",
       "path": "src/kyth_shared/kyth_shared/memory_tune.py",
@@ -623,45 +209,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "office_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/office_preset.py",
-      "path": "src/kyth_shared/kyth_shared/office_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "oom",
-      "owner": "fixture::src/kyth_shared/kyth_shared/oom.py",
-      "path": "src/kyth_shared/kyth_shared/oom.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "overlay_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/overlay_preset.py",
-      "path": "src/kyth_shared/kyth_shared/overlay_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "perf_gate",
       "owner": "fixture::src/kyth_shared/kyth_shared/perf_gate.py",
       "path": "src/kyth_shared/kyth_shared/perf_gate.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "perf_transaction",
-      "owner": "fixture::src/kyth_shared/kyth_shared/perf_transaction.py",
-      "path": "src/kyth_shared/kyth_shared/perf_transaction.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -677,117 +227,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "pipewire_latency",
-      "owner": "fixture::src/kyth_shared/kyth_shared/pipewire_latency.py",
-      "path": "src/kyth_shared/kyth_shared/pipewire_latency.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "plasma_drift",
-      "owner": "fixture::src/kyth_shared/kyth_shared/plasma_drift.py",
-      "path": "src/kyth_shared/kyth_shared/plasma_drift.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "plymouth",
-      "owner": "fixture::src/kyth_shared/kyth_shared/plymouth.py",
-      "path": "src/kyth_shared/kyth_shared/plymouth.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "plymouth_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/plymouth_preset.py",
-      "path": "src/kyth_shared/kyth_shared/plymouth_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "polkit_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/polkit_preset.py",
-      "path": "src/kyth_shared/kyth_shared/polkit_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "power_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/power_preset.py",
-      "path": "src/kyth_shared/kyth_shared/power_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/preset.py",
-      "path": "src/kyth_shared/kyth_shared/preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "print_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/print_preset.py",
-      "path": "src/kyth_shared/kyth_shared/print_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "privacy_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/privacy_preset.py",
-      "path": "src/kyth_shared/kyth_shared/privacy_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "qt",
-      "owner": "fixture::src/kyth_shared/kyth_shared/qt.py",
-      "path": "src/kyth_shared/kyth_shared/qt.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "quadlet",
-      "owner": "fixture::src/kyth_shared/kyth_shared/quadlet.py",
-      "path": "src/kyth_shared/kyth_shared/quadlet.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "qualification",
       "owner": "fixture::src/kyth_shared/kyth_shared/qualification.py",
       "path": "src/kyth_shared/kyth_shared/qualification.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "quicksettings",
-      "owner": "fixture::src/kyth_shared/kyth_shared/quicksettings.py",
-      "path": "src/kyth_shared/kyth_shared/quicksettings.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -803,72 +245,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "rgb_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/rgb_preset.py",
-      "path": "src/kyth_shared/kyth_shared/rgb_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "rollback_single_source",
-      "owner": "fixture::src/kyth_shared/kyth_shared/rollback_single_source.py",
-      "path": "src/kyth_shared/kyth_shared/rollback_single_source.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "runtime_diagnostics",
-      "owner": "fixture::src/kyth_shared/kyth_shared/runtime_diagnostics.py",
-      "path": "src/kyth_shared/kyth_shared/runtime_diagnostics.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "runtime_output",
       "owner": "fixture::src/kyth_shared/kyth_shared/runtime_output.py",
       "path": "src/kyth_shared/kyth_shared/runtime_output.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "safe_upgrade",
-      "owner": "fixture::src/kyth_shared/kyth_shared/safe_upgrade.py",
-      "path": "src/kyth_shared/kyth_shared/safe_upgrade.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "save_cloud",
-      "owner": "fixture::src/kyth_shared/kyth_shared/save_cloud.py",
-      "path": "src/kyth_shared/kyth_shared/save_cloud.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "sbom_diff",
-      "owner": "fixture::src/kyth_shared/kyth_shared/sbom_diff.py",
-      "path": "src/kyth_shared/kyth_shared/sbom_diff.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "scaling",
-      "owner": "fixture::src/kyth_shared/kyth_shared/scaling.py",
-      "path": "src/kyth_shared/kyth_shared/scaling.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -884,69 +263,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "scx_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/scx_preset.py",
-      "path": "src/kyth_shared/kyth_shared/scx_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "search_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/search_preset.py",
-      "path": "src/kyth_shared/kyth_shared/search_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "selinux_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/selinux_preset.py",
-      "path": "src/kyth_shared/kyth_shared/selinux_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "session",
-      "owner": "fixture::src/kyth_shared/kyth_shared/session.py",
-      "path": "src/kyth_shared/kyth_shared/session.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "setup_transfer",
-      "owner": "fixture::src/kyth_shared/kyth_shared/setup_transfer.py",
-      "path": "src/kyth_shared/kyth_shared/setup_transfer.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "shader_cache",
-      "owner": "fixture::src/kyth_shared/kyth_shared/shader_cache.py",
-      "path": "src/kyth_shared/kyth_shared/shader_cache.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "signing_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/signing_preset.py",
-      "path": "src/kyth_shared/kyth_shared/signing_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "smoke_check",
       "owner": "fixture::src/kyth_shared/kyth_shared/smoke_check.py",
       "path": "src/kyth_shared/kyth_shared/smoke_check.py",
@@ -956,27 +272,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "snapshot_autoclean",
-      "owner": "fixture::src/kyth_shared/kyth_shared/snapshot_autoclean.py",
-      "path": "src/kyth_shared/kyth_shared/snapshot_autoclean.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "snapshot_timeline",
       "owner": "fixture::src/kyth_shared/kyth_shared/snapshot_timeline.py",
       "path": "src/kyth_shared/kyth_shared/snapshot_timeline.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "steam_input",
-      "owner": "fixture::src/kyth_shared/kyth_shared/steam_input.py",
-      "path": "src/kyth_shared/kyth_shared/steam_input.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -1037,99 +335,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "btrfs_status",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/btrfs_status.py",
-      "path": "src/kyth_shared/kyth_shared/system/btrfs_status.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "cloud_oauth",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/cloud_oauth.py",
-      "path": "src/kyth_shared/kyth_shared/system/cloud_oauth.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "controllers",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/controllers.py",
       "path": "src/kyth_shared/kyth_shared/system/controllers.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "deployment_history",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/deployment_history.py",
-      "path": "src/kyth_shared/kyth_shared/system/deployment_history.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "desktop_stack",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/desktop_stack.py",
-      "path": "src/kyth_shared/kyth_shared/system/desktop_stack.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "drivers",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/drivers.py",
-      "path": "src/kyth_shared/kyth_shared/system/drivers.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "drives",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/drives.py",
-      "path": "src/kyth_shared/kyth_shared/system/drives.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "firmware",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/firmware.py",
-      "path": "src/kyth_shared/kyth_shared/system/firmware.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "fonts_ready",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/fonts_ready.py",
-      "path": "src/kyth_shared/kyth_shared/system/fonts_ready.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "gaming_slice",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/gaming_slice.py",
-      "path": "src/kyth_shared/kyth_shared/system/gaming_slice.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "gpu",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/gpu.py",
-      "path": "src/kyth_shared/kyth_shared/system/gpu.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -1145,63 +353,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "memory_pressure",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/memory_pressure.py",
-      "path": "src/kyth_shared/kyth_shared/system/memory_pressure.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "mesa_version",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/mesa_version.py",
-      "path": "src/kyth_shared/kyth_shared/system/mesa_version.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "mok_verify",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/mok_verify.py",
-      "path": "src/kyth_shared/kyth_shared/system/mok_verify.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "network_identity",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/network_identity.py",
       "path": "src/kyth_shared/kyth_shared/system/network_identity.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "pipewire",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/pipewire.py",
-      "path": "src/kyth_shared/kyth_shared/system/pipewire.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "plasma_hdr",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/plasma_hdr.py",
-      "path": "src/kyth_shared/kyth_shared/system/plasma_hdr.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "printing",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/printing.py",
-      "path": "src/kyth_shared/kyth_shared/system/printing.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -1226,90 +380,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "recovery_status",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/recovery_status.py",
-      "path": "src/kyth_shared/kyth_shared/system/recovery_status.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "registry",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/registry.py",
-      "path": "src/kyth_shared/kyth_shared/system/registry.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "smb",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/smb.py",
-      "path": "src/kyth_shared/kyth_shared/system/smb.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "snapshot",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/snapshot.py",
-      "path": "src/kyth_shared/kyth_shared/system/snapshot.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "update_availability",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/update_availability.py",
-      "path": "src/kyth_shared/kyth_shared/system/update_availability.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "update_status",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/update_status.py",
-      "path": "src/kyth_shared/kyth_shared/system/update_status.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "updater",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/updater.py",
-      "path": "src/kyth_shared/kyth_shared/system/updater.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "updates_unified",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/updates_unified.py",
-      "path": "src/kyth_shared/kyth_shared/system/updates_unified.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "system_probe",
       "owner": "fixture::src/kyth_shared/kyth_shared/system_probe.py",
       "path": "src/kyth_shared/kyth_shared/system_probe.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "tailscale_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/tailscale_preset.py",
-      "path": "src/kyth_shared/kyth_shared/tailscale_preset.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -1325,15 +398,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "thirdparty",
-      "owner": "fixture::src/kyth_shared/kyth_shared/thirdparty.py",
-      "path": "src/kyth_shared/kyth_shared/thirdparty.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "update_coordinator",
       "owner": "fixture::src/kyth_shared/kyth_shared/update_coordinator.py",
       "path": "src/kyth_shared/kyth_shared/update_coordinator.py",
@@ -1343,72 +407,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "update_status",
-      "owner": "fixture::src/kyth_shared/kyth_shared/update_status.py",
-      "path": "src/kyth_shared/kyth_shared/update_status.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "vm_acceptance",
-      "owner": "fixture::src/kyth_shared/kyth_shared/vm_acceptance.py",
-      "path": "src/kyth_shared/kyth_shared/vm_acceptance.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "vpn_saml",
-      "owner": "fixture::src/kyth_shared/kyth_shared/vpn_saml.py",
-      "path": "src/kyth_shared/kyth_shared/vpn_saml.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "vrr",
-      "owner": "fixture::src/kyth_shared/kyth_shared/vrr.py",
-      "path": "src/kyth_shared/kyth_shared/vrr.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "wayland_compose",
       "owner": "fixture::src/kyth_shared/kyth_shared/wayland_compose.py",
       "path": "src/kyth_shared/kyth_shared/wayland_compose.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "window_snap",
-      "owner": "fixture::src/kyth_shared/kyth_shared/window_snap.py",
-      "path": "src/kyth_shared/kyth_shared/window_snap.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "work_migration_idempotent",
-      "owner": "fixture::src/kyth_shared/kyth_shared/work_migration_idempotent.py",
-      "path": "src/kyth_shared/kyth_shared/work_migration_idempotent.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "zram",
-      "owner": "fixture::src/kyth_shared/kyth_shared/zram.py",
-      "path": "src/kyth_shared/kyth_shared/zram.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -2741,28 +1742,1027 @@
       "runtime_authority": "source-only",
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "accounts",
+      "owner": "fixture::src/kyth_shared/kyth_shared/accounts.py",
+      "path": "src/kyth_shared/kyth_shared/accounts.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "ai_assist",
+      "owner": "fixture::src/kyth_shared/kyth_shared/ai_assist.py",
+      "path": "src/kyth_shared/kyth_shared/ai_assist.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "ai_perf_daemon",
+      "owner": "fixture::src/kyth_shared/kyth_shared/ai_perf_daemon.py",
+      "path": "src/kyth_shared/kyth_shared/ai_perf_daemon.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "app_presets",
+      "owner": "fixture::src/kyth_shared/kyth_shared/app_presets.py",
+      "path": "src/kyth_shared/kyth_shared/app_presets.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "appstore_cache",
+      "owner": "fixture::src/kyth_shared/kyth_shared/appstore_cache.py",
+      "path": "src/kyth_shared/kyth_shared/appstore_cache.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "attest",
+      "owner": "fixture::src/kyth_shared/kyth_shared/attest.py",
+      "path": "src/kyth_shared/kyth_shared/attest.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "backup_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/backup_preset.py",
+      "path": "src/kyth_shared/kyth_shared/backup_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "battery",
+      "owner": "fixture::src/kyth_shared/kyth_shared/battery.py",
+      "path": "src/kyth_shared/kyth_shared/battery.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "bluetooth_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/bluetooth_preset.py",
+      "path": "src/kyth_shared/kyth_shared/bluetooth_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "cgroup_slice",
+      "owner": "fixture::src/kyth_shared/kyth_shared/cgroup_slice.py",
+      "path": "src/kyth_shared/kyth_shared/cgroup_slice.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "clip_quick",
+      "owner": "fixture::src/kyth_shared/kyth_shared/clip_quick.py",
+      "path": "src/kyth_shared/kyth_shared/clip_quick.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "cloud_idempotent",
+      "owner": "fixture::src/kyth_shared/kyth_shared/cloud_idempotent.py",
+      "path": "src/kyth_shared/kyth_shared/cloud_idempotent.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "cloud_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/cloud_preset.py",
+      "path": "src/kyth_shared/kyth_shared/cloud_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "config",
+      "owner": "fixture::src/kyth_shared/kyth_shared/config.py",
+      "path": "src/kyth_shared/kyth_shared/config.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "controller_hotplug",
+      "owner": "fixture::src/kyth_shared/kyth_shared/controller_hotplug.py",
+      "path": "src/kyth_shared/kyth_shared/controller_hotplug.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "daemon",
+      "owner": "fixture::src/kyth_shared/kyth_shared/daemon.py",
+      "path": "src/kyth_shared/kyth_shared/daemon.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "__init__",
+      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/__init__.py",
+      "path": "src/kyth_shared/kyth_shared/desktop/__init__.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "plasma",
+      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/plasma.py",
+      "path": "src/kyth_shared/kyth_shared/desktop/plasma.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "polish_manifest",
+      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/polish_manifest.py",
+      "path": "src/kyth_shared/kyth_shared/desktop/polish_manifest.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "shortcut",
+      "owner": "fixture::src/kyth_shared/kyth_shared/desktop/shortcut.py",
+      "path": "src/kyth_shared/kyth_shared/desktop/shortcut.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "devcontainers",
+      "owner": "fixture::src/kyth_shared/kyth_shared/devcontainers.py",
+      "path": "src/kyth_shared/kyth_shared/devcontainers.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "diagnostics",
+      "owner": "fixture::src/kyth_shared/kyth_shared/diagnostics.py",
+      "path": "src/kyth_shared/kyth_shared/diagnostics.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "diagnostics_scrub",
+      "owner": "fixture::src/kyth_shared/kyth_shared/diagnostics_scrub.py",
+      "path": "src/kyth_shared/kyth_shared/diagnostics_scrub.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "disk_utils",
+      "owner": "fixture::src/kyth_shared/kyth_shared/disk_utils.py",
+      "path": "src/kyth_shared/kyth_shared/disk_utils.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "display_hdr",
+      "owner": "fixture::src/kyth_shared/kyth_shared/display_hdr.py",
+      "path": "src/kyth_shared/kyth_shared/display_hdr.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "display_live_apply",
+      "owner": "fixture::src/kyth_shared/kyth_shared/display_live_apply.py",
+      "path": "src/kyth_shared/kyth_shared/display_live_apply.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "doctor",
+      "owner": "fixture::src/kyth_shared/kyth_shared/doctor.py",
+      "path": "src/kyth_shared/kyth_shared/doctor.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "driver_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/driver_preset.py",
+      "path": "src/kyth_shared/kyth_shared/driver_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "etc_overlay",
+      "owner": "fixture::src/kyth_shared/kyth_shared/etc_overlay.py",
+      "path": "src/kyth_shared/kyth_shared/etc_overlay.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "exe_compat",
+      "owner": "fixture::src/kyth_shared/kyth_shared/exe_compat.py",
+      "path": "src/kyth_shared/kyth_shared/exe_compat.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "explorer_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/explorer_preset.py",
+      "path": "src/kyth_shared/kyth_shared/explorer_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "fan_curve",
+      "owner": "fixture::src/kyth_shared/kyth_shared/fan_curve.py",
+      "path": "src/kyth_shared/kyth_shared/fan_curve.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "flatpak_overrides",
+      "owner": "fixture::src/kyth_shared/kyth_shared/flatpak_overrides.py",
+      "path": "src/kyth_shared/kyth_shared/flatpak_overrides.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "fonts_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/fonts_preset.py",
+      "path": "src/kyth_shared/kyth_shared/fonts_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "gaming",
+      "owner": "fixture::src/kyth_shared/kyth_shared/gaming.py",
+      "path": "src/kyth_shared/kyth_shared/gaming.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "truth_engine",
+      "owner": "fixture::src/kyth_shared/kyth_shared/gaming/truth_engine.py",
+      "path": "src/kyth_shared/kyth_shared/gaming/truth_engine.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "gaming_per_game",
+      "owner": "fixture::src/kyth_shared/kyth_shared/gaming_per_game.py",
+      "path": "src/kyth_shared/kyth_shared/gaming_per_game.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "gaming_scan_atomic",
+      "owner": "fixture::src/kyth_shared/kyth_shared/gaming_scan_atomic.py",
+      "path": "src/kyth_shared/kyth_shared/gaming_scan_atomic.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "gaming_snapshot",
+      "owner": "fixture::src/kyth_shared/kyth_shared/gaming_snapshot.py",
+      "path": "src/kyth_shared/kyth_shared/gaming_snapshot.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "guardian",
+      "owner": "fixture::src/kyth_shared/kyth_shared/guardian.py",
+      "path": "src/kyth_shared/kyth_shared/guardian.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "guardian_actions",
+      "owner": "fixture::src/kyth_shared/kyth_shared/guardian_actions.py",
+      "path": "src/kyth_shared/kyth_shared/guardian_actions.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "hardware_policy_parse",
+      "owner": "fixture::src/kyth_shared/kyth_shared/hardware_policy_parse.py",
+      "path": "src/kyth_shared/kyth_shared/hardware_policy_parse.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "input_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/input_preset.py",
+      "path": "src/kyth_shared/kyth_shared/input_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "installer_validation",
+      "owner": "fixture::src/kyth_shared/kyth_shared/installer_validation.py",
+      "path": "src/kyth_shared/kyth_shared/installer_validation.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "locale_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/locale_preset.py",
+      "path": "src/kyth_shared/kyth_shared/locale_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "maintenance",
+      "owner": "fixture::src/kyth_shared/kyth_shared/maintenance.py",
+      "path": "src/kyth_shared/kyth_shared/maintenance.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "office_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/office_preset.py",
+      "path": "src/kyth_shared/kyth_shared/office_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "oom",
+      "owner": "fixture::src/kyth_shared/kyth_shared/oom.py",
+      "path": "src/kyth_shared/kyth_shared/oom.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "overlay_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/overlay_preset.py",
+      "path": "src/kyth_shared/kyth_shared/overlay_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "perf_transaction",
+      "owner": "fixture::src/kyth_shared/kyth_shared/perf_transaction.py",
+      "path": "src/kyth_shared/kyth_shared/perf_transaction.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "pipewire_latency",
+      "owner": "fixture::src/kyth_shared/kyth_shared/pipewire_latency.py",
+      "path": "src/kyth_shared/kyth_shared/pipewire_latency.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "plasma_drift",
+      "owner": "fixture::src/kyth_shared/kyth_shared/plasma_drift.py",
+      "path": "src/kyth_shared/kyth_shared/plasma_drift.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "plymouth",
+      "owner": "fixture::src/kyth_shared/kyth_shared/plymouth.py",
+      "path": "src/kyth_shared/kyth_shared/plymouth.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "plymouth_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/plymouth_preset.py",
+      "path": "src/kyth_shared/kyth_shared/plymouth_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "polkit_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/polkit_preset.py",
+      "path": "src/kyth_shared/kyth_shared/polkit_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "power_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/power_preset.py",
+      "path": "src/kyth_shared/kyth_shared/power_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/preset.py",
+      "path": "src/kyth_shared/kyth_shared/preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "print_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/print_preset.py",
+      "path": "src/kyth_shared/kyth_shared/print_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "privacy_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/privacy_preset.py",
+      "path": "src/kyth_shared/kyth_shared/privacy_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "qt",
+      "owner": "fixture::src/kyth_shared/kyth_shared/qt.py",
+      "path": "src/kyth_shared/kyth_shared/qt.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "quadlet",
+      "owner": "fixture::src/kyth_shared/kyth_shared/quadlet.py",
+      "path": "src/kyth_shared/kyth_shared/quadlet.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "quicksettings",
+      "owner": "fixture::src/kyth_shared/kyth_shared/quicksettings.py",
+      "path": "src/kyth_shared/kyth_shared/quicksettings.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "rgb_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/rgb_preset.py",
+      "path": "src/kyth_shared/kyth_shared/rgb_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "rollback_single_source",
+      "owner": "fixture::src/kyth_shared/kyth_shared/rollback_single_source.py",
+      "path": "src/kyth_shared/kyth_shared/rollback_single_source.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "runtime_diagnostics",
+      "owner": "fixture::src/kyth_shared/kyth_shared/runtime_diagnostics.py",
+      "path": "src/kyth_shared/kyth_shared/runtime_diagnostics.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "safe_upgrade",
+      "owner": "fixture::src/kyth_shared/kyth_shared/safe_upgrade.py",
+      "path": "src/kyth_shared/kyth_shared/safe_upgrade.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "save_cloud",
+      "owner": "fixture::src/kyth_shared/kyth_shared/save_cloud.py",
+      "path": "src/kyth_shared/kyth_shared/save_cloud.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "sbom_diff",
+      "owner": "fixture::src/kyth_shared/kyth_shared/sbom_diff.py",
+      "path": "src/kyth_shared/kyth_shared/sbom_diff.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "scaling",
+      "owner": "fixture::src/kyth_shared/kyth_shared/scaling.py",
+      "path": "src/kyth_shared/kyth_shared/scaling.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "scx_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/scx_preset.py",
+      "path": "src/kyth_shared/kyth_shared/scx_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "search_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/search_preset.py",
+      "path": "src/kyth_shared/kyth_shared/search_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "selinux_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/selinux_preset.py",
+      "path": "src/kyth_shared/kyth_shared/selinux_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "session",
+      "owner": "fixture::src/kyth_shared/kyth_shared/session.py",
+      "path": "src/kyth_shared/kyth_shared/session.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "setup_transfer",
+      "owner": "fixture::src/kyth_shared/kyth_shared/setup_transfer.py",
+      "path": "src/kyth_shared/kyth_shared/setup_transfer.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "shader_cache",
+      "owner": "fixture::src/kyth_shared/kyth_shared/shader_cache.py",
+      "path": "src/kyth_shared/kyth_shared/shader_cache.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "signing_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/signing_preset.py",
+      "path": "src/kyth_shared/kyth_shared/signing_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "snapshot_autoclean",
+      "owner": "fixture::src/kyth_shared/kyth_shared/snapshot_autoclean.py",
+      "path": "src/kyth_shared/kyth_shared/snapshot_autoclean.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "steam_input",
+      "owner": "fixture::src/kyth_shared/kyth_shared/steam_input.py",
+      "path": "src/kyth_shared/kyth_shared/steam_input.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "btrfs_status",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/btrfs_status.py",
+      "path": "src/kyth_shared/kyth_shared/system/btrfs_status.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "cloud_oauth",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/cloud_oauth.py",
+      "path": "src/kyth_shared/kyth_shared/system/cloud_oauth.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "deployment_history",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/deployment_history.py",
+      "path": "src/kyth_shared/kyth_shared/system/deployment_history.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "desktop_stack",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/desktop_stack.py",
+      "path": "src/kyth_shared/kyth_shared/system/desktop_stack.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "drivers",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/drivers.py",
+      "path": "src/kyth_shared/kyth_shared/system/drivers.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "drives",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/drives.py",
+      "path": "src/kyth_shared/kyth_shared/system/drives.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "firmware",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/firmware.py",
+      "path": "src/kyth_shared/kyth_shared/system/firmware.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "fonts_ready",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/fonts_ready.py",
+      "path": "src/kyth_shared/kyth_shared/system/fonts_ready.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "gaming_slice",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/gaming_slice.py",
+      "path": "src/kyth_shared/kyth_shared/system/gaming_slice.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "gpu",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/gpu.py",
+      "path": "src/kyth_shared/kyth_shared/system/gpu.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "memory_pressure",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/memory_pressure.py",
+      "path": "src/kyth_shared/kyth_shared/system/memory_pressure.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "mesa_version",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/mesa_version.py",
+      "path": "src/kyth_shared/kyth_shared/system/mesa_version.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "mok_verify",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/mok_verify.py",
+      "path": "src/kyth_shared/kyth_shared/system/mok_verify.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "pipewire",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/pipewire.py",
+      "path": "src/kyth_shared/kyth_shared/system/pipewire.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "plasma_hdr",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/plasma_hdr.py",
+      "path": "src/kyth_shared/kyth_shared/system/plasma_hdr.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "printing",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/printing.py",
+      "path": "src/kyth_shared/kyth_shared/system/printing.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "recovery_status",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/recovery_status.py",
+      "path": "src/kyth_shared/kyth_shared/system/recovery_status.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "registry",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/registry.py",
+      "path": "src/kyth_shared/kyth_shared/system/registry.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "smb",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/smb.py",
+      "path": "src/kyth_shared/kyth_shared/system/smb.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "snapshot",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/snapshot.py",
+      "path": "src/kyth_shared/kyth_shared/system/snapshot.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "update_availability",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/update_availability.py",
+      "path": "src/kyth_shared/kyth_shared/system/update_availability.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "update_status",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/update_status.py",
+      "path": "src/kyth_shared/kyth_shared/system/update_status.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "updater",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/updater.py",
+      "path": "src/kyth_shared/kyth_shared/system/updater.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "updates_unified",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/updates_unified.py",
+      "path": "src/kyth_shared/kyth_shared/system/updates_unified.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "tailscale_preset",
+      "owner": "fixture::src/kyth_shared/kyth_shared/tailscale_preset.py",
+      "path": "src/kyth_shared/kyth_shared/tailscale_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "thirdparty",
+      "owner": "fixture::src/kyth_shared/kyth_shared/thirdparty.py",
+      "path": "src/kyth_shared/kyth_shared/thirdparty.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "update_status",
+      "owner": "fixture::src/kyth_shared/kyth_shared/update_status.py",
+      "path": "src/kyth_shared/kyth_shared/update_status.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "vm_acceptance",
+      "owner": "fixture::src/kyth_shared/kyth_shared/vm_acceptance.py",
+      "path": "src/kyth_shared/kyth_shared/vm_acceptance.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "vpn_saml",
+      "owner": "fixture::src/kyth_shared/kyth_shared/vpn_saml.py",
+      "path": "src/kyth_shared/kyth_shared/vpn_saml.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "vrr",
+      "owner": "fixture::src/kyth_shared/kyth_shared/vrr.py",
+      "path": "src/kyth_shared/kyth_shared/vrr.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "window_snap",
+      "owner": "fixture::src/kyth_shared/kyth_shared/window_snap.py",
+      "path": "src/kyth_shared/kyth_shared/window_snap.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "work_migration_idempotent",
+      "owner": "fixture::src/kyth_shared/kyth_shared/work_migration_idempotent.py",
+      "path": "src/kyth_shared/kyth_shared/work_migration_idempotent.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "zram",
+      "owner": "fixture::src/kyth_shared/kyth_shared/zram.py",
+      "path": "src/kyth_shared/kyth_shared/zram.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
     }
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 157,
+      "python-shared-package": 46,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 157,
+      "standalone": 46,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 342,
-    "active_python_entries": 157,
+    "active_entries": 231,
+    "active_python_entries": 46,
     "entries": 859,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 157
+      "queued": 46
     },
     "superseded_entries": 98
   },
