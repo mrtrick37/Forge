@@ -1,7 +1,0 @@
-#!/usr/bin/env python3
-"""kyth-apply-quicksettings — apply quicksettings.toml (offline)."""
-from kyth_shared.quicksettings import apply_qs
-import sys
-applied=apply_qs()
-print(f"kyth-apply-quicksettings: {len(applied)}")
-sys.exit(0)

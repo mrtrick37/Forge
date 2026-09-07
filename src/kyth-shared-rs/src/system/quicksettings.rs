@@ -19,6 +19,22 @@ fn normalize_tiles(value: Option<&toml::Value>) -> Vec<String> {
     if tiles.is_empty() { vec!["wifi".into(), "bt".into(), "night".into()] } else { tiles }
 }
 
+pub const TTL_PATH: &str = "/run/kyth-qs-ttl";
+pub const TTL_SECS: u64 = 30;
+
+/// PowerDevil brightness argv, exactly as the Python launcher ordered it.
+/// The `brightness` note is recorded on spawn success regardless of exit
+/// status (`run` defaults to `check=False` upstream).
+pub fn brightness_argv(brightness: i64) -> Vec<String> {
+    vec![
+        "qdbus".to_string(),
+        "org.kde.Solid.PowerManagement".to_string(),
+        "/org/kde/Solid/PowerManagement/Actions/BrightnessControl".to_string(),
+        "setBrightness".to_string(),
+        brightness.to_string(),
+    ]
+}
+
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     if let Some(path) = path { return path.as_ref().to_path_buf(); }
     if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(config).join("kyth/quicksettings.toml"); }
@@ -54,6 +70,14 @@ mod tests {
         let path = directory.path().join("quicksettings.toml");
         std::fs::write(&path, "brightness = 999\ntiles = [\"wifi\", \"secret\"]\n").unwrap();
         assert_eq!(load(&path), QuickSettingsConfig { brightness: 100, tiles: vec!["wifi".into()] });
+    }
+
+    #[test]
+    fn projects_brightness_argv() {
+        assert_eq!(
+            brightness_argv(80),
+            vec!["qdbus", "org.kde.Solid.PowerManagement", "/org/kde/Solid/PowerManagement/Actions/BrightnessControl", "setBrightness", "80"]
+        );
     }
 
     #[test]

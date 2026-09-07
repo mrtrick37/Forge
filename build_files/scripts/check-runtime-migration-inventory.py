@@ -69,6 +69,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-input"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-network"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-pipewire-latency"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-plasma"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-quicksettings"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }
