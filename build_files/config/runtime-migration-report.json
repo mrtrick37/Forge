@@ -38,15 +38,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "network_preset",
-      "owner": "fixture::src/kyth_shared/kyth_shared/network_preset.py",
-      "path": "src/kyth_shared/kyth_shared/network_preset.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "repos",
       "owner": "fixture::src/kyth_shared/kyth_shared/repos.py",
       "path": "src/kyth_shared/kyth_shared/repos.py",
@@ -2691,26 +2682,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 20,
+      "python-shared-package": 19,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 20,
+      "standalone": 19,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 205,
-    "active_python_entries": 20,
+    "active_entries": 204,
+    "active_python_entries": 19,
     "entries": 860,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 20
+      "queued": 19
     },
-    "superseded_entries": 105
+    "superseded_entries": 106
   },
   "superseded": [
     {
@@ -3142,6 +3133,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "network_preset",
+      "owner": "native::kyth-apply-network",
+      "path": "src/kyth_shared/kyth_shared/network_preset.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-apply-network"
     },
     {
       "migration_priority": 3,

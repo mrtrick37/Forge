@@ -172,6 +172,7 @@ NATIVE_REPLACED_MODULES = {
     "perf_gate": "native::kyth-perf-gate-rs",
     "memory_tune": "native::kyth-memory-tune",
     "sysctl_compose": "native::kyth-sysctl-compose",
+    "network_preset": "native::kyth-apply-network",
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
     "apps": "native::kyth-exe-handler",
@@ -206,7 +207,6 @@ SUPERSEDED_TUNABLE_MODULES = frozenset({
 # from shell (build_files/scripts/*.sh, check-*.py) rather than any launcher.
 # These must never be marked superseded, even if a dispatch table names them.
 SHELL_HARNESS_MODULES = frozenset({
-    "network_preset",
     "snapshot_timeline", "gaming_resolve",
     "sched_arbiter",
 })
