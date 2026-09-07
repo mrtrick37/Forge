@@ -300,6 +300,37 @@ pub fn profile_stamp_path(home: impl AsRef<Path>) -> PathBuf {
     home.as_ref().join(".local/share/kyth/profile")
 }
 
+/// State file consulted by `kyth-refresh-taskbar-pins` before touching
+/// Plasma (`~/.local/share/kyth/taskbar-pins`).
+pub fn taskbar_pins_state_path(home: impl AsRef<Path>) -> PathBuf {
+    home.as_ref().join(".local/share/kyth/taskbar-pins")
+}
+
+/// Renders the taskbar-pins refresh script, matching the Python
+/// `js_script` f-string shape (570 chars with a 3-char CSV).
+pub fn render_pins_script(launchers_csv: &str) -> String {
+    format!("var launchers = \"{launchers_csv}\";\n{PINS_SCRIPT_TAIL}\n")
+}
+
+const PINS_SCRIPT_TAIL: &str = r#"for (var i = 0; i < panelIds.length; ++i) {
+    var panel = panelById(panelIds[i]);
+    if (!panel) {
+        continue;
+    }
+    var ids = panel.widgetIds;
+    for (var j = 0; j < ids.length; ++j) {
+        var widget = panel.widgetById(ids[j]);
+        if (widget && widget.type === "org.kde.plasma.icontasks") {
+            try {
+                widget.currentConfigGroup = ["General"];
+                widget.writeConfig("launchers", launchers);
+                widget.reloadConfig();
+            } catch (e) {
+            }
+        }
+    }
+}"#;
+
 /// Renders the role-preset Plasma widget-update script, matching the Python
 /// `js_script` f-string shape (double-quoted CSV header, single braces).
 pub fn render_role_script(launchers_csv: &str, tray_csv: &str, hidden_csv: &str) -> String {
@@ -439,6 +470,15 @@ mod tests {
         assert!(script.ends_with("    }\n}\n"));
         assert!(!script.contains("{{") && !script.contains("}}"));
         assert!(script.contains("panelById(panelIds[p])"));
+    }
+
+    #[test]
+    fn pins_script_matches_python_template_shape() {
+        let script = render_pins_script("A,B");
+        assert_eq!(script.len(), 570);
+        assert!(script.starts_with("var launchers = \"A,B\";\nfor (var i = 0; i < panelIds.length; ++i)"));
+        assert!(script.ends_with("    }\n}\n"));
+        assert!(!script.contains("{{") && !script.contains("}}"));
     }
 
     #[test]

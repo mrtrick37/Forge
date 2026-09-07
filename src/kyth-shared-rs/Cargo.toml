@@ -234,6 +234,10 @@ path = "src/performance_mode_bin.rs"
 name = "kyth-refresh-boot-splash-initramfs"
 path = "src/boot_splash_refresh_bin.rs"
 
+[[bin]]
+name = "kyth-refresh-taskbar-pins"
+path = "src/taskbar_pins_refresh_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

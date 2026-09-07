@@ -3226,28 +3226,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-refresh-taskbar-pins entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-refresh-taskbar-pins",
-      "owner": "fixture::build_files/kyth-refresh-taskbar-pins",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-refresh-taskbar-pins",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-refresh-taskbar-pins",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-refresh-taskbar-pins entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "shell",
       "cutover": "replace installed kyth-report-common.sh entry point after parity gates",
       "installed_implementation": "shell",
@@ -3666,23 +3644,24 @@
       "current_implementation": "data",
       "cutover": "replace installed kyth-refresh-taskbar-pins entry point after parity gates",
       "exec_start": [],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-refresh-taskbar-pins",
-      "owner": "fixture::build_files/kyth-scripts/kyth-refresh-taskbar-pins.path",
+      "owner": "native::kyth-refresh-taskbar-pins",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-scripts/kyth-refresh-taskbar-pins.path",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-scripts/kyth-refresh-taskbar-pins.path",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-refresh-taskbar-pins entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3691,23 +3670,24 @@
       "exec_start": [
         "/usr/bin/kyth-refresh-taskbar-pins"
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-refresh-taskbar-pins",
-      "owner": "fixture::build_files/kyth-scripts/kyth-refresh-taskbar-pins.service",
+      "owner": "native::kyth-refresh-taskbar-pins",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-scripts/kyth-refresh-taskbar-pins.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-scripts/kyth-refresh-taskbar-pins.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-refresh-taskbar-pins entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {

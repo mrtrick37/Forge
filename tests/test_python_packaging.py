@@ -149,6 +149,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-kali-desktop-fixup",
             "kyth-ntfs-repair",
             "kyth-performance-mode",
+            "kyth-refresh-taskbar-pins",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
