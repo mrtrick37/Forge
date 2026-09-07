@@ -74,6 +74,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-rgb"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-role-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scaling"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-tailscale"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-vrr"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }

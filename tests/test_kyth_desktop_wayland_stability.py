@@ -313,13 +313,14 @@ class BrandingInstallTests(unittest.TestCase):
         self.assertIn("kyth-apply-vrr", vrr)
         self.assertIn("kyth-apply-scaling", scaling)
         self.assertIn("kyth-apply-display-hdr", scaling)
-        self.assertTrue((ROOT / "build_files/kyth-apply-vrr").is_file())
         # Native ports: the binaries come from the Rust crate, no Python launchers.
+        self.assertFalse((ROOT / "build_files/kyth-apply-vrr").exists())
         self.assertFalse((ROOT / "build_files/kyth-apply-scaling").exists())
         self.assertFalse((ROOT / "build_files/kyth-apply-display-hdr").exists())
         cargo = (ROOT / "src/kyth-shared-rs/Cargo.toml").read_text()
         self.assertIn('name = "kyth-apply-display-hdr"', cargo)
         self.assertIn('name = "kyth-apply-scaling"', cargo)
+        self.assertIn('name = "kyth-apply-vrr"', cargo)
 
 
 if __name__ == "__main__":

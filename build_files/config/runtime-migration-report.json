@@ -2,15 +2,6 @@
   "active_python": [
     {
       "migration_priority": 2,
-      "name": "kyth-apply-vrr",
-      "owner": "fixture::build_files/kyth-apply-vrr",
-      "path": "build_files/kyth-apply-vrr",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-apply-window-snap",
       "owner": "fixture::build_files/kyth-apply-window-snap",
       "path": "build_files/kyth-apply-window-snap",
@@ -3033,7 +3024,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 28,
+      "python-runtime": 27,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 11,
@@ -3043,15 +3034,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 189
+      "user-session": 188
     },
-    "active_entries": 388,
-    "active_python_entries": 191,
-    "entries": 641,
+    "active_entries": 387,
+    "active_python_entries": 190,
+    "entries": 640,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 268
+      "queued": 267
     },
     "superseded_entries": 92
   },
