@@ -28,6 +28,10 @@ env:
   ZIZMOR_VERSION: 1.25.2
   ZIZMOR_SHA256: aa1facd105f0d83fe5c55b1adcd9d7417de5d83aa27471f91dc0b66cf3803577
   NODE_VERSION: "22"
+  # Probe timing is host-dependent. The tracked ledger is developer-machine
+  # data, so GitHub-hosted runners report the measurement but must not turn
+  # runner variance into a repository validation failure.
+  KYTH_PERF_GATE_ADVISORY: "1"
 
 jobs:
   validation:

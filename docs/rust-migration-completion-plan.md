@@ -238,8 +238,11 @@ test run; `just validate`/`just test` fail immediately because
 `PYTHONPATH=build_files/kyth_shared:build_files/kyth-welcome:build_files/kyth-installer
 python3 -m unittest discover -s tests` directly instead, per CLAUDE.md); and
 `just validate`'s perf gate is failing >20% over its recorded baseline
-regardless of code changes — stale baseline, needs a maintainer `--record`
-re-baseline, not an automatic fix.
+regardless of code changes — the tracked baseline is developer-machine data,
+not a comparable GitHub-hosted runner baseline. Local/per-host validation keeps
+the comparison strict; GitHub validation sets `KYTH_PERF_GATE_ADVISORY=1` so
+it still reports runner timing without turning host variance into a CI failure.
+Rebaseline with `--record` only when the target host and workload are stable.
 
 This phase produces no Rust code. It is a prerequisite because every later
 phase's "done" count is meaningless while the starting count is inflated by
