@@ -91,6 +91,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-web-app-categorize"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-storage-sense"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-duperemove"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-batteryd"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-cloud-mount"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }

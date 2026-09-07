@@ -798,28 +798,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-cloud-mount entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-cloud-mount",
-      "owner": "fixture::build_files/kyth-cloud-mount",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-cloud-mount",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-cloud-mount",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-cloud-mount entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "alias",
       "cutover": "replace installed kyth-compaction entry point after parity gates",
       "installed_implementation": "rust",

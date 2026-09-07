@@ -274,6 +274,14 @@ path = "src/duperemove_bin.rs"
 name = "kyth-batteryd"
 path = "src/batteryd_bin.rs"
 
+[[bin]]
+name = "kyth-cloud-mount"
+path = "src/cloud_mount_bin.rs"
+
+[[bin]]
+name = "kyth-save-sync"
+path = "src/save_sync_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
