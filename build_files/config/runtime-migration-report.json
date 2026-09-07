@@ -38,15 +38,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "memory_tune",
-      "owner": "fixture::src/kyth_shared/kyth_shared/memory_tune.py",
-      "path": "src/kyth_shared/kyth_shared/memory_tune.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "network_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/network_preset.py",
       "path": "src/kyth_shared/kyth_shared/network_preset.py",
@@ -2709,26 +2700,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 22,
+      "python-shared-package": 21,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 22,
+      "standalone": 21,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 207,
-    "active_python_entries": 22,
+    "active_entries": 206,
+    "active_python_entries": 21,
     "entries": 860,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 22
+      "queued": 21
     },
-    "superseded_entries": 103
+    "superseded_entries": 104
   },
   "superseded": [
     {
@@ -3100,6 +3091,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "memory_tune",
+      "owner": "native::kyth-memory-tune",
+      "path": "src/kyth_shared/kyth_shared/memory_tune.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-memory-tune"
     },
     {
       "migration_priority": 3,

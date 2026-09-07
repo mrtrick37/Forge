@@ -144,7 +144,7 @@ class InventoryTest(unittest.TestCase):
         by_name = {item["name"]: item for item in entries if item["surface"] == "python-runtime"}
         # sched_arbiter is imported by build_files/kyth-game-launch; the
         # remaining shell-harness modules stay live until native callers land.
-        for name in ("sched_arbiter", "memory_tune", "sysctl_compose"):
+        for name in ("sched_arbiter", "sysctl_compose"):
             item = by_name[name]
             self.assertTrue(item["runtime_active"], name)
             self.assertNotIn("superseded_by", item, name)
@@ -203,7 +203,7 @@ class InventoryTest(unittest.TestCase):
 
         # These modules are invoked from build/acceptance harnesses rather than
         # from an installed console script.
-        for name in ("memory_tune", "sysctl_compose"):
+        for name in ("sysctl_compose",):
             self.assertIn(f"kyth_shared.{name}", reachable, name)
             self.assertTrue(by_name[name]["runtime_active"], name)
 

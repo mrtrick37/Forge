@@ -334,6 +334,10 @@ path = "src/hardware_policy_bin.rs"
 name = "kyth-qualify"
 path = "src/qualification_bin.rs"
 
+[[bin]]
+name = "kyth-memory-tune"
+path = "src/memory_tune_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -57,7 +57,7 @@ from the surviving Python console-script root (`qualification`), scans direct
 `build_files/scripts` imports, and preserves explicit shell-harness channels.
 The native `kyth-hardware-policy` boundary owns the former hardware-policy and
 hardware-quirk catalog paths, so those Python files are no longer reachability
-roots. The resulting 22 active package modules remain queued; 127 unreachable
+roots. The resulting 21 active package modules remain queued; 128 unreachable
 shared-package modules are classified as source-only compatibility fixtures.
 The first reachable module,
 `ai_dev`, is now owned by the packaged `kyth-ai-dev` Rust binary; its Python
@@ -112,9 +112,9 @@ Reachable-package cutover (2026-09-07):
 
 | Metric | Before | After |
 | --- | ---: | ---: |
-| Active Python package entries | 45 | 22 |
-| Native shared-package owners | 4 | 5 (`kyth-ai-dev`, `kyth-boot-health`, `kyth-hardware-policy`, `kyth-qualify`, `kyth-perf-gate-rs`) |
-| Superseded native rollback fixtures | 99 | 103 |
+| Active Python package entries | 45 | 21 |
+| Native shared-package owners | 5 | 6 (`kyth-ai-dev`, `kyth-boot-health`, `kyth-hardware-policy`, `kyth-qualify`, `kyth-perf-gate-rs`, `kyth-memory-tune`) |
+| Superseded native rollback fixtures | 99 | 104 |
 
 `kyth-ai-dev` now owns setup, status, enter, start, stop, model pull, and
 destructive box removal. Its Rust controller retains bounded execution,
@@ -142,6 +142,10 @@ remains only for parity and rollback qualification.
 `kyth-perf-gate-rs` now owns probe timing, regression comparison, and bounded
 ledger persistence. The legacy Python check script delegates to the native
 binary and remains only as a compatibility entry point.
+
+`kyth-memory-tune` now owns RAM-tier selection, sysctl/zram/runtime-env writes,
+root enforcement, and apply failure semantics. The Python memory-tune module
+remains only as a parity/rollback fixture.
 
 The package is still installed for compatibility and rollback tooling, but a
 package path alone is no longer evidence of runtime authority. The checked-in
