@@ -101,6 +101,18 @@ pub fn categorize_web_app(content: &str) -> Option<String> {
     Some(format!("{}\n", lines.join("\n")))
 }
 
+/// Zenmap-specific fixup for Kali exports: whole-line `Exec=`/`TryExec=`
+/// replacement routing through the rootful Kali box. Like the Python loop,
+/// the caller writes the result (and marks changed) whenever the Kali gate
+/// passes, even when neither line matched.
+pub fn rewrite_zenmap_desktop(content: &str) -> Option<String> {
+    if !content.contains("--name kali") && !content.contains("-n kali") { return None; }
+    let exec = Regex::new(r"(?m)^Exec=.*$").ok()?;
+    let try_exec = Regex::new(r"(?m)^TryExec=.*$").ok()?;
+    let content = exec.replace_all(content, "Exec=kyth-distrobox-root-launch --root kali /usr/bin/zenmap").into_owned();
+    Some(try_exec.replace_all(&content, "TryExec=kyth-distrobox-root-launch").into_owned())
+}
+
 /// Apply the safe text-only Kali launcher fixups.  The caller decides which
 /// files are in the Kali export directory and persists the returned text.
 pub fn rewrite_kali_desktop(content: &str) -> Option<String> {
@@ -146,6 +158,14 @@ mod tests {
         assert!(result.content.contains("Categories=Game;"));
         assert!(!result.content.contains("Hidden=true"));
         assert!(result.content.contains("X-KythExportedSteamGame=true"));
+    }
+
+    #[test]
+    fn zenmap_exec_lines_route_through_kali_box() {
+        let fixed = rewrite_zenmap_desktop("Exec=/usr/bin/zenmap %F\nTryExec=/usr/bin/zenmap\nName=x --name kali\n").unwrap();
+        assert!(fixed.contains("Exec=kyth-distrobox-root-launch --root kali /usr/bin/zenmap"));
+        assert!(fixed.contains("TryExec=kyth-distrobox-root-launch"));
+        assert!(rewrite_zenmap_desktop("Exec=/usr/bin/other\n").is_none());
     }
 
     #[test]

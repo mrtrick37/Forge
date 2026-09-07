@@ -65,15 +65,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-kali-desktop-fixup",
-      "owner": "fixture::build_files/kyth-kali-desktop-fixup",
-      "path": "build_files/kyth-kali-desktop-fixup",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-ntfs-repair",
       "owner": "fixture::build_files/kyth-ntfs-repair",
       "path": "build_files/kyth-ntfs-repair",
@@ -3006,7 +2997,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 25,
+      "python-runtime": 24,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 11,
@@ -3016,15 +3007,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 186
+      "user-session": 185
     },
-    "active_entries": 385,
-    "active_python_entries": 188,
-    "entries": 638,
+    "active_entries": 384,
+    "active_python_entries": 187,
+    "entries": 637,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 265
+      "queued": 264
     },
     "superseded_entries": 92
   },

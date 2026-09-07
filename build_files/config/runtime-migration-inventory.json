@@ -2092,28 +2092,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-kali-desktop-fixup entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-kali-desktop-fixup",
-      "owner": "fixture::build_files/kyth-kali-desktop-fixup",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-kali-desktop-fixup",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-kali-desktop-fixup",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-kali-desktop-fixup entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "alias",
       "cutover": "replace installed kyth-kargs-apply entry point after parity gates",
       "installed_implementation": "rust",

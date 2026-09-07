@@ -3,7 +3,8 @@
 install -m 0755 /ctx/kyth-davinci-install /usr/bin/kyth-davinci-install
 install -m 0755 /ctx/kyth-duperemove /usr/bin/kyth-duperemove
 install -m 0755 /ctx/kyth-distrobox-root-launch /usr/bin/kyth-distrobox-root-launch
-install -m 0755 /ctx/kyth-kali-desktop-fixup /usr/bin/kyth-kali-desktop-fixup
+# kyth-kali-desktop-fixup is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-local-bin-migrate /usr/bin/kyth-local-bin-migrate
 install -m 0755 /ctx/kyth-nearby-share /usr/bin/kyth-nearby-share
 install -m 0755 /ctx/kyth-setup-transfer /usr/bin/kyth-setup-transfer
