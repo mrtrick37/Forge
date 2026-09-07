@@ -154,6 +154,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-session-snapshot",
             "kyth-setup-devcontainer",
             "kyth-setup-transfer",
+            "kyth-vscode-wallet",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
@@ -174,7 +175,7 @@ class PythonPackagingTests(unittest.TestCase):
         helper_copy = next(
             line
             for line in dockerfile.splitlines()
-            if line.startswith("COPY build_files/kyth-vscode-wallet ")
+            if line.startswith("COPY build_files/game-performance ")
         )
         for entry_point in entry_points:
             with self.subTest(host_copy_entry_point=entry_point):

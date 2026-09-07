@@ -58,7 +58,7 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     --mount=type=cache,id=kyth-hub-shell-target,target=/build/kyth-hub-web/src-tauri/target \
     cargo build --release --locked && \
     cp target/release/kyth-hub-shell /build/kyth-hub-shell && \
-    (cd /build/kyth-shared-rs && cargo build --release --locked --features telemetry-writer --bin kyth-probe --bin kyth-guardian --bin kyth-update-watcher --bin kyth-network-share --bin kyth-telem --bin kyth-privileged --bin kyth-post-update-check --bin kyth-firstboot-app-status --bin kyth-steam-game-export --bin kyth-hub-desktop-entries --bin kyth-safe-upgrade --bin kyth-bootc-guard --bin kyth-finalize-staged --bin kyth-btrfs-maint --bin kyth-ai-perfd --bin kyth-perf-gate-rs --bin kyth-doctor --bin kyth-health-check --bin kyth-smoke-check --bin kyth-resume-check --bin kyth-nvidia-status --bin kyth-controller-check --bin kyth-creator-check --bin kyth-exe-compat --bin kyth-snapshot-timeline --bin kyth-print-check --bin kyth-windows-verify --bin kyth-vm-acceptance-guest --bin kyth-tunable --bin kyth-tunable-rs --bin kyth-game-boost --bin kyth-configure-session --bin kyth-set-resolution --bin kyth-set-kickoff-icon --bin kyth-greeter-compositor --bin kyth-config-apply --bin kyth-apply-scx-preset --bin kyth-apply-explorer --bin kyth-apply-desktop-layout --bin kyth-apply-display-hdr --bin kyth-apply-input --bin kyth-apply-network --bin kyth-apply-pipewire-latency --bin kyth-apply-plasma --bin kyth-apply-quicksettings --bin kyth-apply-rgb --bin kyth-apply-role-preset --bin kyth-apply-scaling --bin kyth-apply-tailscale --bin kyth-apply-vrr --bin kyth-apply-window-snap --bin kyth-driver-switch --bin kyth-kali-desktop-fixup --bin kyth-ntfs-repair --bin kyth-performance-mode --bin kyth-refresh-boot-splash-initramfs --bin kyth-refresh-taskbar-pins --bin kyth-report-issue --bin kyth-session-snapshot --bin kyth-setup-devcontainer --bin kyth-setup-transfer) && \
+    (cd /build/kyth-shared-rs && cargo build --release --locked --features telemetry-writer --bin kyth-probe --bin kyth-guardian --bin kyth-update-watcher --bin kyth-network-share --bin kyth-telem --bin kyth-privileged --bin kyth-post-update-check --bin kyth-firstboot-app-status --bin kyth-steam-game-export --bin kyth-hub-desktop-entries --bin kyth-safe-upgrade --bin kyth-bootc-guard --bin kyth-finalize-staged --bin kyth-btrfs-maint --bin kyth-ai-perfd --bin kyth-perf-gate-rs --bin kyth-doctor --bin kyth-health-check --bin kyth-smoke-check --bin kyth-resume-check --bin kyth-nvidia-status --bin kyth-controller-check --bin kyth-creator-check --bin kyth-exe-compat --bin kyth-snapshot-timeline --bin kyth-print-check --bin kyth-windows-verify --bin kyth-vm-acceptance-guest --bin kyth-tunable --bin kyth-tunable-rs --bin kyth-game-boost --bin kyth-configure-session --bin kyth-set-resolution --bin kyth-set-kickoff-icon --bin kyth-greeter-compositor --bin kyth-config-apply --bin kyth-apply-scx-preset --bin kyth-apply-explorer --bin kyth-apply-desktop-layout --bin kyth-apply-display-hdr --bin kyth-apply-input --bin kyth-apply-network --bin kyth-apply-pipewire-latency --bin kyth-apply-plasma --bin kyth-apply-quicksettings --bin kyth-apply-rgb --bin kyth-apply-role-preset --bin kyth-apply-scaling --bin kyth-apply-tailscale --bin kyth-apply-vrr --bin kyth-apply-window-snap --bin kyth-driver-switch --bin kyth-kali-desktop-fixup --bin kyth-ntfs-repair --bin kyth-performance-mode --bin kyth-refresh-boot-splash-initramfs --bin kyth-refresh-taskbar-pins --bin kyth-report-issue --bin kyth-session-snapshot --bin kyth-setup-devcontainer --bin kyth-setup-transfer --bin kyth-vscode-wallet) && \
     cp /build/kyth-shared-rs/target/release/kyth-probe /build/kyth-probe && \
     cp /build/kyth-shared-rs/target/release/kyth-guardian /build/kyth-guardian && \
     cp /build/kyth-shared-rs/target/release/kyth-update-watcher /build/kyth-update-watcher && \
@@ -103,6 +103,7 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     cp /build/kyth-shared-rs/target/release/kyth-session-snapshot /build/kyth-session-snapshot && \
     cp /build/kyth-shared-rs/target/release/kyth-setup-devcontainer /build/kyth-setup-devcontainer && \
     cp /build/kyth-shared-rs/target/release/kyth-setup-transfer /build/kyth-setup-transfer && \
+    cp /build/kyth-shared-rs/target/release/kyth-vscode-wallet /build/kyth-vscode-wallet && \
     cp /build/kyth-shared-rs/target/release/kyth-ai-perfd /build/kyth-ai-perfd && \
     cp /build/kyth-shared-rs/target/release/kyth-perf-gate-rs /build/kyth-perf-gate-rs && \
     cp /build/kyth-shared-rs/target/release/kyth-doctor /build/kyth-doctor && \
@@ -225,7 +226,7 @@ RUN : "cache-bust:plymouth=${PLYMOUTH_HASH}" && \
 # sysconfig-static and sysconfig layers. COPY once so neither layer needs a
 # redundant bind-mount. sysconfig.sh removes these from /ctx once installed
 # (see its tail) so they don't linger as duplicate content in the final image.
-COPY build_files/kyth-vscode-wallet build_files/game-performance build_files/kyth-shader-preheat build_files/kyth-sched-arbiter build_files/kyth-power-arbiter build_files/kyth-power-arbiter.service build_files/kyth-storage-gate build_files/kyth-readahead-hint build_files/kyth-game-launch build_files/kyth-shader-prune build_files/kyth-tunable /ctx/
+COPY build_files/game-performance build_files/kyth-shader-preheat build_files/kyth-sched-arbiter build_files/kyth-power-arbiter build_files/kyth-power-arbiter.service build_files/kyth-storage-gate build_files/kyth-readahead-hint build_files/kyth-game-launch build_files/kyth-shader-prune build_files/kyth-tunable /ctx/
 
 # Install the shared Python distribution for runtime scripts.
 COPY build_files/kyth_shared /tmp/kyth-shared-package
@@ -250,6 +251,8 @@ COPY --from=hub-web-builder --chmod=0755 /build/kyth-report-issue /usr/bin/kyth-
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-session-snapshot /usr/bin/kyth-session-snapshot
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-setup-devcontainer /usr/bin/kyth-setup-devcontainer
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-setup-transfer /usr/bin/kyth-setup-transfer
+COPY --from=hub-web-builder --chmod=0755 /build/kyth-vscode-wallet /ctx/kyth-vscode-wallet
+COPY --from=hub-web-builder --chmod=0755 /build/kyth-vscode-wallet /usr/bin/kyth-vscode-wallet
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-tunable-rs /usr/bin/kyth-tunable-rs
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-game-boost /usr/bin/kyth-game-boost
 ARG SYSCONFIG_HASH=unset

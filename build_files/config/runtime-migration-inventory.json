@@ -685,7 +685,7 @@
         "/usr/bin/kyth-vscode-wallet"
       ],
       "installed_implementation": "data",
-      "migration_priority": 2,
+      "migration_priority": 1,
       "name": "kyth-browser-wallet-defaults",
       "owner": "fixture::build_files/kyth-browser-wallet-defaults.service",
       "parity_tests": [
@@ -698,7 +698,7 @@
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-browser-wallet-defaults entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
       "status": "queued",
       "surface": "systemd-unit"
@@ -4886,28 +4886,6 @@
       "rollback": "restore previous installed kyth-vpnc-script entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-vscode-wallet entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-vscode-wallet",
-      "owner": "fixture::build_files/kyth-vscode-wallet",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-vscode-wallet",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-vscode-wallet",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-vscode-wallet entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
       "runtime_scope": "user-session",
       "status": "queued",
       "surface": "launcher"

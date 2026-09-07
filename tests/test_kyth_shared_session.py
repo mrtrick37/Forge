@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pathlib
-import runpy
 import sys
 import unittest
 from unittest import mock
@@ -24,17 +23,36 @@ from kyth_shared.session import (
 
 
 class SessionTests(unittest.TestCase):
-    def test_vscode_wallet_launcher_runs_main(self) -> None:
-        launcher = ROOT / "build_files" / "kyth-vscode-wallet"
-        with (
-            mock.patch(
-                "kyth_shared.session.enable_vscode_brave_wallet_prompts"
-            ) as enable_prompts,
-            mock.patch("builtins.print"),
-        ):
-            runpy.run_path(str(launcher), run_name="__main__")
+    def test_vscode_wallet_launcher_is_native(self) -> None:
+        # The installed entry point is the native `kyth-vscode-wallet`
+        # binary (see `system::browser_wallet` and `vscode_wallet_bin`);
+        # this pins the behavior contract against the retained Python
+        # fixture (`kyth_shared.session`) plus the native packaging
+        # contract. No Python launcher remains in the source tree.
+        self.assertFalse((ROOT / "build_files" / "kyth-vscode-wallet").exists())
+        cargo = (ROOT / "src/kyth-shared-rs/Cargo.toml").read_text()
+        dockerfile = (ROOT / "Dockerfile").read_text()
+        self.assertIn('name = "kyth-vscode-wallet"', cargo)
+        self.assertIn("/build/kyth-vscode-wallet /usr/bin/kyth-vscode-wallet", dockerfile)
+        # The build-time sysconfig seeding runs the staged native binary.
+        self.assertIn("/build/kyth-vscode-wallet /ctx/kyth-vscode-wallet", dockerfile)
 
-        enable_prompts.assert_called_once_with(pathlib.Path.home())
+    def test_vscode_wallet_fixture_enables_kwallet(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as home:
+            home_path = pathlib.Path(home)
+            (home_path / ".config" / "Code").mkdir(parents=True)
+            (home_path / ".config" / "Code" / "argv.json").write_text(
+                '{"zoom": 2}', encoding="utf-8"
+            )
+            enable_vscode_brave_wallet_prompts(home_path)
+            argv = (home_path / ".config" / "Code" / "argv.json").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn('"password-store": "kwallet5"', argv)
+            flags = home_path / ".config" / "brave-flags.conf"
+            self.assertIn("--password-store=kwallet5", flags.read_text(encoding="utf-8"))
 
     @mock.patch("pathlib.Path.home")
     def test_marker_path(self, mock_home) -> None:

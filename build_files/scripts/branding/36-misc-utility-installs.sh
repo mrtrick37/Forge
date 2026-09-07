@@ -18,7 +18,8 @@ install -m 0755 /ctx/kyth-scx-loader /usr/bin/scx_loader
 # kyth-doctor is the native Rust binary copied from the hub-web-builder stage;
 # retain the Python launcher in the source tree for parity only.
 install -m 0755 /ctx/kyth-windows-import /usr/bin/kyth-windows-import
-install -m 0755 /ctx/kyth-vscode-wallet /usr/bin/kyth-vscode-wallet
+# kyth-vscode-wallet is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 mkdir -p /usr/lib/systemd/user /usr/lib/systemd/user/default.target.wants
 install -m 0644 /ctx/kyth-dynamic-lock.service /usr/lib/systemd/user/kyth-dynamic-lock.service
 install -m 0644 /ctx/kyth-browser-wallet-defaults.service /usr/lib/systemd/user/kyth-browser-wallet-defaults.service
