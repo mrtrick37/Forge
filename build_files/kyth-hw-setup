@@ -1,5 +1,4 @@
-#!/bin/bash
-# Compatibility entry point for the versioned declarative hardware engine.
+#!/usr/bin/env bash
 set -euo pipefail
-
-exec /usr/bin/kyth-hardware-policy apply "$@"
+# Rust owner replaces the former kyth-hardware-policy apply --force path.
+exec /usr/bin/kyth-runtime apply-hardware "$@"

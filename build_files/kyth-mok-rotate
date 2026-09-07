@@ -1,30 +1,5 @@
 #!/usr/bin/env bash
-# kyth-mok-rotate — SecureBoot MOK expiry check (offline, no cloud)
 set -euo pipefail
-# Cert path must match secureboot.sh's install path — that is the only place
-# the Kyth signing cert is ever installed on a real image. This previously
-# pointed at /etc/pki/kyth/secureboot.crt, which nothing ever created, so
-# this check silently no-opped on every machine, every run.
-cert="/usr/share/kyth/secureboot/kyth-secureboot.cer"
-if [[ ! -f "$cert" ]]; then echo "kyth-mok-rotate: no cert $cert — image built without Secure Boot support" >&2; exit 0; fi
-# Check expiry via openssl
-if command -v openssl >/dev/null 2>&1; then
-    exp=$(openssl x509 -enddate -noout -in "$cert" 2>/dev/null | cut -d= -f2 || true)
-    if [[ -n "$exp" ]]; then
-        # The signing key lives in a CI secret and is baked into the image at
-        # build time — nothing running on an already-deployed machine can
-        # mint a replacement. Warn loudly rather than pretend to fix it:
-        # sbctl-generated keys (if sbctl were even installed) are an
-        # unrelated key hierarchy and enrolling them would do nothing about
-        # this cert expiring.
-        if ! openssl x509 -checkend 2592000 -noout -in "$cert" 2>/dev/null; then
-            echo "kyth-mok-rotate: WARNING — Kyth Secure Boot cert expires ${exp} (within 30d)." >&2
-            echo "kyth-mok-rotate: rotate MOK_KEY in CI, publish a new image, and re-run 'ujust enroll-secureboot' on each machine." >&2
-        fi
-    fi
-fi
-# TPM PCR7 re-seal best-effort
-if command -v tpm2_pcrread >/dev/null 2>&1; then
-    tpm2_pcrread sha256:7 >/dev/null 2>&1 || true
-fi
-echo "kyth-mok-rotate: ok"
+# Rust owns cert="/usr/share/kyth/secureboot/kyth-secureboot.cer" expiry
+# inspection and the ujust enroll-secureboot remediation contract.
+exec /usr/bin/kyth-runtime rotate-mok "$@"

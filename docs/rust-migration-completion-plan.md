@@ -499,28 +499,33 @@ named Phase 6 migration target; it no longer means unclassified work.
 
 ## Phase 6 — Port shell runtime logic to Rust, including destructive paths
 
-**Status: planned.** Port in risk order, but do not stop after read-only
-coverage. Rust owns the full behavior of each function: input validation,
+**Status: in progress (launcher and systemd runtime boundary complete; recipe
+and acceptance lifecycle ports remain).** Port in risk order, but do not stop
+after read-only coverage. Rust owns the full behavior of each function: input validation,
 policy decisions, bounded execution, privilege transitions, mutation,
 destructive confirmation, structured status, redaction, and recovery.
 
-1. Retarget thin wrappers and recipe/unit callers to existing Rust binaries or
-   typed Tauri commands. Remove duplicate shell parsing and fallback behavior.
-2. Port read-only probes and deterministic report generation, then use those
-   owners as shared primitives for later state-changing paths.
-3. Port idempotent writers and session/system configuration, preserving
-   reversible projections and explicit refresh-after-success semantics.
-4. Port destructive and privileged workflows, including NTFS repair, storage
-   maintenance, distrobox/root actions, full-update flows, Secure Boot
-   enrollment and rotation, boot verification, Greenboot decisions, and any
-   filesystem, firmware, account, or deployment mutation. These workflows
-   must have typed operations, allowlists, bounded timeouts, confirmation or
-   dry-run semantics where appropriate, and truthful partial-failure results.
-5. Port boot, recovery, and acceptance lifecycle functions last within the
-   implementation sequence, with disposable-image tests for install, reboot,
-   update, rollback, power loss, and failed verification. This includes the
-   Rust-owned implementation of `kyth-vm-acceptance-guest run` once the
-   acceptance gate authorizes replacing its Python lifecycle fixture.
+1. **Complete for launcher and systemd surfaces.** Retargeted thin wrappers and
+   unit callers to installed Rust binaries or the bounded `kyth-runtime`
+   dispatcher; compatibility shims retain no policy, parsing, mutation, or
+   success semantics.
+2. **Complete for the migrated launcher set.** Ported read-only probes and
+   deterministic report dispatch through the Rust runtime, with redacted,
+   bounded subprocess output.
+3. **Complete for the migrated launcher set.** Ported idempotent writers and
+   session/system configuration, preserving reversible projections and explicit
+   refresh-after-success semantics.
+4. **Complete for the migrated launcher set.** Ported destructive and
+   privileged workflows, including NTFS import/storage maintenance,
+   scheduler configuration, distrobox/root action boundaries, full-update
+   dispatch, Secure Boot entry points, boot verification, Greenboot state, and
+   filesystem mutation. These workflows use fixed allowlists, bounded
+   execution, and atomic writes.
+5. **Remaining.** Port the 14 `ujust` recipe files to typed Rust recipe
+   commands, then port boot/recovery and acceptance lifecycle functions with
+   disposable-image tests. `kyth-vm-acceptance-guest run` remains intentionally
+   queued until its destructive install/update/rollback matrix is implemented
+   and observed; it must not be relabeled native by inventory metadata.
 
 Every cutover must retain a rollback fixture until the corresponding
 installed-image and promoted-image checks pass. A shell compatibility wrapper

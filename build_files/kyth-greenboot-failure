@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Count one failure per boot ID and quarantine repeatedly unhealthy digests.
 set -euo pipefail
-
-exec /usr/bin/kyth-boot-health record-failure --reason "greenboot required check failed"
+# Rust owns the shared /usr/bin/kyth-boot-health failure transition.
+exec /usr/bin/kyth-runtime greenboot-failure "$@"

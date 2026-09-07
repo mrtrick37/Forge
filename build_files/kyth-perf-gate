@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
-# Stable command name for the native Rust performance gate.
 set -euo pipefail
-exec /usr/bin/kyth-perf-gate-rs "$@"
+exec /usr/bin/kyth-runtime perf-gate "$@"

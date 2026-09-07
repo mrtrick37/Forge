@@ -1,27 +1,3 @@
 #!/usr/bin/env bash
-# kyth-power-arbiter — debounced EPP setter (single writer)
-# Called via systemd service triggered by udev, coalesces per-second power_supply events.
 set -euo pipefail
-# Determine AC state: any BAT discharging => battery, else AC
-ac=1
-for s in /sys/class/power_supply/BAT*/status /sys/class/power_supply/CMB*/status; do
-  [[ -f "$s" ]] || continue
-  if grep -q "Discharging" "$s" 2>/dev/null; then
-    ac=0; break
-  fi
-done
-# Also check online attr for AC adapters
-if [[ $ac -eq 1 ]]; then
-  for o in /sys/class/power_supply/AC*/online /sys/class/power_supply/ADP*/online; do
-    [[ -f "$o" ]] || continue
-    if [[ "$(cat "$o" 2>/dev/null)" == "0" ]]; then
-      # if any AC online==0 and no BAT, might be battery; keep ac=1 as fallback
-      :
-    fi
-  done
-fi
-if [[ $ac -eq 1 ]]; then
-  /usr/bin/kyth-set-epp performance 2>/dev/null || true
-else
-  /usr/bin/kyth-set-epp balance_power 2>/dev/null || true
-fi
+exec /usr/bin/kyth-runtime power-arbiter "$@"

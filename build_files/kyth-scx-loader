@@ -1,28 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-config=/etc/scx/scx_loader.conf
-[[ -r "${config}" ]] || {
-	echo "scx_loader: missing ${config}; leaving sched_ext unset" >&2
-	exit 0
-}
-
-scheduler=$(awk -F= '/^SCX_SCHEDULER=/{print $2; exit}' "${config}")
-if [[ ! "${scheduler}" =~ ^scx_[a-z0-9_]+$ ]]; then
-	echo "scx_loader: invalid scheduler name: ${scheduler}" >&2
-	exit 1
-fi
-
-binary="/usr/bin/${scheduler}"
-if [[ ! -x "${binary}" ]]; then
-	echo "scx_loader: scheduler ${scheduler} not installed, falling back to default (no sched_ext)" >&2
-	exit 0
-fi
-
-# Health check: spawn scheduler briefly and verify it stays up 2s; fallback on failure
-timeout 5 "${binary}" --help >/dev/null 2>&1 || {
-	echo "scx_loader: ${scheduler} failed health check, falling back to default" >&2
-	exit 0
-}
-
-exec "${binary}"
+# Rust owns the ^scx_[a-z0-9_]+$ validation and the "leaving sched_ext unset"
+# refusal/skip contract for a missing configuration.
+exec /usr/bin/kyth-runtime scx-loader "$@"

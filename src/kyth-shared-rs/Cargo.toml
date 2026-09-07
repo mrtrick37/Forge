@@ -314,6 +314,10 @@ path = "src/user_polish_bin.rs"
 name = "kyth-exe-handler"
 path = "src/exe_handler_bin.rs"
 
+[[bin]]
+name = "kyth-runtime"
+path = "src/runtime_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

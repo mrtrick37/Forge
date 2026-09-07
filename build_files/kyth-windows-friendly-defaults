@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-exec /usr/bin/kyth-user-polish "$@"
+exec /usr/bin/kyth-runtime windows-friendly-defaults "$@"

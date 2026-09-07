@@ -7,7 +7,7 @@ StartLimitBurst=3
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/kyth-sched-arbiter apply
+ExecStart=/usr/bin/kyth-tunable-rs sched-arbiter apply
 RemainAfterExit=yes
 # Runs once at boot to pick a placement owner, then stays "active" without
 # doing further work — deprioritized so its brief startup work never

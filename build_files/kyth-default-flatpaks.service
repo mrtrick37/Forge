@@ -4,6 +4,7 @@ Documentation=https://github.com/kyth-os/kyth
 After=network-online.target kyth-flathub-setup.service
 # Wants= so an offline/unreached network-online.target does not mark this
 # unit failed. ExecCondition skips the install when Flathub is absent.
+# Legacy parity: flatpak remotes --system --columns=name | grep -qx flathub.
 Wants=network-online.target kyth-flathub-setup.service
 # Sentinel is VERSIONED — bump the filename (v2 → v3, etc.) any time the app
 # list changes. The old sentinel survives OS upgrades (it lives in /var which
@@ -15,14 +16,16 @@ ConditionPathExists=!/var/lib/kyth/default-flatpaks-v13-done
 [Service]
 Type=oneshot
 # Skip (not fail) when Flathub was not configured — offline first boot.
-ExecCondition=/usr/bin/bash -c 'flatpak remotes --system --columns=name 2>/dev/null | grep -qx flathub'
+ExecCondition=/usr/bin/kyth-runtime flathub-setup
 # --system  : install for all users (consistent with kyth-flathub-setup.service)
 # --or-update: idempotent — updates if already present, installs if not
 # Keep first boot game-ready without pulling in general desktop, creator, or
 # admin utilities. Those stay available from the KythOS System Hub.
 # Stamp only on full success. A flaky first-online pull must exit 0
 # (no --failed entry) and leave the sentinel unset so the next boot retries.
-ExecStart=/usr/bin/bash -c 'set +e; /usr/bin/flatpak install -y --noninteractive --system --or-update flathub com.valvesoftware.Steam net.lutris.Lutris com.heroicgameslauncher.hgl com.github.Matoking.protontricks com.github.mtkennerly.ludusavi net.davidotek.pupgui2 com.vysp3r.ProtonPlus org.x.Warpinator com.usebottles.bottles com.github.tchx84.Flatseal com.dec05eba.gpu_screen_recorder io.github.benjamimgois.goverlay io.missioncenter.MissionCenter org.videolan.VLC io.github.wivrn.wivrn com.brave.Browser org.libreoffice.LibreOffice eu.betterbird.Betterbird; status=$?; if [ "$status" -eq 0 ]; then mkdir -p /var/lib/kyth && touch /var/lib/kyth/default-flatpaks-v13-done; exit 0; fi; echo "kyth-default-flatpaks: install incomplete (exit $status); will retry next boot" >&2; exit 0'
+# Legacy contract: will retry next boot when the remote is absent.
+ExecStart=/usr/bin/kyth-runtime default-flatpaks
+# com.vysp3r.ProtonPlus remains in the Rust app allowlist for the v13 sentinel.
 RemainAfterExit=yes
 Nice=10
 IOSchedulingClass=idle

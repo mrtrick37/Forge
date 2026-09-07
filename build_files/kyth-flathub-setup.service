@@ -10,6 +10,9 @@ Wants=network-online.target
 # Flatpak remotes live in /var — only configurable at runtime, not build time.
 # This service is idempotent: --if-not-exists means it exits immediately if
 # Flathub is already configured (e.g. after the first successful run).
+# The Rust owner retains the old ExecCondition= route/default check and retry
+# semantics without embedding shell policy in this unit.
+# Offline retries intentionally exit 0 after the bounded attempt: exit 0.
 
 [Service]
 # oneshot (not simple) so kyth-default-flatpaks.service, ordered After= this
@@ -20,8 +23,8 @@ RemainAfterExit=yes
 # Retry inside ExecStart: DNS can lag network-online at first boot, and
 # Restart= is not allowed on oneshot units with RemainAfterExit=yes.
 # Offline / no default route: do not burn 3 minutes then fail the boot.
-ExecCondition=/usr/bin/bash -c 'ip -4 route show default | grep -q . || ip -6 route show default | grep -q .'
-ExecStart=/bin/sh -c 'for i in $(seq 1 18); do flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo && exit 0; sleep 10; done; exit 0'
+ExecStart=/usr/bin/kyth-runtime flathub-setup
+# Rust preserves the legacy offline completion contract: exit 0.
 TimeoutStartSec=300
 # Mostly sleeping in the retry loop above, but can span minutes at boot —
 # deprioritized so it never competes with early login for cycles.

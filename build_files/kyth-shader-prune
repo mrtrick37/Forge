@@ -1,26 +1,3 @@
 #!/usr/bin/env bash
-# kyth-shader-prune — LRU prune Mesa shader cache when PSI>40% or free<2G (idle I/O, single scan)
 set -euo pipefail
-# Run idle to avoid stutter during shader load
-if command -v ionice >/dev/null 2>&1; then
-  ionice -c 3 -p $$ 2>/dev/null || true
-fi
-cache="${XDG_CACHE_HOME:-$HOME/.cache}/mesa_shader_cache"
-if [[ ! -d "$cache" ]]; then exit 0; fi
-# check pressure
-if [[ -f /proc/pressure/io ]]; then
-  if grep -q "avg10=" /proc/pressure/io; then
-    avg=$(grep -o "avg10=[0-9.]*" /proc/pressure/io | head -n1 | cut -d= -f2)
-    if awk "BEGIN{exit !($avg > 40)}"; then
-      # prune oldest 20% when PSI high
-      find "$cache" -type f -printf '%T@ %p\n' | sort -n | head -n 100 | cut -d' ' -f2- | xargs -r rm -f
-      exit 0
-    fi
-  fi
-fi
-# check free
-free_kb=$(df --output=avail "$cache" 2>/dev/null | tail -n1 | tr -d ' ')
-if [[ "$free_kb" =~ ^[0-9]+$ ]] && (( free_kb < 2*1024*1024 )); then
-  find "$cache" -type f -printf '%T@ %p\n' | sort -n | head -n 50 | cut -d' ' -f2- | xargs -r rm -f
-fi
-# cap size to min(4G on ≤16GB, 10G else) via max 10G already in env.d, this is LRU only
+exec /usr/bin/kyth-runtime shader-prune "$@"

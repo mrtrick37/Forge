@@ -1,12 +1,3 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
-
-[[ "${1:-}" == deep && $# -eq 1 ]] || {
-	echo "Usage: kyth-set-sleep-mode deep" >&2
-	exit 64
-}
-[[ -w /sys/power/mem_sleep ]] || {
-	echo "Deep sleep is unavailable or not writable on this system" >&2
-	exit 1
-}
-printf 'deep\n' >/sys/power/mem_sleep
+exec /usr/bin/kyth-runtime set-sleep-mode "$@"

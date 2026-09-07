@@ -1430,9 +1430,27 @@
   "source_only": [
     {
       "migration_priority": 3,
+      "name": "kyth-hub-web",
+      "owner": "fixture::build_files/kyth-hub-web",
+      "path": "build_files/kyth-hub-web",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "kyth-installer",
       "owner": "fixture::build_files/kyth-installer",
       "path": "build_files/kyth-installer",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "kyth-welcome",
+      "owner": "fixture::build_files/kyth-welcome",
+      "path": "build_files/kyth-welcome",
       "runtime_authority": "source-only",
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported"
@@ -2738,23 +2756,23 @@
     "active_by_authority": {
       "python-runtime": 1,
       "python-shared-package": 157,
-      "rust-dispatcher": 16,
-      "rust-service": 20,
-      "shell-orchestration": 165
+      "rust-dispatcher": 51,
+      "rust-service": 25,
+      "shell-orchestration": 121
     },
     "active_by_scope": {
       "installer": 1,
       "standalone": 157,
       "system-service": 38,
-      "user-session": 163
+      "user-session": 159
     },
-    "active_entries": 359,
+    "active_entries": 355,
     "active_python_entries": 158,
     "entries": 852,
     "p0_open_entries": 0,
     "status_by_active_entry": {
-      "done-native": 130,
-      "queued": 229
+      "done-native": 182,
+      "queued": 173
     },
     "superseded_entries": 98
   },

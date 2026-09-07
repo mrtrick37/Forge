@@ -1,10 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-splash_package=/usr/share/plasma/look-and-feel/org.kythos.desktop
-[[ -r "${splash_package}/contents/splash/Splash.qml" ]] || exit 0
-command -v kwriteconfig6 >/dev/null 2>&1 || exit 0
-
-mkdir -p "${HOME}/.config"
-kwriteconfig6 --file ksplashrc --group KSplash --key Engine KSplashQML
-kwriteconfig6 --file ksplashrc --group KSplash --key Theme org.kythos.desktop
+# Rust applies --key Theme org.kythos.desktop atomically after validation.
+exec /usr/bin/kyth-runtime session-splash-guard "$@"

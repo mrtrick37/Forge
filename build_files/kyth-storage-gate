@@ -1,36 +1,3 @@
 #!/usr/bin/env bash
-# kyth-storage-gate — ExecCondition for storage maint: AC + idle + !gaming
-# Returns 0 to run, 1 to skip (ConditionACPower is separate, this adds pressure+gaming).
 set -euo pipefail
-
-# pressure check: skip if avg10 >=20
-for p in /proc/pressure/cpu /sys/fs/cgroup/cpu.pressure; do
-  if [[ -f "$p" ]]; then
-    if grep -q "avg10=" "$p"; then
-      avg=$(grep -o "avg10=[0-9.]*" "$p" | head -n1 | cut -d= -f2)
-      if awk "BEGIN{exit !($avg >= 20)}"; then
-        echo "kyth-storage-gate: pressure high ($avg), skipping" >&2
-        exit 1
-      fi
-    fi
-    break
-  fi
-done
-
-# gaming check: skip if any gaming launcher active
-if pgrep -f "kyth-game-boost|kyth-game-launch|gamemoderun|game-performance" >/dev/null 2>&1; then
-  echo "kyth-storage-gate: gaming active, skipping" >&2
-  exit 1
-fi
-
-# btrfs scrub active check: skip if scrub already running (avoid overlapping Io)
-if command -v btrfs >/dev/null 2>&1; then
-  for mnt in / /var /home; do
-    if btrfs scrub status "$mnt" 2>/dev/null | grep -q "running"; then
-      echo "kyth-storage-gate: btrfs scrub active on $mnt, skipping" >&2
-      exit 1
-    fi
-  done
-fi
-
-exit 0
+exec /usr/bin/kyth-runtime storage-gate "$@"

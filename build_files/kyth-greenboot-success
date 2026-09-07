@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Record the exact digest greenboot declared healthy.
 set -euo pipefail
-
-exec /usr/bin/kyth-boot-health mark-healthy
+# Rust owns the shared /usr/bin/kyth-boot-health success transition.
+exec /usr/bin/kyth-runtime greenboot-success "$@"

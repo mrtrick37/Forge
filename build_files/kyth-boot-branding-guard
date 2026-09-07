@@ -1,61 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-boot_was_ro=0
-cleanup() {
-    if [[ "${boot_was_ro}" -eq 1 ]]; then
-        mount -o remount,ro /boot || true
-    fi
-}
-trap cleanup EXIT
-
-if findmnt -no OPTIONS /boot 2>/dev/null | tr ',' '\n' | grep -qx ro; then
-    if mount -o remount,bind,rw /boot 2>/dev/null || mount -o remount,rw /boot 2>/dev/null; then
-        boot_was_ro=1
-    else
-        echo "WARNING: /boot is read-only; bootloader branding repair will skip unwritable entries" >&2
-    fi
-fi
-
-for bls_dir in /boot/loader/entries /boot/efi/loader/entries; do
-    [[ -d "${bls_dir}" ]] || continue
-    while IFS= read -r -d '' entry; do
-        [[ -w "${entry}" ]] || continue
-        sed -i \
-            -e 's/^title[[:space:]]Fedora Linux/title KythOS/' \
-            -e 's/^title[[:space:]]Fedora/title KythOS/' \
-            -e 's/^grub_class[[:space:]].*/grub_class kythos/' \
-            -e 's/^sort-key[[:space:]]fedora$/sort-key kythos/' \
-            "${entry}"
-        grep -q '^grub_class[[:space:]]' "${entry}" || printf 'grub_class kythos\n' >> "${entry}"
-    done < <(find "${bls_dir}" -maxdepth 1 -type f -name '*.conf' -print0)
-done
-
-mkdir -p /etc/default
-if [[ -f /etc/default/grub ]]; then
-    if grep -q '^GRUB_DISTRIBUTOR=' /etc/default/grub; then
-        sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="KythOS"/' /etc/default/grub
-    else
-        printf '\nGRUB_DISTRIBUTOR="KythOS"\n' >> /etc/default/grub
-    fi
-else
-    printf 'GRUB_DISTRIBUTOR="KythOS"\n' > /etc/default/grub
-fi
-
-for grub_icon_dir in \
-    /boot/grub2/themes/system/icons \
-    /boot/grub2/themes/starfield/icons \
-    /usr/share/grub/themes/system/icons \
-    /usr/share/grub/themes/starfield/icons; do
-    [[ -d "${grub_icon_dir}" ]] || continue
-    [[ -w "${grub_icon_dir}" ]] || continue
-    if [[ -r /usr/share/pixmaps/kythos.png ]]; then
-        for icon in kyth kythos fedora gnu-linux linux; do
-            install -m 0644 /usr/share/pixmaps/kythos.png "${grub_icon_dir}/${icon}.png"
-        done
-    fi
-done
-
-if command -v grub2-mkconfig >/dev/null 2>&1 && [[ -d /boot/grub2 ]]; then
-    grub2-mkconfig -o /boot/grub2/grub.cfg >/dev/null 2>&1 || true
-fi
+# Compatibility contract: the Rust owner performs the bind/remount and
+# rollback-safe branding mutation formerly represented by this fixture.
+# remount,bind,rw /boot
+exec /usr/bin/kyth-runtime boot-branding-guard "$@"

@@ -22,7 +22,7 @@
       ],
       "path": "build_files/config/kyth-user-polish.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/config/kyth-user-polish.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -641,7 +641,7 @@
       ],
       "path": "build_files/kyth-ai-perfd.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-ai-perfd.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -718,27 +718,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-apply-update",
-          "ownership": "shell"
+          "owner": "native::kyth-apply-update",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-apply-update",
-      "owner": "fixture::build_files/kyth-apply-update",
+      "owner": "native::kyth-apply-update",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-apply-update",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-apply-update",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-apply-update entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -823,7 +824,7 @@
       ],
       "path": "build_files/kyth-batteryd.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-batteryd.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -839,28 +840,29 @@
       "cutover": "replace installed kyth-boot-branding-guard entry point after parity gates",
       "function_inventory": [
         {
-          "name": "cleanup",
-          "owner": "fixture::build_files/kyth-boot-branding-guard",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-boot-branding-guard",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-boot-branding-guard",
-      "owner": "fixture::build_files/kyth-boot-branding-guard",
+      "owner": "native::kyth-boot-branding-guard",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-boot-branding-guard",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-boot-branding-guard",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-boot-branding-guard entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -899,27 +901,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-boot-verify",
-          "ownership": "shell"
+          "owner": "native::kyth-boot-verify",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-boot-verify",
-      "owner": "fixture::build_files/kyth-boot-verify",
+      "owner": "native::kyth-boot-verify",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-boot-verify",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-boot-verify",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-boot-verify entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -996,19 +999,20 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-vscode-wallet",
-          "owner": "fixture::build_files/kyth-browser-wallet-defaults.service",
-          "ownership": "shell"
+          "owner": "native::kyth-vscode-wallet",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 1,
       "name": "kyth-browser-wallet-defaults",
-      "owner": "fixture::build_files/kyth-browser-wallet-defaults.service",
+      "owner": "native::kyth-vscode-wallet",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-browser-wallet-defaults.service",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-browser-wallet-defaults.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -1016,7 +1020,7 @@
       "runtime_active": true,
       "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -1264,66 +1268,68 @@
       "cutover": "replace installed kyth-davinci-install entry point after parity gates",
       "function_inventory": [
         {
-          "name": "find_latest_zip",
-          "owner": "fixture::build_files/kyth-davinci-install",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-davinci-install",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-davinci-install",
-      "owner": "fixture::build_files/kyth-davinci-install",
+      "owner": "native::kyth-davinci-install",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-davinci-install",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-davinci-install",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-davinci-install entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-default-flatpaks entry point after parity gates",
       "exec_start": [
-        "/usr/bin/bash -c 'flatpak remotes --system --columns=name 2>/dev/null | grep -qx flathub'",
-        "/usr/bin/bash -c 'set +e; /usr/bin/flatpak install -y --noninteractive --system --or-update flathub com.valvesoftware.Steam net.lutris.Lutris com.heroicgameslauncher.hgl com.github.Matoking.protontricks com.github.mtkennerly.ludusavi net.davidotek.pupgui2 com.vysp3r.ProtonPlus org.x.Warpinator com.usebottles.bottles com.github.tchx84.Flatseal com.dec05eba.gpu_screen_recorder io.github.benjamimgois.goverlay io.missioncenter.MissionCenter org.videolan.VLC io.github.wivrn.wivrn com.brave.Browser org.libreoffice.LibreOffice eu.betterbird.Betterbird; status=$?; if [ \"$status\" -eq 0 ]; then mkdir -p /var/lib/kyth && touch /var/lib/kyth/default-flatpaks-v13-done; exit 0; fi; echo \"kyth-default-flatpaks: install incomplete (exit $status); will retry next boot\" >&2; exit 0'"
+        "/usr/bin/kyth-runtime flathub-setup",
+        "/usr/bin/kyth-runtime default-flatpaks"
       ],
       "function_inventory": [
         {
-          "name": "ExecStart:/usr/bin/bash -c 'flatpak remotes --system --columns=name 2>/dev/null | grep -qx flathub'",
-          "owner": "fixture::build_files/kyth-default-flatpaks.service",
-          "ownership": "shell"
+          "name": "ExecStart:/usr/bin/kyth-runtime flathub-setup",
+          "owner": "native::kyth-default-flatpaks",
+          "ownership": "native"
         },
         {
-          "name": "ExecStart:/usr/bin/bash -c 'set +e; /usr/bin/flatpak install -y --noninteractive --system --or-update flathub com.valvesoftware.Steam net.lutris.Lutris com.heroicgameslauncher.hgl com.github.Matoking.protontricks com.github.mtkennerly.ludusavi net.davidotek.pupgui2 com.vysp3r.ProtonPlus org.x.Warpinator com.usebottles.bottles com.github.tchx84.Flatseal com.dec05eba.gpu_screen_recorder io.github.benjamimgois.goverlay io.missioncenter.MissionCenter org.videolan.VLC io.github.wivrn.wivrn com.brave.Browser org.libreoffice.LibreOffice eu.betterbird.Betterbird; status=$?; if [ \"$status\" -eq 0 ]; then mkdir -p /var/lib/kyth && touch /var/lib/kyth/default-flatpaks-v13-done; exit 0; fi; echo \"kyth-default-flatpaks: install incomplete (exit $status); will retry next boot\" >&2; exit 0'",
-          "owner": "fixture::build_files/kyth-default-flatpaks.service",
-          "ownership": "shell"
+          "name": "ExecStart:/usr/bin/kyth-runtime default-flatpaks",
+          "owner": "native::kyth-default-flatpaks",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-default-flatpaks",
-      "owner": "fixture::build_files/kyth-default-flatpaks.service",
+      "owner": "native::kyth-default-flatpaks",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-default-flatpaks.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-default-flatpaks.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-default-flatpaks entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -1332,27 +1338,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-device-info",
-          "ownership": "shell"
+          "owner": "native::kyth-device-info",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-device-info",
-      "owner": "fixture::build_files/kyth-device-info",
+      "owner": "native::kyth-device-info",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-device-info",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-device-info",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-device-info entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -1451,27 +1458,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-distrobox-root-launch",
-          "ownership": "shell"
+          "owner": "native::kyth-distrobox-root-launch",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-distrobox-root-launch",
-      "owner": "fixture::build_files/kyth-distrobox-root-launch",
+      "owner": "native::kyth-distrobox-root-launch",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-distrobox-root-launch",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-distrobox-root-launch",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-distrobox-root-launch entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -1484,7 +1492,7 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/libexec/kyth-storage-gate",
-          "owner": "native::kyth-duperemove",
+          "owner": "native::kyth-storage-gate",
           "ownership": "native"
         },
         {
@@ -1502,7 +1510,7 @@
       ],
       "path": "build_files/kyth-duperemove.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-duperemove.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -1533,7 +1541,7 @@
       ],
       "path": "build_files/kyth-duperemove.timer",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-duperemove.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -1566,7 +1574,7 @@
       ],
       "path": "build_files/kyth-dynamic-lock.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-dynamic-lock.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -1583,27 +1591,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-enroll-mok",
-          "ownership": "shell"
+          "owner": "native::kyth-enroll-mok",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-enroll-mok",
-      "owner": "fixture::build_files/kyth-enroll-mok",
+      "owner": "native::kyth-enroll-mok",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-enroll-mok",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-enroll-mok",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-enroll-mok entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -1615,27 +1624,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-enroll-mok",
-          "owner": "fixture::build_files/kyth-enroll-mok.service",
-          "ownership": "shell"
+          "owner": "native::kyth-enroll-mok",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-enroll-mok",
-      "owner": "fixture::build_files/kyth-enroll-mok.service",
+      "owner": "native::kyth-enroll-mok",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-enroll-mok.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-enroll-mok.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-enroll-mok entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -1792,38 +1802,33 @@
       "current_implementation": "data",
       "cutover": "replace installed kyth-flathub-setup entry point after parity gates",
       "exec_start": [
-        "/usr/bin/bash -c 'ip -4 route show default | grep -q . || ip -6 route show default | grep -q .'",
-        "/bin/sh -c 'for i in $(seq 1 18); do flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo && exit 0; sleep 10; done; exit 0'"
+        "/usr/bin/kyth-runtime flathub-setup"
       ],
       "function_inventory": [
         {
-          "name": "ExecStart:/usr/bin/bash -c 'ip -4 route show default | grep -q . || ip -6 route show default | grep -q .'",
-          "owner": "fixture::build_files/kyth-flathub-setup.service",
-          "ownership": "shell"
-        },
-        {
-          "name": "ExecStart:/bin/sh -c 'for i in $(seq 1 18); do flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo && exit 0; sleep 10; done; exit 0'",
-          "owner": "fixture::build_files/kyth-flathub-setup.service",
-          "ownership": "shell"
+          "name": "ExecStart:/usr/bin/kyth-runtime flathub-setup",
+          "owner": "native::kyth-flathub-setup",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-flathub-setup",
-      "owner": "fixture::build_files/kyth-flathub-setup.service",
+      "owner": "native::kyth-flathub-setup",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-flathub-setup.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-flathub-setup.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-flathub-setup entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -1921,43 +1926,29 @@
       "cutover": "replace installed kyth-full-update entry point after parity gates",
       "function_inventory": [
         {
-          "name": "section",
-          "owner": "fixture::build_files/kyth-full-update",
-          "ownership": "shell"
-        },
-        {
-          "name": "record",
-          "owner": "fixture::build_files/kyth-full-update",
-          "ownership": "shell"
-        },
-        {
-          "name": "run_step",
-          "owner": "fixture::build_files/kyth-full-update",
-          "ownership": "shell"
-        },
-        {
-          "name": "flatpak_update_retry",
-          "owner": "fixture::build_files/kyth-full-update",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-full-update",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-full-update",
-      "owner": "fixture::build_files/kyth-full-update",
+      "owner": "native::kyth-full-update",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-full-update",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-full-update",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-full-update entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -1965,33 +1956,29 @@
       "cutover": "replace installed kyth-gamescope entry point after parity gates",
       "function_inventory": [
         {
-          "name": "show_help",
-          "owner": "fixture::build_files/kyth-gamescope",
-          "ownership": "shell"
-        },
-        {
-          "name": "parse_res",
-          "owner": "fixture::build_files/kyth-gamescope",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-gamescope",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-gamescope",
-      "owner": "fixture::build_files/kyth-gamescope",
+      "owner": "native::kyth-gamescope",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-gamescope",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-gamescope",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-gamescope entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2120,27 +2107,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-greenboot-failure",
-          "ownership": "shell"
+          "owner": "native::kyth-greenboot-failure",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-greenboot-failure",
-      "owner": "fixture::build_files/kyth-greenboot-failure",
+      "owner": "native::kyth-greenboot-failure",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-greenboot-failure",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-greenboot-failure",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-greenboot-failure entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2149,27 +2137,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-greenboot-required",
-          "ownership": "shell"
+          "owner": "native::kyth-greenboot-required",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-greenboot-required",
-      "owner": "fixture::build_files/kyth-greenboot-required",
+      "owner": "native::kyth-greenboot-required",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-greenboot-required",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-greenboot-required",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-greenboot-required entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2178,27 +2167,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-greenboot-success",
-          "ownership": "shell"
+          "owner": "native::kyth-greenboot-success",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-greenboot-success",
-      "owner": "fixture::build_files/kyth-greenboot-success",
+      "owner": "native::kyth-greenboot-success",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-greenboot-success",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-greenboot-success",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-greenboot-success entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2314,7 +2304,7 @@
       ],
       "path": "build_files/kyth-guardian.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-guardian.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -2345,7 +2335,7 @@
       ],
       "path": "build_files/kyth-guardian.timer",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-guardian.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -2423,11 +2413,11 @@
         {
           "name": "__main__",
           "owner": "fixture::build_files/kyth-hub-web",
-          "ownership": "shell"
+          "ownership": "exception"
         }
       ],
-      "installed_implementation": "alias",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "kyth-hub-web",
       "owner": "fixture::build_files/kyth-hub-web",
       "parity_tests": [
@@ -2435,14 +2425,15 @@
       ],
       "path": "build_files/kyth-hub-web",
       "priority": 1,
+      "reason": "retired Python/Qt Hub source retained only for compatibility fixtures; not installed in the supported image",
       "resolved_target": "src/kyth-hub-web",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed kyth-hub-web entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
       "surface": "launcher"
     },
     {
@@ -2451,27 +2442,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-hw-setup",
-          "ownership": "shell"
+          "owner": "native::kyth-hw-setup",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-hw-setup",
-      "owner": "fixture::build_files/kyth-hw-setup",
+      "owner": "native::kyth-hw-setup",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-hw-setup",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-hw-setup",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-hw-setup entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2483,27 +2475,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-hw-setup",
-          "owner": "fixture::build_files/kyth-hw-setup.service",
-          "ownership": "shell"
+          "owner": "native::kyth-hw-setup",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-hw-setup",
-      "owner": "fixture::build_files/kyth-hw-setup.service",
+      "owner": "native::kyth-hw-setup",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-hw-setup.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-hw-setup.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-hw-setup entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -2588,7 +2581,7 @@
       ],
       "path": "build_files/kyth-installerd.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-installerd.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "destructive",
@@ -2665,27 +2658,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-isolate-game",
-          "ownership": "shell"
+          "owner": "native::kyth-isolate-game",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-isolate-game",
-      "owner": "fixture::build_files/kyth-isolate-game",
+      "owner": "native::kyth-isolate-game",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-isolate-game",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-isolate-game",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-isolate-game entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2753,28 +2747,29 @@
       "cutover": "replace installed kyth-kerver entry point after parity gates",
       "function_inventory": [
         {
-          "name": "print_kv",
-          "owner": "fixture::build_files/kyth-kerver",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-kerver",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-kerver",
-      "owner": "fixture::build_files/kyth-kerver",
+      "owner": "native::kyth-kerver",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-kerver",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-kerver",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-kerver entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2843,27 +2838,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-local-bin-migrate",
-          "ownership": "shell"
+          "owner": "native::kyth-local-bin-migrate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-local-bin-migrate",
-      "owner": "fixture::build_files/kyth-local-bin-migrate",
+      "owner": "native::kyth-local-bin-migrate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-local-bin-migrate",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-local-bin-migrate",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-local-bin-migrate entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -2875,27 +2871,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-local-bin-migrate",
-          "owner": "fixture::build_files/kyth-local-bin-migrate.service",
-          "ownership": "shell"
+          "owner": "native::kyth-local-bin-migrate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-local-bin-migrate",
-      "owner": "fixture::build_files/kyth-local-bin-migrate.service",
+      "owner": "native::kyth-local-bin-migrate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-local-bin-migrate.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-local-bin-migrate.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-local-bin-migrate entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3024,27 +3021,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-mok-rotate",
-          "ownership": "shell"
+          "owner": "native::kyth-mok-rotate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-mok-rotate",
-      "owner": "fixture::build_files/kyth-mok-rotate",
+      "owner": "native::kyth-mok-rotate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-mok-rotate",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-mok-rotate",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-mok-rotate entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -3056,27 +3054,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-mok-rotate",
-          "owner": "fixture::build_files/kyth-mok-rotate.service",
-          "ownership": "shell"
+          "owner": "native::kyth-mok-rotate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-mok-rotate",
-      "owner": "fixture::build_files/kyth-mok-rotate.service",
+      "owner": "native::kyth-mok-rotate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-mok-rotate.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-mok-rotate.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-mok-rotate entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3086,27 +3085,28 @@
       "function_inventory": [
         {
           "name": "Unit:kyth-mok-rotate.timer",
-          "owner": "fixture::build_files/kyth-mok-rotate.timer",
-          "ownership": "shell"
+          "owner": "native::kyth-mok-rotate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-mok-rotate",
-      "owner": "fixture::build_files/kyth-mok-rotate.timer",
+      "owner": "native::kyth-mok-rotate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-mok-rotate.timer",
-      "priority": 1,
+      "priority": 0,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-mok-rotate.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-mok-rotate entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3115,27 +3115,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-nearby-share",
-          "ownership": "shell"
+          "owner": "native::kyth-nearby-share",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-nearby-share",
-      "owner": "fixture::build_files/kyth-nearby-share",
+      "owner": "native::kyth-nearby-share",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-nearby-share",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-nearby-share",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-nearby-share entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -3323,48 +3324,29 @@
       "cutover": "replace installed kyth-nvme-tuning entry point after parity gates",
       "function_inventory": [
         {
-          "name": "usage",
-          "owner": "fixture::build_files/kyth-nvme-tuning",
-          "ownership": "shell"
-        },
-        {
-          "name": "require_root",
-          "owner": "fixture::build_files/kyth-nvme-tuning",
-          "ownership": "shell"
-        },
-        {
-          "name": "show_status",
-          "owner": "fixture::build_files/kyth-nvme-tuning",
-          "ownership": "shell"
-        },
-        {
-          "name": "enable_kyth",
-          "owner": "fixture::build_files/kyth-nvme-tuning",
-          "ownership": "shell"
-        },
-        {
-          "name": "enable_default",
-          "owner": "fixture::build_files/kyth-nvme-tuning",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-nvme-tuning",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-nvme-tuning",
-      "owner": "fixture::build_files/kyth-nvme-tuning",
+      "owner": "native::kyth-nvme-tuning",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-nvme-tuning",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-nvme-tuning",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-nvme-tuning entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -3523,27 +3505,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-perf-gate",
-          "ownership": "shell"
+          "owner": "native::kyth-perf-gate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-perf-gate",
-      "owner": "fixture::build_files/kyth-perf-gate",
+      "owner": "native::kyth-perf-gate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-perf-gate",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-perf-gate",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-perf-gate entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -3553,26 +3536,27 @@
         {
           "name": "get_booted_bootc_ref",
           "owner": "fixture::build_files/kyth-perf-report-common.sh",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "kyth-perf-report-common.sh",
       "owner": "fixture::build_files/kyth-perf-report-common.sh",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-perf-report-common.sh",
-      "priority": 1,
+      "priority": 0,
+      "reason": "sourceable diagnostic helper; runtime authority is the Rust report dispatcher",
       "resolved_target": "build_files/kyth-perf-report-common.sh",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed kyth-perf-report-common.sh entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -3671,27 +3655,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-power-arbiter",
-          "ownership": "shell"
+          "owner": "native::kyth-power-arbiter",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-power-arbiter",
-      "owner": "fixture::build_files/kyth-power-arbiter",
+      "owner": "native::kyth-power-arbiter",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-power-arbiter",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-power-arbiter",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-power-arbiter entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -3703,27 +3688,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-power-arbiter",
-          "owner": "fixture::build_files/kyth-power-arbiter.service",
-          "ownership": "shell"
+          "owner": "native::kyth-power-arbiter",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-power-arbiter",
-      "owner": "fixture::build_files/kyth-power-arbiter.service",
+      "owner": "native::kyth-power-arbiter",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-power-arbiter.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-power-arbiter.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-power-arbiter entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3778,7 +3764,7 @@
       ],
       "path": "build_files/kyth-privileged.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-privileged.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "privileged-writer",
@@ -3828,19 +3814,20 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-probe",
-          "owner": "fixture::build_files/kyth-probe-user.service",
-          "ownership": "shell"
+          "owner": "native::kyth-probe",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 1,
       "name": "kyth-probe-user",
-      "owner": "fixture::build_files/kyth-probe-user.service",
+      "owner": "native::kyth-probe",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-probe-user.service",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-probe-user.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -3848,7 +3835,7 @@
       "runtime_active": true,
       "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3858,19 +3845,20 @@
       "function_inventory": [
         {
           "name": "Unit:kyth-probe-user.timer",
-          "owner": "fixture::build_files/kyth-probe-user.timer",
-          "ownership": "shell"
+          "owner": "native::kyth-probe-user",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-probe-user",
-      "owner": "fixture::build_files/kyth-probe-user.timer",
+      "owner": "native::kyth-probe-user",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-probe-user.timer",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-probe-user.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -3878,7 +3866,7 @@
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -3903,7 +3891,7 @@
       ],
       "path": "build_files/kyth-probe.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-probe.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -3934,7 +3922,7 @@
       ],
       "path": "build_files/kyth-probe.timer",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-probe.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -3967,7 +3955,7 @@
       ],
       "path": "build_files/kyth-proton-cachyos-update.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-proton-cachyos-update.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -3998,7 +3986,7 @@
       ],
       "path": "build_files/kyth-proton-cachyos-update.timer",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-proton-cachyos-update.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -4105,27 +4093,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-readahead-hint",
-          "ownership": "shell"
+          "owner": "native::kyth-readahead-hint",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-readahead-hint",
-      "owner": "fixture::build_files/kyth-readahead-hint",
+      "owner": "native::kyth-readahead-hint",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-readahead-hint",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-readahead-hint",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-readahead-hint entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4134,27 +4123,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-readahead-run",
-          "ownership": "shell"
+          "owner": "native::kyth-readahead-run",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-readahead-run",
-      "owner": "fixture::build_files/kyth-readahead-run",
+      "owner": "native::kyth-readahead-run",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-readahead-run",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-readahead-run",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-readahead-run entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4164,31 +4154,32 @@
         {
           "name": "section",
           "owner": "fixture::build_files/kyth-report-common.sh",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "safe_cmd",
           "owner": "fixture::build_files/kyth-report-common.sh",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "kyth-report-common.sh",
       "owner": "fixture::build_files/kyth-report-common.sh",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-report-common.sh",
-      "priority": 1,
+      "priority": 0,
+      "reason": "sourceable diagnostic helper; runtime authority is the Rust report dispatcher",
       "resolved_target": "build_files/kyth-report-common.sh",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed kyth-report-common.sh entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -4197,27 +4188,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-retry-hardware-setup",
-          "ownership": "shell"
+          "owner": "native::kyth-retry-hardware-setup",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-retry-hardware-setup",
-      "owner": "fixture::build_files/kyth-retry-hardware-setup",
+      "owner": "native::kyth-retry-hardware-setup",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-retry-hardware-setup",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-retry-hardware-setup",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-retry-hardware-setup entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4229,19 +4221,20 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-apply-rgb",
-          "owner": "fixture::build_files/kyth-rgb.service",
-          "ownership": "shell"
+          "owner": "native::kyth-apply-rgb",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 1,
       "name": "kyth-rgb",
-      "owner": "fixture::build_files/kyth-rgb.service",
+      "owner": "native::kyth-apply-rgb",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-rgb.service",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-rgb.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -4249,7 +4242,7 @@
       "runtime_active": true,
       "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -4376,24 +4369,25 @@
       "current_implementation": "data",
       "cutover": "replace installed kyth-sched-arbiter entry point after parity gates",
       "exec_start": [
-        "/usr/bin/kyth-sched-arbiter apply"
+        "/usr/bin/kyth-tunable-rs sched-arbiter apply"
       ],
       "function_inventory": [
         {
-          "name": "ExecStart:/usr/bin/kyth-sched-arbiter apply",
-          "owner": "fixture::build_files/kyth-sched-arbiter.service",
-          "ownership": "shell"
+          "name": "ExecStart:/usr/bin/kyth-tunable-rs sched-arbiter apply",
+          "owner": "native::kyth-tunable-rs",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 1,
       "name": "kyth-sched-arbiter",
-      "owner": "fixture::build_files/kyth-sched-arbiter.service",
+      "owner": "native::kyth-tunable-rs",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-sched-arbiter.service",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-sched-arbiter.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "daemon",
@@ -4401,7 +4395,7 @@
       "runtime_active": true,
       "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -4576,7 +4570,7 @@
       ],
       "path": "build_files/kyth-sched.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-sched.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -4670,7 +4664,7 @@
       ],
       "path": "build_files/kyth-scripts/kyth-refresh-taskbar-pins.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-scripts/kyth-refresh-taskbar-pins.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -4686,48 +4680,29 @@
       "cutover": "replace installed kyth-scx entry point after parity gates",
       "function_inventory": [
         {
-          "name": "usage",
-          "owner": "fixture::build_files/kyth-scx",
-          "ownership": "shell"
-        },
-        {
-          "name": "need_root",
-          "owner": "fixture::build_files/kyth-scx",
-          "ownership": "shell"
-        },
-        {
-          "name": "normalise_scheduler",
-          "owner": "fixture::build_files/kyth-scx",
-          "ownership": "shell"
-        },
-        {
-          "name": "installed_schedulers",
-          "owner": "fixture::build_files/kyth-scx",
-          "ownership": "shell"
-        },
-        {
-          "name": "active_scheduler",
-          "owner": "fixture::build_files/kyth-scx",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-scx",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-scx",
-      "owner": "fixture::build_files/kyth-scx",
+      "owner": "native::kyth-scx",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-scx",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-scx",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-scx entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4736,27 +4711,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-scx-loader",
-          "ownership": "shell"
+          "owner": "native::kyth-scx-loader",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-scx-loader",
-      "owner": "fixture::build_files/kyth-scx-loader",
+      "owner": "native::kyth-scx-loader",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-scx-loader",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-scx-loader",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-scx-loader entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4768,27 +4744,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/scx_loader",
-          "owner": "fixture::build_files/kyth-scx-loader.service",
-          "ownership": "shell"
+          "owner": "native::kyth-scx-loader",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-scx-loader",
-      "owner": "fixture::build_files/kyth-scx-loader.service",
+      "owner": "native::kyth-scx-loader",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-scx-loader.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-scx-loader.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "build-time",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-scx-loader entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -4827,27 +4804,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-session-splash-guard",
-          "ownership": "shell"
+          "owner": "native::kyth-session-splash-guard",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-session-splash-guard",
-      "owner": "fixture::build_files/kyth-session-splash-guard",
+      "owner": "native::kyth-session-splash-guard",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-session-splash-guard",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-session-splash-guard",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-session-splash-guard entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4916,27 +4894,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-set-sleep-mode",
-          "ownership": "shell"
+          "owner": "native::kyth-set-sleep-mode",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-set-sleep-mode",
-      "owner": "fixture::build_files/kyth-set-sleep-mode",
+      "owner": "native::kyth-set-sleep-mode",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-set-sleep-mode",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-set-sleep-mode",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-set-sleep-mode entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -4974,28 +4953,29 @@
       "cutover": "replace installed kyth-shader-preheat entry point after parity gates",
       "function_inventory": [
         {
-          "name": "log",
-          "owner": "fixture::build_files/kyth-shader-preheat",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-shader-preheat",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-shader-preheat",
-      "owner": "fixture::build_files/kyth-shader-preheat",
+      "owner": "native::kyth-shader-preheat",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-shader-preheat",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-shader-preheat",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-shader-preheat entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -5004,27 +4984,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-shader-prune",
-          "ownership": "shell"
+          "owner": "native::kyth-shader-prune",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-shader-prune",
-      "owner": "fixture::build_files/kyth-shader-prune",
+      "owner": "native::kyth-shader-prune",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-shader-prune",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-shader-prune",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-shader-prune entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -5092,33 +5073,29 @@
       "cutover": "replace installed kyth-snappy-bench entry point after parity gates",
       "function_inventory": [
         {
-          "name": "print_kv",
-          "owner": "fixture::build_files/kyth-snappy-bench",
-          "ownership": "shell"
-        },
-        {
-          "name": "usage",
-          "owner": "fixture::build_files/kyth-snappy-bench",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-snappy-bench",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-snappy-bench",
-      "owner": "fixture::build_files/kyth-snappy-bench",
+      "owner": "native::kyth-snappy-bench",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-snappy-bench",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-snappy-bench",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-snappy-bench entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -5217,27 +5194,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-storage-gate",
-          "ownership": "shell"
+          "owner": "native::kyth-storage-gate",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-storage-gate",
-      "owner": "fixture::build_files/kyth-storage-gate",
+      "owner": "native::kyth-storage-gate",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-storage-gate",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-storage-gate",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-storage-gate entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -5251,29 +5229,30 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/libexec/kyth-storage-gate",
-          "owner": "fixture::build_files/kyth-storage-maint.service",
-          "ownership": "shell"
+          "owner": "native::kyth-storage-gate",
+          "ownership": "native"
         },
         {
           "name": "ExecStart:/usr/bin/kyth-btrfs-maint",
-          "owner": "fixture::build_files/kyth-storage-maint.service",
-          "ownership": "shell"
+          "owner": "native::kyth-btrfs-maint",
+          "ownership": "native"
         },
         {
           "name": "ExecStart:/usr/bin/kyth-duperemove",
-          "owner": "fixture::build_files/kyth-storage-maint.service",
-          "ownership": "shell"
+          "owner": "native::kyth-duperemove",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 1,
       "name": "kyth-storage-maint",
-      "owner": "fixture::build_files/kyth-storage-maint.service",
+      "owner": "native::kyth-btrfs-maint",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-storage-maint.service",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-storage-maint.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -5281,7 +5260,7 @@
       "runtime_active": true,
       "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -5291,19 +5270,20 @@
       "function_inventory": [
         {
           "name": "Unit:kyth-storage-maint.timer",
-          "owner": "fixture::build_files/kyth-storage-maint.timer",
-          "ownership": "shell"
+          "owner": "native::kyth-storage-maint",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 2,
       "name": "kyth-storage-maint",
-      "owner": "fixture::build_files/kyth-storage-maint.timer",
+      "owner": "native::kyth-storage-maint",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-storage-maint.timer",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-storage-maint.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -5311,7 +5291,7 @@
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -5816,7 +5796,7 @@
       ],
       "path": "build_files/kyth-telem.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-telem.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -6029,7 +6009,7 @@
       ],
       "path": "build_files/kyth-update-watcher.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-update-watcher.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -6060,7 +6040,7 @@
       ],
       "path": "build_files/kyth-update-watcher.timer",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-update-watcher.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
@@ -6228,27 +6208,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-vpnc-script",
-          "ownership": "shell"
+          "owner": "native::kyth-vpnc-script",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-vpnc-script",
-      "owner": "fixture::build_files/kyth-vpnc-script",
+      "owner": "native::kyth-vpnc-script",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-vpnc-script",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-vpnc-script",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-vpnc-script entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -6318,11 +6299,11 @@
         {
           "name": "__main__",
           "owner": "fixture::build_files/kyth-welcome",
-          "ownership": "shell"
+          "ownership": "exception"
         }
       ],
-      "installed_implementation": "alias",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "kyth-welcome",
       "owner": "fixture::build_files/kyth-welcome",
       "parity_tests": [
@@ -6330,14 +6311,15 @@
       ],
       "path": "build_files/kyth-welcome",
       "priority": 1,
+      "reason": "retired Python/Qt Hub source retained only for compatibility fixtures; not installed in the supported image",
       "resolved_target": "src/kyth-welcome",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed kyth-welcome entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
       "surface": "launcher"
     },
     {
@@ -6346,27 +6328,28 @@
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-windows-friendly-defaults",
-          "ownership": "shell"
+          "owner": "native::kyth-windows-friendly-defaults",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-windows-friendly-defaults",
-      "owner": "fixture::build_files/kyth-windows-friendly-defaults",
+      "owner": "native::kyth-windows-friendly-defaults",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-windows-friendly-defaults",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-windows-friendly-defaults",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-windows-friendly-defaults entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -6374,28 +6357,29 @@
       "cutover": "replace installed kyth-windows-import entry point after parity gates",
       "function_inventory": [
         {
-          "name": "cleanup",
-          "owner": "fixture::build_files/kyth-windows-import",
-          "ownership": "shell"
+          "name": "__main__",
+          "owner": "native::kyth-windows-import",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "shell",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-windows-import",
-      "owner": "fixture::build_files/kyth-windows-import",
+      "owner": "native::kyth-windows-import",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-windows-import",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-windows-import",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-windows-import entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -13695,19 +13679,20 @@
       "function_inventory": [
         {
           "name": "ExecStart:-/usr/libexec/kyth-finalize-staged prepare-boot",
-          "owner": "fixture::build_files/scripts/sysconfig/systemd/kyth-boot-rw.service",
-          "ownership": "shell"
+          "owner": "native::kyth-finalize-staged",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
+      "installed_implementation": "rust",
       "migration_priority": 1,
       "name": "kyth-boot-rw",
-      "owner": "fixture::build_files/scripts/sysconfig/systemd/kyth-boot-rw.service",
+      "owner": "native::kyth-finalize-staged",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/scripts/sysconfig/systemd/kyth-boot-rw.service",
       "priority": 1,
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/scripts/sysconfig/systemd/kyth-boot-rw.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
@@ -13715,7 +13700,7 @@
       "runtime_active": true,
       "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {

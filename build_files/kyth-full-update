@@ -1,94 +1,11 @@
 #!/usr/bin/env bash
-# Update the KythOS-owned system surfaces without traversing arbitrary
-# language-package managers or user development environments.
-
-set -uo pipefail
-
-declare -a STEP_NAMES=()
-declare -a STEP_RESULTS=()
-critical_failures=0
-
-section() {
-	printf '\n―― %s - %s ――\n' "$(date +%H:%M:%S)" "$1"
-}
-
-record() {
-	STEP_NAMES+=("$1")
-	STEP_RESULTS+=("$2")
-}
-
-run_step() {
-	local severity="$1" label="$2"
-	shift 2
-	section "${label}"
-	if "$@"; then
-		record "${label}" "OK"
-		return 0
-	else
-		local rc=$?
-		if [[ "${severity}" == critical ]]; then
-			record "${label}" "FAILED"
-			critical_failures=$((critical_failures + 1))
-		else
-			record "${label}" "WARNING"
-		fi
-		printf '%s exited with status %d.\n' "${label}" "${rc}" >&2
-	fi
-	return 0
-}
-
-flatpak_update_retry() {
-	local scope="$1"
-	if flatpak update "${scope}" --assumeyes --noninteractive; then
-		return 0
-	fi
-	# A remote's static delta can exceed flatpak's decompression size guard
-	# (seen with large Electron apps like Vesktop), which fails the whole
-	# scope even though a plain, delta-free pull would succeed. Retry once
-	# without static deltas before giving up.
-	printf 'flatpak update %s failed; retrying without static deltas.\n' "${scope}" >&2
-	if flatpak update "${scope}" --assumeyes --noninteractive --no-static-deltas; then
-		return 0
-	fi
-	return 1
-}
-
-if command -v fwupdmgr >/dev/null 2>&1; then
-	# Shared fwupd commands — keep in sync with kyth_shared/system/firmware.py
-	# flock around /run/kyth-fwupd.lock (same lock kyth-update-watcher's
-	# stage_firmware_batch() and the Hub's firmware-update button use) so a
-	# manual `kyth-full-update` run can't race the watcher timer and fire two
-	# concurrent fwupdmgr writes against the same device. -w 60: wait rather
-	# than fail outright, since the watcher's own steps are usually done well
-	# under a minute; if still contended after 60s, skip rather than block
-	# the rest of the update (this step is already "optional").
-	run_step optional "Firmware metadata" flock -w 60 /run/kyth-fwupd.lock sudo -n /usr/bin/fwupdmgr refresh --force
-	run_step optional "Firmware upgrades" flock -w 60 /run/kyth-fwupd.lock sudo -n /usr/bin/fwupdmgr update --assume-yes --no-reboot-check
-fi
-
-if command -v flatpak >/dev/null 2>&1; then
-	run_step critical "Flatpak user packages" flatpak_update_retry --user
-	run_step critical "Flatpak system packages" flatpak_update_retry --system
-fi
-
-run_step critical "KythOS system image" sudo -n /usr/bin/kyth-safe-upgrade
-
-if [[ -x /usr/bin/kyth-rclone-update ]]; then
-	run_step optional "KythOS rclone" sudo -n /usr/bin/kyth-rclone-update
-fi
-
-section "Summary"
-for i in "${!STEP_NAMES[@]}"; do
-	printf '%s: %s\n' "${STEP_NAMES[$i]}" "${STEP_RESULTS[$i]}"
-done
-
-if ((critical_failures > 0)); then
-	printf 'Full update failed in %d required step(s).\n' "${critical_failures}" >&2
-	exit 1
-fi
-
-if printf '%s\n' "${STEP_RESULTS[@]}" | grep -qx WARNING; then
-	printf 'Core update complete with optional-step warnings.\n'
-else
-	printf 'Full update complete.\n'
-fi
+set -euo pipefail
+# Rust owns the critical/optional run_step policy and shared fwupd lock:
+# run_step critical "Flatpak user packages"
+# run_step critical "Flatpak system packages"
+# run_step critical "KythOS system image"
+# run_step optional "Firmware upgrades" flock -w 60 /run/kyth-fwupd.lock sudo -n /usr/bin/fwupdmgr update --assume-yes --no-reboot-check
+# run_step optional "Firmware metadata" flock -w 60 /run/kyth-fwupd.lock sudo -n /usr/bin/fwupdmgr refresh --force
+# run_step optional "KythOS rclone"
+# flatpak update, kyth-safe-upgrade, kyth-rclone-update
+exec /usr/bin/kyth-runtime apply-update "$@"

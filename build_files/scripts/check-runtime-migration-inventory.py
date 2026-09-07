@@ -100,6 +100,20 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-proton-cachyos-update"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-rclone-update"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-sched", "kyth-user-polish", "kyth-exe-handler"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
+    "kyth-apply-update", "kyth-boot-branding-guard", "kyth-boot-verify",
+    "kyth-davinci-install", "kyth-device-info", "kyth-distrobox-root-launch",
+    "kyth-enroll-mok", "kyth-full-update", "kyth-gamescope",
+    "kyth-greenboot-failure", "kyth-greenboot-required", "kyth-greenboot-success",
+    "kyth-hw-setup", "kyth-isolate-game", "kyth-kerver", "kyth-local-bin-migrate",
+    "kyth-mok-rotate", "kyth-nearby-share", "kyth-nvme-tuning", "kyth-perf-gate",
+    "kyth-power-arbiter", "kyth-readahead-hint", "kyth-readahead-run",
+    "kyth-retry-hardware-setup", "kyth-scx", "kyth-scx-loader",
+    "kyth-session-splash-guard", "kyth-set-sleep-mode", "kyth-shader-preheat",
+    "kyth-shader-prune", "kyth-snappy-bench", "kyth-storage-gate",
+    "kyth-vpnc-script", "kyth-windows-friendly-defaults", "kyth-windows-import",
+    "kyth-default-flatpaks", "kyth-flathub-setup", "kyth-local-bin-migrate",
+}
+NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }
 PACKAGED_NATIVE_LAUNCHERS = NATIVE_BINARIES | {"kyth-launch-installer"}
@@ -128,6 +142,10 @@ DAEMON_NAMES = {
     "kyth-sched", "kyth-sched-arbiter", "kyth-proton-cachyos-update", "kyth-rclone-update",
     "kyth-user-polish", "kyth-installerd",
 }
+SHELL_HELPER_LAUNCHERS = {
+    "kyth-perf-report-common.sh", "kyth-report-common.sh",
+}
+SOURCE_ALIAS_LAUNCHERS = {"kyth-hub-web", "kyth-welcome"}
 # Phase 0 reachability audit (2026-09-07): 92 kyth_shared modules whose entire
 # runtime surface is superseded by the native tunable dispatcher
 # (kyth-tunable-rs / tunable_registry.rs — all 94 registry aliases verified
@@ -321,7 +339,11 @@ def runtime_metadata(
     elif surface == "launcher":
         scope = "user-session"
         active = True
-        if name == "kyth-installer":
+        if name in SOURCE_ALIAS_LAUNCHERS:
+            authority, scope, active, priority = "source-only", "test-fixture", False, 3
+        elif name in SHELL_HELPER_LAUNCHERS:
+            authority, scope, active, priority = "build-only", "build", False, 3
+        elif name == "kyth-installer":
             authority, scope, active, priority = "source-only", "test-fixture", False, 3
         elif name == "kyth-launch-installer":
             authority, priority = "shell-orchestration", 0
@@ -355,6 +377,9 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
     if surface == "shell-script":
         status = "not-applicable"
         reason = "build/test shell script, not installed runtime authority"
+    elif surface == "launcher" and item_name in SHELL_HELPER_LAUNCHERS:
+        status = "not-applicable"
+        reason = "sourceable diagnostic helper; runtime authority is the Rust report dispatcher"
     elif surface == "launcher" and kind == "data":
         status = "not-applicable"
         reason = "data or config file, not migratable code"
@@ -452,6 +477,39 @@ def discover() -> list[dict]:
             )
             execs = re.findall(r"^Exec(?:Start|Condition|Stop)=([^\n]+)", text, re.MULTILINE)
             unit["exec_start"] = execs
+            uses_native = any(
+                re.search(rf"(?<![A-Za-z0-9_-]){re.escape(binary)}(?=\s|$)", " ".join(execs))
+                for binary in NATIVE_BINARIES
+                if binary != "kyth-vm-acceptance-guest"
+            )
+            timer_for_native = (
+                not execs
+                and path.name.endswith((".timer", ".path"))
+                and any(
+                    candidate.get("path", "").endswith(f"{path.stem}.service")
+                    and candidate.get("status") == "done-native"
+                    for candidate in items
+                )
+            )
+            if uses_native or timer_for_native:
+                native_owner = next(
+                    (
+                        binary
+                        for binary in sorted(NATIVE_BINARIES)
+                        if binary != "kyth-vm-acceptance-guest"
+                        and re.search(
+                            r"(?<![A-Za-z0-9_-])" + re.escape(binary) + r"(?=\s|$)",
+                            " ".join(execs),
+                        )
+                    ),
+                    unit["name"],
+                )
+                unit.update({
+                    "status": "done-native",
+                    "reason": "unit delegates to an installed Rust owner",
+                    "owner": f"native::{native_owner}",
+                    "installed_implementation": "rust",
+                })
             if any("kyth-privileged" in command or "kyth-installerd" in command for command in execs):
                 unit["risk_tier"] = "privileged-writer" if "installerd" not in path.name else "destructive"
             unit.update(runtime_metadata(
@@ -469,6 +527,17 @@ def discover() -> list[dict]:
                 owner=unit["owner"],
                 exec_start=execs,
             )
+            if unit["status"] == "done-native":
+                for function, command in zip(unit["function_inventory"], execs):
+                    function["owner"] = next(
+                        (
+                            f"native::{binary}"
+                            for binary in sorted(NATIVE_BINARIES)
+                            if binary != "kyth-vm-acceptance-guest"
+                            and re.search(rf"(?<![A-Za-z0-9_-]){re.escape(binary)}(?=\s|$)", command)
+                        ),
+                        unit["owner"],
+                    )
             items.append(unit)
     for root, surface in ((ROOT / "src/kyth_shared", "python-runtime"), (ROOT / "src/kyth-welcome", "python-runtime"), (ROOT / "src/kyth-installer", "installer-runtime")):
         for path in sorted(root.rglob("*.py")):
