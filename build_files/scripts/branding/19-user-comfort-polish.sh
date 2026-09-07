@@ -1,6 +1,7 @@
 # shellcheck shell=bash
 # ── User comfort polish ───────────────────────────────────────────────────────
-install -m 0755 /ctx/kyth-user-polish /usr/bin/kyth-user-polish
+# kyth-user-polish is the native Rust binary copied from the hub-web-builder
+# stage in Dockerfile; this fragment only owns its user-service wiring.
 
 write_config /usr/bin/kyth-windows-friendly-defaults 0755 <<'WINDEFAULTEOF'
 #!/usr/bin/env bash
@@ -22,4 +23,3 @@ ln -sfn /usr/lib/systemd/user/kyth-user-polish.service \
 # layout --force, sycoca rebuild) and racing each other. kyth-user-polish's own
 # cleanup_autostart() still prunes any leftover ~/.config/autostart copy from
 # systems that were installed before this change.
-

@@ -58,3 +58,18 @@ Reachability audit behind the 92: transitive static-import closure over the
 (used by `build_files/scripts/check-perf-gate.py`) remain reachable and stay
 active; all 94 tunable registry aliases verified present in
 `tunable_registry.rs` with 0 missing.
+
+User-polish cutover (2026-09-07, after the 38-port baseline):
+
+| Metric | Before | After |
+| --- | ---: | ---: |
+| Active entries | 363 | 360 |
+| Active Python entries | 166 | 163 |
+| `python-runtime` active | 3 | 2 (the two deliberate `kyth-exe-handler` and `kyth-vm-acceptance-guest` deferrals) |
+| `python-shared-package` active | 163 | 161 |
+| `rust-service` active | 19 | 20 |
+| Superseded entries | 92 | 94 (adds the two user-polish source fixtures) |
+
+The native `kyth-user-polish` binary is built by the shared Rust crate and
+installed at the same `/usr/bin/kyth-user-polish` path. Its Python modules are
+retained only for parity tests and rollback qualification.

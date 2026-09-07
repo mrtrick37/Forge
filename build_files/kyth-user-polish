@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-"""Stable executable entry point for the packaged user-polish service."""
-
-# The implementation sets Plasma's Theme to org.kythos.desktop.
-from kyth_shared.user_polish import main
-
-
-if __name__ == "__main__":
-    main()

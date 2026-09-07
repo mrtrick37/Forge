@@ -97,6 +97,7 @@ for — see `src/kyth-hub-web/src-tauri/src/main.rs`'s `probe_backend`,
 | `system::desktop_preferences` | Flatpak override arguments, Plasma drift section flattening, and window-snap preference models | Flatpak/KDE mutation and session reconfiguration remain outside Rust. |
 | `system::desktop_shortcuts` | Application-id sanitizing and Steam/web-app/Kali desktop-file transformations; the native `kyth-steam-game-export` CLI owns the installed Steam export entry point and its bounded filesystem/cache work | No arbitrary launcher execution; all cache refresh commands remain fixed and bounded. |
 | `system::desktop_plasma` | Launcher availability filtering and bounded Plasma/qdbus/kwriteconfig argv projections | Command discovery, command execution, and Plasma mutation remain caller-owned. |
+| `kyth-user-polish` | Native first-login folder/MIME/KDE/desktop-polish service, including the versioned stamp/lock and Dolphin places XML contract | The Python `user_polish` and `user_polish_flatpak` files remain source-only parity fixtures until image rollback qualification closes. |
 | `system::akmods_lock` | Single-flight bounded lock for NVIDIA module builds | The lock does not start or supervise an akmods build. |
 | `system::qualification` | Acceptance sentinel parsing, qualification reports, and regression budgets | Probe, benchmark, VM, and deployment execution remain caller-owned. |
 | `system::vm_acceptance` | Acceptance reference validation, bootc/ostree JSON decoding, state normalization, and event framing | Guest commands, power control, and smoke-check execution remain caller-owned. |
@@ -160,6 +161,9 @@ One module (or one function) at a time, in this order of preference:
    writes state, executes a repair, or runs a probe sweep is not — do
    those later, once there's a real reason (a Rust caller that needs it)
    and real test coverage proving parity with the Python original.
+   New host-tuning logic should land in the Rust shared crate and its native
+   dispatcher/binary pattern; do not add new standalone Python modules under
+   `kyth_shared` for installed runtime behavior.
 2. **Port faithfully, not "improved."** Match the Python original's
    behavior exactly, including its quirks (see `system::gpu`'s doc comment
    for a real example — `lspci_gpu_lines`'s substring-match gotcha is

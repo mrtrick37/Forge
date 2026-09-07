@@ -108,7 +108,7 @@ class SysconfigFragmentTests(unittest.TestCase):
             / "splash"
             / "Splash.qml"
         ).read_text(encoding="utf-8")
-        polish = (ROOT / "build_files" / "kyth-user-polish").read_text(
+        polish = (ROOT / "src" / "kyth-shared-rs" / "src" / "user_polish_bin.rs").read_text(
             encoding="utf-8"
         )
         guard = (ROOT / "build_files" / "kyth-session-splash-guard").read_text(

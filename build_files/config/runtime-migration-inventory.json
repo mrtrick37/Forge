@@ -6,23 +6,24 @@
       "exec_start": [
         "/usr/bin/kyth-user-polish"
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-user-polish",
-      "owner": "fixture::build_files/config/kyth-user-polish.service",
+      "owner": "native::kyth-user-polish",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/config/kyth-user-polish.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/config/kyth-user-polish.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-user-polish entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -4494,28 +4495,6 @@
       "runtime_scope": "system-service",
       "status": "done-native",
       "surface": "systemd-unit"
-    },
-    {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-user-polish entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-user-polish",
-      "owner": "fixture::build_files/kyth-user-polish",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-user-polish",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-user-polish",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-user-polish entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
     },
     {
       "current_implementation": "alias",
@@ -13638,9 +13617,9 @@
       "current_implementation": "python",
       "cutover": "replace installed user_polish entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "user_polish",
-      "owner": "fixture::src/kyth_shared/kyth_shared/user_polish.py",
+      "owner": "native::kyth-user-polish",
       "parity_tests": [
         "tests/"
       ],
@@ -13650,19 +13629,20 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed user_polish entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
+      "runtime_scope": "test-fixture",
       "status": "queued",
+      "superseded_by": "native::kyth-user-polish",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed user_polish_flatpak entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "user_polish_flatpak",
-      "owner": "fixture::src/kyth_shared/kyth_shared/user_polish_flatpak.py",
+      "owner": "native::kyth-user-polish",
       "parity_tests": [
         "tests/"
       ],
@@ -13672,10 +13652,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed user_polish_flatpak entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
+      "runtime_scope": "test-fixture",
       "status": "queued",
+      "superseded_by": "native::kyth-user-polish",
       "surface": "python-runtime"
     },
     {

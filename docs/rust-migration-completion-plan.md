@@ -8,16 +8,13 @@ points (see
 and [Installer Migration Plan](installer-migration-plan.md)). What remains is
 a smaller, previously uncatalogued surface: 41 standalone launcher scripts
 under `build_files/kyth-*` that `ujust` recipes and systemd units invoke
-directly. Of those 41, **38 are ported and committed**, **2 are permanent,
+directly. Of those 41, **39 are ported and committed**, **2 are permanent,
 already-decided deferrals** (`kyth-vm-acceptance-guest`, gated on an existing
 Hub-plan release gate; `kyth-exe-handler`, a Qt GUI dialog with no Rust UI
-target — see below for both), and **1 remains actionable: `kyth-user-polish`**,
-the last `python-runtime` daemon in Phase 2. Landing it closes Phase 1 and
-Phase 2 to their full non-deferred scope and makes Phase 4 (the CLAUDE.md
-convention flip) ready to start. Phase 3 stays blocked on the Hub plan's own
-post-cutover observation window (not yet started, not agent-schedulable) —
-plus a classifier gap that currently overstates how much Python is actually
-still running.
+target — see below for both). The full non-deferred Python launcher scope is
+now complete, including the final `kyth-user-polish` daemon. Phase 3 stays
+blocked on the Hub plan's own post-cutover observation window (not yet
+started, not agent-schedulable).
 
 **Scope:** This plan completes the **Python** runtime authority — the 41
 `python-runtime` launchers plus the classifier fix that makes the
@@ -196,12 +193,12 @@ silently ignoring them.
   it before relying on it to catch a Phase 0 regression.
   (Done 2026-09-07: converted to `unittest.TestCase`, collected by
   `unittest discover`, plus Phase 0 invariant tests.)
-- [ ] Same defect, different file: `tests/test_kyth_doctor_native.py` uses
+- [x] Same defect, different file: `tests/test_kyth_doctor_native.py` used
   bare `def test_*():` module-level functions, not `unittest.TestCase`
   methods, so `python3 -m unittest tests.test_kyth_doctor_native -v` reports
   "Ran 0 tests" — invisible to `unittest discover`. Its 3 assertions are now
   duplicated by the `entry_points` tuple in `test_python_packaging.py`, so
-  this is cleanup (convert or delete), not a coverage gap. Not yet done.
+  this was cleanup (converted to `unittest.TestCase`; no coverage gap).
 
 Known environmental noise, reproduces on a clean checkout, not caused by
 migration work — don't try to fix these mid-launcher-port:
@@ -269,12 +266,11 @@ than 15 independent ports.
 
 ## Phase 2 — Daemon-class launchers (12 items)
 
-**Status: 11/12 done.** `kyth-batteryd`, `kyth-backup`, `kyth-cloud-mount`,
+**Status: complete (12/12).** `kyth-batteryd`, `kyth-backup`, `kyth-cloud-mount`,
 `kyth-duperemove`, `kyth-dynamic-lock`, `kyth-game-launch`,
 `kyth-proton-cachyos-update`, `kyth-rclone-update`, `kyth-save-sync`,
 `kyth-sched`, `kyth-storage-sense` are ported and committed. Only
-`kyth-user-polish` remains — the last actionable `python-runtime` launcher in
-this plan.
+`kyth-user-polish` is now ported to the native shared-crate binary.
 
 Risk-classified `daemon` by `DAEMON_NAMES`. These run continuously or on a
 schedule and warrant more parity testing before cutover, in the same spirit
@@ -288,16 +284,16 @@ as the Hub plan's Guardian/update-watcher ports.
   (`kyth-backup`, `kyth-save-sync`, `kyth-cloud-mount`) — matching the
   installer plan's own convention of sequencing destructive/data-affecting
   work after everything else has parity coverage. `kyth-user-polish` was
-  placed in the scheduled/idempotent group by this ordering; it's the one
-  item left.
+  placed in the scheduled/idempotent group by this ordering and is now
+  complete.
 - [x] Each port needs a shared Rust/Python parity fixture before the Python
   path is removed, the same pattern used throughout the Hub and installer
   plans (see `src/kyth-hub-web/PARITY.md` and
   `src/kyth-shared-rs/MIGRATION.md` for the established format).
 
-### Next: `kyth-user-polish`
+### Completed: `kyth-user-polish`
 
-`src/kyth_shared/kyth_shared/user_polish.py` (642 lines) is the full-parity
+`src/kyth_shared/kyth_shared/user_polish.py` (642 lines) was the full-parity
 target — theme/fonts/icons/favorites/klipper/dolphin/spectacle/screen-lock/
 kwin settings, lossy/compressed `user-places.xbel` writes with XXE hardening,
 a lockfile-based single-instance guard, MissionCenter flatpak install logic,
@@ -317,20 +313,18 @@ base to build on.
 Known hazards, carried forward from prior reconnaissance of `user_polish.py`,
 `user_polish_flatpak.py`, and `polish_manifest.py` — **the port pass still
 needs its own fresh, non-lossy read of all three files before writing Rust**;
-this list is a starting checklist, not a substitute for that read:
+this list is a starting checklist, not a substitute for that read. The port
+is now implemented in `src/kyth-shared-rs/src/user_polish_bin.rs`, with the
+Python modules retained as source-only parity fixtures:
 
 - `smoke_check.py:215` only path-checks `/usr/bin/kyth-user-polish` exists —
   that keeps passing after the port since the Rust binary installs at the
   same path. Not a hazard.
-- The real presence-sentinel is
+- The real presence-sentinel was
   `tests/test_kyth_sysconfig_fragments.py::test_late_plasma_splash_is_kyth_owned`
-  (~line 111–123): it reads `build_files/kyth-user-polish` — the Python
-  launcher fixture itself, which is a thin `from kyth_shared.user_polish
-  import main` wrapper carrying the comment `"The implementation sets
-  Plasma's Theme to org.kythos.desktop."` — and asserts that literal text is
-  present. Deleting `build_files/kyth-user-polish` breaks this test unless
-  it's repointed (e.g. at the Rust source, or the assertion is dropped/
-  reworked) as part of the same commit.
+  (~line 111–123): it reads the native Rust source after the Python launcher
+  fixture was retired and asserts that the Kyth Plasma theme literal remains
+  present.
 - `user_polish_flatpak.py` is a thin re-export; grep its importers before
   assuming it can be deleted alongside the launcher.
 - Quirks to pin byte-for-byte: the KDE block gates on `kwriteconfig6`, not
@@ -428,18 +422,21 @@ deliberate rollback fixture ahead of its own release gate.
 
 ## Phase 4 — Convention change
 
-**Ready once `kyth-user-polish` lands.** Phase 1 is already complete (its one
+**Complete after `kyth-user-polish` landed.** Phase 1 is already complete (its one
 gap, `kyth-exe-handler`, is a permanent deferral, not pending work); Phase 2
 closes to 12/12 the moment `kyth-user-polish` is committed. At that point
 "Phase 1/2 demonstrate the replacement shape is stable" is satisfied and this
 becomes the immediate next item — cheap, and it's what stops new Python
 arriving in `kyth_shared` by convention while Phase 3 stays blocked.
 
-- [ ] Update `CLAUDE.md`'s architecture section: replace "Follow this
+- [x] Update the contributor architecture guidance: replace "Follow this
   convention for new host-tuning logic: a small, independently testable
   [Python] module" with guidance pointing at the Rust tunable/shared-crate
   pattern, once Phase 1/2 demonstrate the replacement shape is stable.
-  Do this after there's a working example to point to, not before.
+  Do this after there's a working example to point to, not before. This
+  checkout has no `CLAUDE.md`; the equivalent canonical guidance is now in
+  `src/kyth-shared-rs/MIGRATION.md`, which points new host-tuning work at the
+  Rust shared crate/native dispatcher.
 
 ## Definition of done
 
@@ -447,9 +444,8 @@ arriving in `kyth_shared` by convention while Phase 3 stays blocked.
   is reachable from a real launcher/unit/harness — no entry is active solely
   because of a path-prefix rule.
 - Of the 41 currently-listed `python-runtime` launchers: 39 are ported to
-  native Rust entry points (`NATIVE_BINARIES`) — 38 are as of 2026-09-07,
-  leaving `kyth-user-polish` as the only remaining item this plan expects to
-  close. The other 2 are permanent, already-decided deferrals and are not
+  native Rust entry points (`NATIVE_BINARIES`) as of 2026-09-07. The other 2
+  are permanent, already-decided deferrals and are not
   expected to close under this plan: `kyth-vm-acceptance-guest`, deferred to
   the Hub plan's post-cutover acceptance gate (see "Not a phase" above), and
   `kyth-exe-handler`, a Qt GUI dialog with no Rust UI target (see "Deferred"

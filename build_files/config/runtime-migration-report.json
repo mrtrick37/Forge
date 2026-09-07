@@ -11,15 +11,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-user-polish",
-      "owner": "fixture::build_files/kyth-user-polish",
-      "path": "build_files/kyth-user-polish",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-vm-acceptance-guest",
       "owner": "fixture::build_files/kyth-vm-acceptance-guest",
       "path": "build_files/kyth-vm-acceptance-guest",
@@ -1415,24 +1406,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "user_polish",
-      "owner": "fixture::src/kyth_shared/kyth_shared/user_polish.py",
-      "path": "src/kyth_shared/kyth_shared/user_polish.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "user_polish_flatpak",
-      "owner": "fixture::src/kyth_shared/kyth_shared/user_polish_flatpak.py",
-      "path": "src/kyth_shared/kyth_shared/user_polish_flatpak.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "vm_acceptance",
       "owner": "fixture::src/kyth_shared/kyth_shared/vm_acceptance.py",
       "path": "src/kyth_shared/kyth_shared/vm_acceptance.py",
@@ -2808,27 +2781,27 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 3,
-      "python-shared-package": 163,
+      "python-runtime": 2,
+      "python-shared-package": 161,
       "rust-dispatcher": 16,
-      "rust-service": 19,
-      "shell-orchestration": 162
+      "rust-service": 20,
+      "shell-orchestration": 161
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 163,
+      "standalone": 161,
       "system-service": 35,
-      "user-session": 164
+      "user-session": 163
     },
-    "active_entries": 363,
-    "active_python_entries": 166,
-    "entries": 616,
+    "active_entries": 360,
+    "active_python_entries": 163,
+    "entries": 615,
     "p0_open_entries": 0,
     "status_by_active_entry": {
-      "done-native": 129,
-      "queued": 234
+      "done-native": 130,
+      "queued": 230
     },
-    "superseded_entries": 92
+    "superseded_entries": 94
   },
   "superseded": [
     {
@@ -3660,6 +3633,26 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "user_polish",
+      "owner": "native::kyth-user-polish",
+      "path": "src/kyth_shared/kyth_shared/user_polish.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "queued",
+      "superseded_by": "native::kyth-user-polish"
+    },
+    {
+      "migration_priority": 3,
+      "name": "user_polish_flatpak",
+      "owner": "native::kyth-user-polish",
+      "path": "src/kyth_shared/kyth_shared/user_polish_flatpak.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "queued",
+      "superseded_by": "native::kyth-user-polish"
     },
     {
       "migration_priority": 3,

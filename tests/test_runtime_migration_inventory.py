@@ -166,6 +166,13 @@ class InventoryTest(unittest.TestCase):
         missing = [name for name in aliases if name not in rust]
         self.assertEqual(missing, [])
 
+    def test_user_polish_python_sources_are_retired_fixtures(self):
+        entries = load_inventory()["entries"]
+        for name in ("user_polish", "user_polish_flatpak"):
+            item = next(item for item in entries if item["name"] == name and item["surface"] == "python-runtime")
+            self.assertFalse(item["runtime_active"])
+            self.assertEqual(item["superseded_by"], "native::kyth-user-polish")
+
 
 if __name__ == "__main__":
     unittest.main()

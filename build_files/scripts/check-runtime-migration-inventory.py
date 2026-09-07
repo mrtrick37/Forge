@@ -98,7 +98,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-game-launch"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-dynamic-lock"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-proton-cachyos-update"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-rclone-update"}
-NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-sched"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-sched", "kyth-user-polish"}
 NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }
@@ -135,6 +135,10 @@ DAEMON_NAMES = {
 # gaming_master/perf_audit dispatch targets overlap this same set; the two
 # dispatcher files themselves are unreachable and superseded with it.
 TUNABLE_SUPERSEDED_BY = "native::kyth-tunable-rs"
+NATIVE_REPLACED_MODULES = {
+    "user_polish": "native::kyth-user-polish",
+    "user_polish_flatpak": "native::kyth-user-polish",
+}
 SUPERSEDED_TUNABLE_MODULES = frozenset({
     "aio_max", "ananicy_preset", "boot_loader", "bore_tune", "btrfs_autotune",
     "btrfs_perf", "busy_poll", "busy_read", "compaction_tune", "dirty_expire",
@@ -233,6 +237,8 @@ def runtime_metadata(
     elif surface == "python-runtime":
         if rel(path).startswith("src/kyth-welcome/"):
             authority, scope, active, priority = "source-only", "test-fixture", False, 3
+        elif name in NATIVE_REPLACED_MODULES:
+            authority, scope, active, priority = "python-shared-package", "test-fixture", False, 3
         else:
             authority, scope, active, priority = "python-shared-package", "standalone", True, 2
     elif surface == "rust-crate":
@@ -328,6 +334,9 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
     }
     metadata = runtime_metadata(path, surface=surface, name=item_name, kind=kind, status=status)
     result.update(metadata)
+    if surface == "python-runtime" and item_name in NATIVE_REPLACED_MODULES:
+        result["superseded_by"] = NATIVE_REPLACED_MODULES[item_name]
+        result["owner"] = NATIVE_REPLACED_MODULES[item_name]
     if (
         surface == "python-runtime"
         and rel(path) == f"src/kyth_shared/kyth_shared/{item_name}.py"
@@ -447,7 +456,7 @@ def validate(document: dict, *, expected_paths: set[str] | None = None) -> list[
         if superseded_by is not None and (not isinstance(superseded_by, str) or not superseded_by.strip()):
             errors.append(f"entry {path} has empty superseded_by")
         if item.get("runtime_authority") == "python-shared-package" and not item.get("runtime_active"):
-            if superseded_by != TUNABLE_SUPERSEDED_BY:
+            if not superseded_by:
                 errors.append(f"entry {path} is inactive without a native owner")
     if expected_paths is not None:
         missing = expected_paths - seen

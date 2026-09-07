@@ -17,15 +17,18 @@ pub const FOLDER_METADATA: [(&str, &str); 3] = [
     ("Templates/Plain Text.txt", ""),
 ];
 
-pub const MIME_DEFAULTS: [(&str, &str); 26] = [
+pub const MIME_DEFAULTS: [(&str, &str); 29] = [
     ("org.kde.okular.desktop", "application/pdf"),
     ("org.kde.okular.desktop", "application/epub+zip"),
     ("org.kde.gwenview.desktop", "image/jpeg"),
     ("org.kde.gwenview.desktop", "image/png"),
     ("org.kde.gwenview.desktop", "image/gif"),
+    ("org.kde.gwenview.desktop", "image/webp"),
     ("org.videolan.VLC.desktop", "video/mp4"),
     ("org.videolan.VLC.desktop", "video/x-matroska"),
     ("org.videolan.VLC.desktop", "video/x-msvideo"),
+    ("org.videolan.VLC.desktop", "audio/mpeg"),
+    ("org.videolan.VLC.desktop", "audio/flac"),
     ("org.kde.kwrite.desktop", "text/plain"),
     ("org.kde.kwrite.desktop", "text/markdown"),
     ("org.kde.ark.desktop", "application/zip"),
