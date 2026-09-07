@@ -220,8 +220,27 @@ class BootStabilityUnitTests(unittest.TestCase):
         body = (
             ROOT / "build_files/scripts/sysconfig/desktop/09-autostart-log-noise-guards.sh"
         ).read_text(encoding="utf-8")
-        dbus_unit = body.split("kyth-dbus-runtime-dir.service", 1)[1]
-        self.assertIn("RemainAfterExit=yes", dbus_unit.split("DBUSRUNDIREOF", 1)[0])
+        dbus_unit = body.split("DBUSRUNDIREOF", 1)[1].split("DBUSRUNDIREOF", 1)[0]
+        # StartLimitIntervalSec/StartLimitBurst are only recognized in
+        # [Unit] — stranded in [Service] they are silently dropped and the
+        # unit runs under systemd's compiled-in 10s/5 default instead.
+        unit_sec, service_sec = dbus_unit.split("\n[Service]\n", 1)
+        self.assertIn("RemainAfterExit=yes", service_sec)
+        self.assertIn("StartLimitIntervalSec=0", unit_sec)
+        self.assertNotIn("StartLimit", service_sec)
+
+    def test_asus_dbus_policy_fixup_disables_start_limit(self) -> None:
+        body = (
+            ROOT / "build_files/scripts/sysconfig/hardware/57-asus-dbus-policy-fixup.sh"
+        ).read_text(encoding="utf-8")
+        unit = body.split("ASUSDBUSUNITEOF", 1)[1].split("ASUSDBUSUNITEOF", 1)[0]
+        # StartLimitIntervalSec/StartLimitBurst are only recognized in
+        # [Unit] — stranded in [Service] they are silently dropped and the
+        # unit runs under systemd's compiled-in 10s/5 default instead.
+        unit_sec, service_sec = unit.split("\n[Service]\n", 1)
+        self.assertIn("StartLimitIntervalSec=0", unit_sec)
+        self.assertNotIn("StartLimit", service_sec)
+        self.assertIn("RemainAfterExit=yes", service_sec)
 
     def test_local_bin_migrate_can_write_state_and_homes(self) -> None:
         body = (ROOT / "build_files/kyth-local-bin-migrate.service").read_text(
@@ -341,6 +360,34 @@ class BootStabilityUnitTests(unittest.TestCase):
         self.assertIn("TimeoutStartSec=600", body)
         self.assertIn("RemainAfterExit=yes", body)
         self.assertGreaterEqual(DEFAULT_DEADLINE, 300.0)
+
+        # StartLimitIntervalSec/StartLimitBurst are only recognized in
+        # [Unit] — stranded in [Service] they are silently dropped and the
+        # unit runs under systemd's compiled-in 10s/5 default instead.
+        drop_in = body.split("40-kyth-timeout.conf", 1)[1].split(
+            "<<'EOF'", 1
+        )[1].split("\nEOF", 1)[0]
+        unit_sec, service_sec = drop_in.split("\n[Service]\n", 1)
+        self.assertIn("StartLimitIntervalSec=0", unit_sec)
+        self.assertNotIn("StartLimit", service_sec)
+
+    def test_greenboot_rollback_trigger_drop_in_disables_start_limit(self) -> None:
+        body = (
+            ROOT / "build_files/scripts/packages/22-greenboot.sh"
+        ).read_text(encoding="utf-8")
+        drop_in = body.split("10-kyth.conf", 1)[1].split(
+            "<<'GBROLLBACK'", 1
+        )[1].split("\nGBROLLBACK", 1)[0]
+        # The drop-in originally had no [Unit] header at all, so its
+        # StartLimitIntervalSec/StartLimitBurst keys (only recognized in
+        # [Unit]) were silently dropped and the unit ran under systemd's
+        # compiled-in 10s/5 default instead of the intended relief.
+        unit_sec, service_sec = drop_in.split("\n[Service]\n", 1)
+        self.assertIn("[Unit]", unit_sec)
+        self.assertIn("StartLimitIntervalSec=0", unit_sec)
+        self.assertNotIn("StartLimit", service_sec)
+        self.assertIn("RemainAfterExit=yes", service_sec)
+        self.assertIn("kyth-finalize-staged prepare-boot", service_sec)
 
     def test_probe_oneshot_stays_active_for_timer(self) -> None:
         body = (ROOT / "build_files/kyth-probe.service").read_text(encoding="utf-8")

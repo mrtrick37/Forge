@@ -31,11 +31,16 @@ cat >/usr/lib/systemd/system/greenboot-healthcheck.service.d/40-kyth-timeout.con
 # Poll after restorecon so a large /var/home cannot consume the
 # display-manager deadline and mark a healthy first boot red.
 After=kyth-selinux-relabel-home.service
+# RemainAfterExit=yes below is what stops multi-user.target's Wants= from
+# restarting this: a start job on an already-active oneshot no-ops.
+# StartLimit only backstops repeated *failures*, so disable it outright
+# instead of giving it a window — these keys belong in [Unit], not
+# [Service]; stranded in [Service] they're silently ignored and the unit
+# runs under systemd's compiled-in 10s/5 default instead.
+StartLimitIntervalSec=0
 [Service]
 TimeoutStartSec=600
 # Upstream is Type=oneshot without RemainAfterExit; Wants= from
 # multi-user.target would otherwise restart it into start-limit.
 RemainAfterExit=yes
-StartLimitIntervalSec=120
-StartLimitBurst=5
 EOF

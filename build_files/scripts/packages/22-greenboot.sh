@@ -14,15 +14,18 @@ systemctl enable greenboot-healthcheck.service greenboot-set-rollback-trigger.se
 
 # Upstream unit is Type=oneshot without RemainAfterExit. After it
 # succeeds (often in <1s, including a /boot remount), anything that
-# Wants= it starts it again and the default start-limit fails the
-# unit for the boot even though the trigger was written. Keep it
-# active and remount /boot the Kyth way (bind,rw — plain remount,rw
-# is EINVAL on the autofs+btrfs bind).
+# Wants= it starts it again — but a start job on an already-active
+# oneshot no-ops, so RemainAfterExit=yes below is what actually stops
+# that. StartLimit only backstops repeated *failures*; disable it
+# outright rather than give it a window, and keep it in [Unit] — in
+# [Service] it's silently ignored and the unit runs under systemd's
+# compiled-in 10s/5 default instead. Also remount /boot the Kyth way
+# (bind,rw — plain remount,rw is EINVAL on the autofs+btrfs bind).
 install -d /usr/lib/systemd/system/greenboot-set-rollback-trigger.service.d
-cat > /usr/lib/systemd/system/greenboot-set-rollback-trigger.service.d/10-kyth.conf <<'GBROLLBACK'
+cat >/usr/lib/systemd/system/greenboot-set-rollback-trigger.service.d/10-kyth.conf <<'GBROLLBACK'
+[Unit]
+StartLimitIntervalSec=0
 [Service]
 RemainAfterExit=yes
-StartLimitIntervalSec=120
-StartLimitBurst=5
 ExecStartPre=-/usr/libexec/kyth-finalize-staged prepare-boot
 GBROLLBACK

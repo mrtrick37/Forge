@@ -103,16 +103,17 @@ Before=sockets.target dbus.socket
 # this unit for the boot even though the later retry succeeded.
 After=kyth-system-accounts.service local-fs.target
 Wants=kyth-system-accounts.service
+# RemainAfterExit=yes below is what stops dbus.socket / sockets.target from
+# re-running this unit: a start job on an already-active oneshot no-ops.
+# StartLimit only backstops repeated *failures*, so disable it outright
+# rather than give it a window — these keys belong in [Unit], not
+# [Service]; stranded in [Service] they're silently ignored and the unit
+# runs under systemd's compiled-in 10s/5 default instead.
+StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
-# Without RemainAfterExit this unit goes inactive after mkdir, then
-# dbus.socket / sockets.target pull it again. A few rapid restarts
-# hit systemd's default start-limit and fail the boot unit list
-# even though /run/dbus was created on the first try.
 RemainAfterExit=yes
-StartLimitIntervalSec=60
-StartLimitBurst=5
 ExecStart=/usr/bin/mkdir -p /run/dbus
 ExecStart=/usr/bin/chmod 0755 /run/dbus
 

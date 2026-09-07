@@ -36,16 +36,19 @@ DefaultDependencies=no
 After=local-fs.target
 Before=dbus.socket dbus-broker.service sockets.target
 # No After=ostree-remount needed — script is read-only-safe (checks -w).
-# StartLimit prevents the "Start request repeated too quickly" storm seen on
-# host when dbus.socket + dbus-broker.service both pull this unit and the
-# old script exited 1 on ro composefs (now guarded with -w + || true).
+# RemainAfterExit=yes below is what actually stops dbus.socket +
+# dbus-broker.service from re-running this: a start job on an already-active
+# oneshot no-ops. StartLimit is only a backstop against repeated *failures*
+# (the old script exited 1 on ro composefs; now guarded with -w + || true),
+# so disable the limit outright rather than give it a window — these keys
+# live in [Unit], not [Service]; stranded in [Service] they're silently
+# ignored and the unit runs under systemd's compiled-in 10s/5 default.
+StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot
 ExecStart=/usr/libexec/kyth-fix-asus-dbus-policy
 RemainAfterExit=yes
-StartLimitIntervalSec=60
-StartLimitBurst=5
 
 [Install]
 WantedBy=sysinit.target
