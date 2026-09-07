@@ -158,9 +158,9 @@ NATIVE_RECIPE_FILES = {"native.just"}
 # runtime surface is superseded by the native tunable dispatcher
 # (kyth-tunable-rs / tunable_registry.rs — all 94 registry aliases verified
 # present, 0 missing). Excluded after a transitive static-import closure over
-# the 39 queued launchers plus a shell-harness scan: sched_arbiter (imported
-# by build_files/kyth-game-launch) and perf_gate (used by
-# build_files/scripts/check-perf-gate.py) remain reachable and stay active.
+# the remaining queued launchers plus a shell-harness scan: sched_arbiter
+# (imported by build_files/kyth-game-launch) remains reachable and stays
+# active; the performance gate now delegates to native Rust.
 # gaming_master/perf_audit dispatch targets overlap this same set; the two
 # dispatcher files themselves are unreachable and superseded with it.
 TUNABLE_SUPERSEDED_BY = "native::kyth-tunable-rs"
@@ -169,6 +169,7 @@ NATIVE_REPLACED_MODULES = {
     "boot_health": "native::kyth-boot-health",
     "hardware_policy": "native::kyth-hardware-policy",
     "qualification": "native::kyth-qualify",
+    "perf_gate": "native::kyth-perf-gate-rs",
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
     "apps": "native::kyth-exe-handler",
@@ -204,7 +205,7 @@ SUPERSEDED_TUNABLE_MODULES = frozenset({
 # These must never be marked superseded, even if a dispatch table names them.
 SHELL_HARNESS_MODULES = frozenset({
     "memory_tune", "sysctl_compose", "network_preset",
-    "snapshot_timeline", "gaming_resolve", "perf_gate",
+    "snapshot_timeline", "gaming_resolve",
     "sched_arbiter",
 })
 

@@ -110,61 +110,16 @@ class PerfGateCoreTests(unittest.TestCase):
 
 
 class CheckPerfGateScriptTests(unittest.TestCase):
-    """The wiring script: bootstrap/compare/record, all read-only unless --record."""
+    """The compatibility script delegates measurement and persistence to Rust."""
 
-    def test_default_mode_with_no_ledger_passes_and_does_not_create_the_file(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            ledger = Path(tmp) / "perf-ledger.jsonl"
-            with mock.patch.object(check_perf_gate_script, "LEDGER", ledger), \
-                 mock.patch.object(check_perf_gate_script, "_measure_current_ms", return_value=42.0):
-                exit_code = check_perf_gate_script.main([])
+    def test_wrapper_delegates_to_native_binary(self):
+        completed = mock.Mock(returncode=0)
+        with mock.patch.object(check_perf_gate_script, "_command", return_value=["kyth-perf-gate-rs"]), \
+             mock.patch.object(check_perf_gate_script.subprocess, "run", return_value=completed) as run:
+            exit_code = check_perf_gate_script.main()
         self.assertEqual(exit_code, 0)
-        self.assertFalse(ledger.exists())
-
-    def test_record_writes_the_ledger_regardless_of_prior_history(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            ledger = Path(tmp) / "perf-ledger.jsonl"
-            with mock.patch.object(check_perf_gate_script, "LEDGER", ledger), \
-                 mock.patch.object(check_perf_gate_script, "_measure_current_ms", return_value=42.0):
-                exit_code = check_perf_gate_script.main(["--record"])
-            self.assertEqual(exit_code, 0)
-            self.assertIn('"p95": 42.0', ledger.read_text(encoding="utf-8"))
-
-    def test_default_mode_never_mutates_the_ledger(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            ledger = Path(tmp) / "perf-ledger.jsonl"
-            ledger.write_text('{"p95": 40.0}\n', encoding="utf-8")
-            original = ledger.read_text(encoding="utf-8")
-            with mock.patch.object(check_perf_gate_script, "LEDGER", ledger), \
-                 mock.patch.object(check_perf_gate_script, "_measure_current_ms", return_value=41.0):
-                check_perf_gate_script.main([])
-                check_perf_gate_script.main([])
-            self.assertEqual(ledger.read_text(encoding="utf-8"), original)
-
-    def test_regression_exits_nonzero_and_does_not_record(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            ledger = Path(tmp) / "perf-ledger.jsonl"
-            ledger.write_text('{"p95": 10.0}\n', encoding="utf-8")
-            with mock.patch.object(check_perf_gate_script, "LEDGER", ledger), \
-                 mock.patch.object(check_perf_gate_script, "_measure_current_ms", return_value=50.0):
-                exit_code = check_perf_gate_script.main([])
-            self.assertEqual(exit_code, 1)
-            self.assertNotIn("50.0", ledger.read_text(encoding="utf-8"))
-
-    def test_ledger_is_trimmed_to_max_entries_on_record(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            ledger = Path(tmp) / "perf-ledger.jsonl"
-            with mock.patch.object(check_perf_gate_script, "LEDGER", ledger), \
-                 mock.patch.object(check_perf_gate_script, "MAX_LEDGER_ENTRIES", 3), \
-                 mock.patch.object(check_perf_gate_script, "_measure_current_ms", return_value=1.0):
-                for _ in range(5):
-                    check_perf_gate_script.main(["--record"])
-            self.assertEqual(len(ledger.read_text(encoding="utf-8").strip().splitlines()), 3)
-
-    def test_measure_current_ms_is_the_median_of_samples(self):
-        # SAMPLES is now 7 (was 3); median of 7 sorted samples.
-        with mock.patch.object(check_perf_gate_script, "_measure_once", side_effect=[7.0, 5.0, 1.0, 9.0, 3.0, 8.0, 2.0]):
-            self.assertEqual(check_perf_gate_script._measure_current_ms(), 5.0)
+        self.assertEqual(run.call_args.args[0][0], "kyth-perf-gate-rs")
+        self.assertEqual(run.call_args.args[0][1], "measure")
 
 
 if __name__ == "__main__":
