@@ -375,10 +375,12 @@ only as a rollback fixture for older images.
 - [x] Port the final module-specific tunable writer to native Rust and make all
       94 registry entries resolve to `kyth-tunable-rs`; retain the compatibility
       dispatcher only as a rollback fixture for older images.
-- Audit the remaining non-Hub compatibility Python modules and unexposed
-  Just recipes; remove or port them if the product requirement is upgraded
-  from “all Hub entry points are Rust/Tauri” to “no Python may execute in any
-  Kyth runtime workflow.”
+- Continue the repository-wide runtime ownership work in the
+  [Rust migration completion plan](rust-migration-completion-plan.md), which
+  now includes non-Hub shell functions and requires Rust ownership for every
+  runtime operation that can be implemented natively, including destructive
+  and privileged paths. This plan remains the source of truth for Hub-specific
+  acceptance, observation, and rollback gates.
 
 Exit criteria: Tauri/Rust is the only supported System Hub implementation and
 the old Python/Qt Hub is absent from the production image and supported code

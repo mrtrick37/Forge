@@ -5,24 +5,31 @@ telemetry, Guardian, probe, update-watcher, the installer backend, and the
 tunable/sysctl registry are already Rust-owned at their installed entry
 points (see
 [Kyth Hub migration finalization plan](kyth-hub-migration-finalization-plan.md)
-and [Installer Migration Plan](installer-migration-plan.md)). What remains is
-a smaller, previously uncatalogued surface: 41 standalone launcher scripts
-under `build_files/kyth-*` that `ujust` recipes and systemd units invoke
-directly. Of those 41, **40 are ported and committed**. The remaining
-`kyth-vm-acceptance-guest` launcher is deferred to an existing Hub-plan
-release gate. `kyth-exe-handler` is now a packaged native Rust launcher with
-its user interface in the existing **Tauri/React Hub**. Phase 3 stays blocked
-on the Hub plan's own post-cutover observation window (not yet started, not
-agent-schedulable).
+and [Installer Migration Plan](installer-migration-plan.md)). The Python
+launcher ledger is also complete except for the deliberately deferred
+`kyth-vm-acceptance-guest` lifecycle. `kyth-exe-handler` is now a packaged
+native Rust launcher with its user interface in the existing **Tauri/React
+Hub**.
 
-**Scope:** This plan completes the **Python** runtime authority — the 41
-`python-runtime` launchers plus the classifier fix that makes the
-`python-shared-package` count trustworthy. It does not cover the non-Python
-`shell-orchestration` surface; that surface is enumerated below and
-deliberately deferred pending its own triage, not silently dropped. This plan
-supersedes no existing plan — it is additive to the Hub and installer plans,
-which already cover their own surfaces and already declare Python retired
-there except for deferred VM/image-acceptance gates.
+This revision expands the plan to include the runtime-relevant
+`shell-orchestration` surface. The generated inventory currently contains 100
+shell entries already backed by native implementations, 61 queued entries,
+and five explicit exceptions. The 61 queued entries and five exceptions are
+now migration work to classify, port, or formally reclassify; they are no
+longer an undecided future surface. Phase 3 remains blocked on the Hub plan's
+post-cutover observation window, but that gate does not exempt shell functions
+from the Rust ownership target.
+
+**Scope:** This plan now covers every supported runtime function currently
+represented by `python-runtime` or `shell-orchestration`, including read-only,
+state-changing, destructive, privileged, boot, recovery, update, Secure Boot,
+storage, and installer-adjacent behavior. Rust must own policy, validation,
+execution, result semantics, and failure handling wherever a native
+implementation is technically viable. Shell may remain only as declarative
+packaging/build glue, a service/desktop launch contract, or a deliberately
+documented external interface whose behavior is owned by Rust. This plan
+supersedes no existing Hub or installer safety contract; it makes their
+Rust-ownership requirement explicit for non-Hub shell callers as well.
 
 ## Why this plan exists, and why it is not "port 255 modules"
 
@@ -83,12 +90,14 @@ material superseded by Rust, and genuinely dead code nobody deleted yet. Phase
 plan because it is what will make the inventory numbers trustworthy for every
 plan after this one, not just this one.
 
-## The non-Python remainder
+## The shell and orchestration surface
 
-The report's `active_by_authority` also lists `data-or-config: 8` and
-`shell-orchestration: 171`. Neither is Python, and neither is in this plan's
-scope, but both are enumerated here so "all remaining items" isn't read as
-silently ignoring them.
+The report's `active_by_authority` currently lists `shell-orchestration: 161`
+active entries, with five additional entries intentionally classified as
+explicit exceptions. This is not a blanket claim that every `.just`, unit,
+desktop file, or build fragment should become a Rust binary. It is a claim
+that every function expressed by those files must be accounted for and that
+runtime behavior must have a Rust owner.
 
 - **`data-or-config` (8 entries):** `.desktop`, `.rules`, `.toml`, `.menu`,
   and `.directory` files (e.g. `kyth-sched-profiles.toml`,
@@ -96,30 +105,28 @@ silently ignoring them.
   port. The classifier marking them `queued` rather than a terminal
   "not applicable" state is itself a small Phase 0 line item (see below), not
   a migration task.
-- **`shell-orchestration` (171 entries):** roughly 97 are `.just` recipe
-  files, `.service`/`.timer`/`.path` systemd units, and `.desktop` glue —
-  orchestration, not implementation. `grep -rnE "python3?\b|kyth_shared"
-  build_files/just/` returns zero matches, so the shipped `ujust` command
-  surface specifically is already Python-free; those recipes call out to the
-  41 launchers this plan tracks and complete automatically as those launchers
-  move. (That check is scoped to `build_files/just/` — it is not a claim that
-  all shell in the repo is Python-free; `vm-acceptance.sh` above is a
-  counterexample.) The remaining ~74 are genuine bash scripts carrying real
-  logic — `kyth-boot-verify`, `kyth-enroll-mok`, `kyth-mok-rotate`,
+* **Runtime shell functions are in scope.** The queued set includes
+  `kyth-boot-verify`, `kyth-enroll-mok`, `kyth-mok-rotate`,
   `kyth-power-arbiter`, `kyth-perf-gate`, `kyth-storage-gate`, the
-  `kyth-greenboot-*` trio, and similar. Their `queued` status in the inventory
-  is a classifier default ("not recognized as a native shim"), not a verified
-  migration verdict — the same field also marks `kyth-aio-max` and
-  `kyth-ananicy` (both bash shims over the Rust tunable binary) as
-  `shell-orchestration` + `done-native`, so `queued` here doesn't distinguish
-  real logic from glue. This plan does not commit to porting the 74; it names
-  them as a **deferred, undecided surface** requiring a triage pass (does this
-  script contain logic, or is it a shim/unit-wrapper?) before any porting
-  commitment is made. Several of them — `kyth-enroll-mok`, `kyth-mok-rotate`,
-  `kyth-boot-verify`, and the `kyth-greenboot-*` group — touch Secure Boot
-  enrollment and boot-health gating, so if triage does turn any of them into a
-  migration target, they'd need the same parity-fixture discipline as
-  Phase 2, not a casual port.
+  `kyth-greenboot-*` group, `kyth-full-update`, `kyth-distrobox-root-launch`,
+  `kyth-ntfs-repair`, and similar behavior. Secure Boot, boot-health,
+  filesystem repair, update, and privileged operations are not excluded just
+  because they are destructive or difficult to test.
+* **Declarative files are still part of the inventory.** `.just` recipes,
+  systemd units, desktop entries, and timers must be retargeted to the Rust
+  owner and tested as launch contracts. They do not need to become standalone
+  Rust binaries when they contain no policy or execution logic.
+* **Build-time assembly is audited, not blindly rewritten.** Package and image
+  construction fragments may remain shell when they only assemble the image or
+  install declarative assets. If a build fragment embeds reusable runtime
+  behavior, that behavior is split out and ported to Rust; the remaining shell
+  is recorded as build-only rather than silently counted as runtime authority.
+* **The five current explicit exceptions are no longer permanent exclusions.**
+  `kyth-default-flatpaks`, `kyth-flathub-setup`, `kyth-local-bin-migrate`, and
+  `rclone@` must be classified under Phase 5. Each either receives a Rust
+  owner or a documented, reviewed `not-applicable`/external-interface status.
+  No runtime function may remain exempt merely because its current
+  implementation is shell.
 
 ## Decision
 
@@ -130,29 +137,34 @@ silently ignoring them.
    and modules retained only as rollback/parity fixtures for an
    already-completed Rust cutover. Only the first group counts toward
    `active_python`.
-2. Treat the 41 `python-runtime` launcher entries as the real migration
-   ledger. Port them in risk order using the same taxonomy the checker
-   already encodes (`READ_ONLY_NAMES` → `WRITER_NAMES` → `DAEMON_NAMES` →
-   privileged), rather than inventing a new ordering.
-3. A launcher is "done" only when: the Rust replacement exists and is wired
-   into the packaged image, the launcher name is added to `NATIVE_BINARIES`
-   in `check-runtime-migration-inventory.py`, the inventory and report are
-   regenerated (`--generate`) and pass `just validate`, and are committed, and
-   tests are added as `unittest.TestCase` subclasses under `tests/` (CI runs
-   `python3 -m unittest discover -s tests -b`; plain pytest-style
-   function tests are silently never collected by that discovery — see the
-   Phase 0 note below, this bit a prior task in this repo).
-4. `NOT_PORTED` / `NOT_PORTED_PATHS` in the checker (`kyth-default-flatpaks`,
-   `kyth-flathub-setup`, `kyth-local-bin-migrate`, `rclone@`, `scx_loader`,
-   the welcome privileged fixture) remain deliberate exceptions. "All
-   remaining items" in this plan means all Python items not already on that
-   list; overturning one of those exclusions, or committing to port the 74
-   bash scripts named above, is a separate, explicit decision this plan does
-   not make.
-5. Once Phase 1 substantially lands, flip the CLAUDE.md guidance that tells
-   contributors to add new host-tuning logic as a small Python module in
-   `kyth_shared` — otherwise every finished phase is undermined by the next
-   feature landing in Python by convention.
+2. Treat the `python-runtime` and runtime-relevant `shell-orchestration`
+   entries as one migration ledger. Port them in risk order using the same
+   taxonomy the checker already encodes (`READ_ONLY_NAMES` → `WRITER_NAMES` →
+   `DAEMON_NAMES` → privileged), then extend that taxonomy for boot, recovery,
+   Secure Boot, storage, update, and destructive operations. The taxonomy
+   determines verification depth, not whether a function is eligible for
+   migration.
+3. A runtime function is "done" only when: its Rust replacement owns policy,
+   validation, execution, result semantics, and failure handling; the
+   replacement is wired into the packaged image; every launcher/unit/recipe
+   caller is retargeted; the inventory records the Rust owner; the inventory
+   and report are regenerated (`--generate`) and pass `just validate`; and
+   parity tests cover success, refusal, malformed input, privilege failure,
+   timeout, partial failure, and rollback/recovery behavior where applicable.
+   Tests are added as `unittest.TestCase` subclasses under `tests/` (CI runs
+   `python3 -m unittest discover -s tests -b`; plain pytest-style function
+   tests are silently never collected by that discovery — see the Phase 0
+   note below, this bit a prior task in this repo).
+4. Existing `NOT_PORTED` / `NOT_PORTED_PATHS` entries are inputs to the shell
+   triage, not permanent exemptions. They may only remain outside the Rust
+   implementation ledger after the Phase 5 review proves that an entry is
+   build-only, declarative, or an external interface whose behavior cannot be
+   owned by Kyth. Any runtime behavior currently hidden behind those entries
+   must be ported or isolated behind a typed Rust boundary.
+5. Keep the contributor guidance that directs new runtime, service, CLI, and
+   desktop behavior to Rust/Tauri. No new Python or shell runtime authority
+   may be added while these phases are in progress; any exception requires a
+   documented owner, parity test, and removal condition.
 
 ## Phase 0 — Fix the classifier before trusting the queue
 
@@ -451,6 +463,88 @@ arriving in `kyth_shared` by convention while Phase 3 stays blocked.
   `src/kyth-shared-rs/MIGRATION.md`, which points new host-tuning work at the
   Rust shared crate/native dispatcher.
 
+## Phase 5 — Inventory every shell function and assign an owner
+
+**Status: planned.** This phase converts the shell expansion from a file-count
+into an auditable function-level ledger. It must cover the 61 queued
+`shell-orchestration` entries, the five current explicit exceptions, and any
+runtime shell helpers discovered under `build_files/scripts/`, `build_files/just/`,
+systemd units, desktop launchers, or acceptance harnesses.
+
+- [ ] Enumerate every shell function, command sequence, and sourceable helper
+  reachable from a supported runtime path. Record its callers, inputs,
+  outputs, privilege boundary, files/devices/services touched, and whether it
+  can mutate or destroy state.
+- [ ] Split declarative launch contracts from implementation. A `.just`
+  recipe, unit, timer, path, or desktop entry may remain as metadata only when
+  it delegates to a named Rust binary or typed Tauri command and contains no
+  policy, parsing, mutation, or error-handling authority of its own.
+- [ ] Classify each implementation function as one of `read-only`,
+  `idempotent-writer`, `destructive`, `privileged`, `boot/recovery`, or
+  `build-only`. `destructive`, `privileged`, and `boot/recovery` are migration
+  classes with deeper tests, not exclusions from the Rust target.
+- [ ] Resolve the five explicit exceptions (`kyth-default-flatpaks`,
+  `kyth-flathub-setup`, `kyth-local-bin-migrate`, and `rclone@` plus their
+  associated unit entries) into a Rust owner or a reviewed terminal status.
+- [ ] Extend the inventory schema and tests so a shell entry cannot be marked
+  `done-native` merely because it is a thin-looking shim. The record must name
+  the Rust owner and the function-level parity test that proves the shim does
+  not retain runtime authority.
+
+The phase exit criterion is a complete ledger: every runtime shell function
+has a Rust owner, an approved external owner, or a documented terminal
+`not-applicable` status. `queued` is not an acceptable final classification
+for a supported runtime function.
+
+## Phase 6 — Port shell runtime logic to Rust, including destructive paths
+
+**Status: planned.** Port in risk order, but do not stop after read-only
+coverage. Rust owns the full behavior of each function: input validation,
+policy decisions, bounded execution, privilege transitions, mutation,
+destructive confirmation, structured status, redaction, and recovery.
+
+1. Retarget thin wrappers and recipe/unit callers to existing Rust binaries or
+   typed Tauri commands. Remove duplicate shell parsing and fallback behavior.
+2. Port read-only probes and deterministic report generation, then use those
+   owners as shared primitives for later state-changing paths.
+3. Port idempotent writers and session/system configuration, preserving
+   reversible projections and explicit refresh-after-success semantics.
+4. Port destructive and privileged workflows, including NTFS repair, storage
+   maintenance, distrobox/root actions, full-update flows, Secure Boot
+   enrollment and rotation, boot verification, Greenboot decisions, and any
+   filesystem, firmware, account, or deployment mutation. These workflows
+   must have typed operations, allowlists, bounded timeouts, confirmation or
+   dry-run semantics where appropriate, and truthful partial-failure results.
+5. Port boot, recovery, and acceptance lifecycle functions last within the
+   implementation sequence, with disposable-image tests for install, reboot,
+   update, rollback, power loss, and failed verification. This includes the
+   Rust-owned implementation of `kyth-vm-acceptance-guest run` once the
+   acceptance gate authorizes replacing its Python lifecycle fixture.
+
+Every cutover must retain a rollback fixture until the corresponding
+installed-image and promoted-image checks pass. A shell compatibility wrapper
+may remain temporarily, but it must delegate to one bounded Rust operation and
+must not retain policy, destructive execution, parsing, or success semantics.
+
+## Phase 7 — Prove and retire shell authority
+
+**Status: planned.** The final phase closes the gap between source ownership
+and installed behavior.
+
+- [ ] Run function-level parity tests through `unittest discover`, including
+  success, refusal, malformed input, missing dependency, privilege failure,
+  timeout, partial completion, and rollback paths.
+- [ ] Validate the packaged image and both release channels with the actual
+  Rust binaries, units, recipes, desktop launchers, and typed Hub commands.
+- [ ] Exercise destructive paths on disposable disks/images and record the
+  recovery evidence before deleting any shell fixture.
+- [ ] Regenerate the runtime inventory and require zero queued runtime shell
+  functions, zero unreviewed explicit exceptions, and zero shell-owned policy
+  or execution authority in the supported image.
+- [ ] Complete the post-cutover observation window, then delete superseded
+  shell/Python fixtures and stale launch references in a separately reviewed
+  cleanup change.
+
 ## Definition of done
 
 - `active_python_entries` in the generated report reflects only Python that
@@ -463,25 +557,32 @@ arriving in `kyth_shared` by convention while Phase 3 stays blocked.
   only after that independently controlled gate has closed.
 - Every port has a `unittest.TestCase`-based parity test collected by
   `python3 -m unittest discover -s tests -b`.
+- Every runtime-relevant shell function is Rust-owned, including functions
+  that read, write, mutate, destroy, recover, update, enroll Secure Boot, or
+  cross a privilege boundary. Shell may remain only as declarative launch
+  metadata or audited build-only assembly.
+- The generated inventory has no queued runtime shell functions and no
+  unreviewed `explicitly-not-ported` runtime entries. A `done-native` shell
+  record names the Rust owner and the function-level parity evidence.
 - The inventory and report are regenerated and pass `just validate` after
   each launcher moves, not batched at the end.
 - CLAUDE.md's host-tuning convention no longer tells contributors to write
   new Python.
-- This plan does not claim to close out `shell-orchestration` or
-  `data-or-config` — see "The non-Python remainder" above. Closing those out
-  is a separate, not-yet-scoped decision.
+- `data-or-config` remains terminal non-code inventory, but every function
+  reachable through `shell-orchestration` is closed by the shell phases above.
 
 ## Out of scope
 
-- Live-media/VM/promoted-image acceptance for the Hub and installer,
-  including `kyth-vm-acceptance-guest`'s `run` lifecycle — already tracked as
-  an open release-gate item in the Hub finalization plan, not code-migration
-  work this plan adds to.
-- Anything in `NOT_PORTED` / `NOT_PORTED_PATHS` unless a separate decision
-  overturns a specific exception.
+- Live-media/VM/promoted-image acceptance remains a release gate, but it is
+  also the required proof for the Rust implementation of destructive and
+  recovery workflows. `kyth-vm-acceptance-guest`'s `run` lifecycle is no
+  longer outside the implementation target; it is sequenced in Phase 6.
+- A runtime entry may not remain in `NOT_PORTED` / `NOT_PORTED_PATHS` without
+  the Phase 5 owner review. Existing entries must be resolved as Rust-owned,
+  build-only/declarative, or a documented external interface with an explicit
+  reason that Kyth cannot own the behavior.
 - `src/kyth-welcome/` Python, which is already classified source-only/
   test-fixture and is not an installed runtime authority.
-- The ~74 non-glue bash scripts under `shell-orchestration` (see "The
-  non-Python remainder"). Naming them here is not a commitment to port them;
-  it's a record that they were looked at and deliberately left for a future,
-  separately-scoped decision.
+- Pure build-time image assembly and declarative metadata are not required to
+  become Rust binaries when they contain no runtime policy or execution logic.
+  They remain audited inventory entries and must not hide runtime behavior.
