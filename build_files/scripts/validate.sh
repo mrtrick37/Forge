@@ -102,7 +102,15 @@ fi
 echo "==> Python unit tests"
 test_home="$(mktemp -d)"
 trap 'rm -rf -- "${test_home}"' EXIT
+# Keep the runner's installed Rust toolchain visible after HOME is isolated
+# for the Python suite. On GitHub-hosted runners `cargo` is a rustup shim; if
+# RUSTUP_HOME follows the temporary HOME, Rust tests fail with "no default
+# toolchain" even though the workflow configured stable successfully.
+rustup_home="${RUSTUP_HOME:-${HOME}/.rustup}"
+cargo_home="${CARGO_HOME:-${HOME}/.cargo}"
 export HOME="${test_home}/home"
+export RUSTUP_HOME="${rustup_home}"
+export CARGO_HOME="${cargo_home}"
 export XDG_CACHE_HOME="${test_home}/cache"
 export XDG_CONFIG_HOME="${test_home}/config"
 export XDG_DATA_HOME="${test_home}/data"

@@ -34,6 +34,13 @@ class QualityContractsTests(unittest.TestCase):
         self.assertIn("rustup default stable", validation_job)
         self.assertIn("cargo --version", validation_job)
 
+    def test_validation_preserves_rustup_home_when_isolating_test_home(self):
+        validation = (ROOT / "build_files/scripts/validate.sh").read_text()
+        self.assertIn('rustup_home="${RUSTUP_HOME:-${HOME}/.rustup}"', validation)
+        self.assertIn('cargo_home="${CARGO_HOME:-${HOME}/.cargo}"', validation)
+        self.assertIn('export RUSTUP_HOME="${rustup_home}"', validation)
+        self.assertIn('export CARGO_HOME="${cargo_home}"', validation)
+
     def test_pre_push_runs_the_same_quality_gate_as_ci(self):
         preflight = (ROOT / "build_files/scripts/ci-preflight.sh").read_text()
         self.assertIn("./build_files/scripts/run-quality.sh", preflight)
