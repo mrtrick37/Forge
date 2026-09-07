@@ -2989,28 +2989,6 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-rclone-update entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-rclone-update",
-      "owner": "fixture::build_files/kyth-rclone-update",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-rclone-update",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-rclone-update",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-rclone-update entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "alias",
       "cutover": "replace installed kyth-readahead entry point after parity gates",
       "installed_implementation": "rust",

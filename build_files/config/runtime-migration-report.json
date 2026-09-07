@@ -11,15 +11,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "kyth-rclone-update",
-      "owner": "fixture::build_files/kyth-rclone-update",
-      "path": "build_files/kyth-rclone-update",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-sched",
       "owner": "fixture::build_files/kyth-sched",
       "path": "build_files/kyth-sched",
@@ -2826,7 +2817,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 5,
+      "python-runtime": 4,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 17,
@@ -2836,15 +2827,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 166
+      "user-session": 165
     },
-    "active_entries": 365,
-    "active_python_entries": 168,
-    "entries": 618,
+    "active_entries": 364,
+    "active_python_entries": 167,
+    "entries": 617,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 128,
-      "queued": 237
+      "queued": 236
     },
     "superseded_entries": 92
   },

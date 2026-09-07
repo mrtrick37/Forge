@@ -165,6 +165,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-game-launch",
             "kyth-dynamic-lock",
             "kyth-proton-cachyos-update",
+            "kyth-rclone-update",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

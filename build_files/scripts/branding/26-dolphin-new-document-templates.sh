@@ -12,7 +12,8 @@ printf '#!/usr/bin/env python3\n\n\ndef main():\n    pass\n\n\nif __name__ == "_
 chmod +x /etc/skel/Templates/"Shell Script.sh"
 chmod +x /etc/skel/Templates/"Python Script.py"
 
-install -m 0755 /ctx/kyth-rclone-update /usr/bin/kyth-rclone-update
+# kyth-rclone-update is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 # kyth-session-snapshot is the native Rust binary copied from the
 # hub-web-builder stage; no Python launcher remains in the source tree.
 # kyth-report-issue is the native Rust binary copied from the
