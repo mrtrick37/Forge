@@ -3852,28 +3852,6 @@
     },
     {
       "current_implementation": "python",
-      "cutover": "replace installed kyth-setup-devcontainer entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-setup-devcontainer",
-      "owner": "fixture::build_files/kyth-setup-devcontainer",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-setup-devcontainer",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-setup-devcontainer",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "user-session-writer",
-      "rollback": "restore previous installed kyth-setup-devcontainer entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
-      "current_implementation": "python",
       "cutover": "replace installed kyth-setup-transfer entry point after parity gates",
       "installed_implementation": "python",
       "migration_priority": 2,
