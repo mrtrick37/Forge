@@ -10,7 +10,8 @@ install -m 0755 /ctx/kyth-local-bin-migrate /usr/bin/kyth-local-bin-migrate
 install -m 0755 /ctx/kyth-nearby-share /usr/bin/kyth-nearby-share
 # kyth-setup-transfer is the native Rust binary copied from the
 # hub-web-builder stage; no Python launcher remains in the source tree.
-install -m 0755 /ctx/kyth-dynamic-lock /usr/bin/kyth-dynamic-lock
+# kyth-dynamic-lock is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 # kyth-duperemove.service/.timer and kyth-local-bin-migrate.service are
 # installed in branding/31-ujust-recipes.sh instead, right before the
 # `systemctl enable` calls that need them to already exist.

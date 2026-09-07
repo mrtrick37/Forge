@@ -163,6 +163,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-save-sync",
             "kyth-backup",
             "kyth-game-launch",
+            "kyth-dynamic-lock",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
