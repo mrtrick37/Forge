@@ -66,6 +66,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-doctor", "kyth-health-check", "kyth-s
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-tunable-rs", "kyth-game-boost", "kyth-vm-acceptance-guest"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-scx-loader"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-runtime"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-ai-dev"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-desktop-layout"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-display-hdr"}
@@ -162,6 +163,7 @@ NATIVE_RECIPE_FILES = {"native.just"}
 # dispatcher files themselves are unreachable and superseded with it.
 TUNABLE_SUPERSEDED_BY = "native::kyth-tunable-rs"
 NATIVE_REPLACED_MODULES = {
+    "ai_dev": "native::kyth-ai-dev",
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
     "apps": "native::kyth-exe-handler",
@@ -609,8 +611,16 @@ def entry(
     metadata = runtime_metadata(path, surface=surface, name=item_name, kind=kind, status=status)
     result.update(metadata)
     if surface == "python-runtime" and item_name in NATIVE_REPLACED_MODULES:
-        result["superseded_by"] = NATIVE_REPLACED_MODULES[item_name]
-        result["owner"] = NATIVE_REPLACED_MODULES[item_name]
+        result.update({
+            "runtime_active": False,
+            "migration_priority": 3,
+            "installed_implementation": "python-fixture",
+            "runtime_scope": "test-fixture",
+            "status": "explicitly-not-ported",
+            "superseded_by": NATIVE_REPLACED_MODULES[item_name],
+            "owner": NATIVE_REPLACED_MODULES[item_name],
+            "reason": "retained shared-package compatibility module is superseded by a packaged native Rust owner",
+        })
     if (
         surface == "python-runtime"
         and rel(path) == f"src/kyth_shared/kyth_shared/{item_name}.py"

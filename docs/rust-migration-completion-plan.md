@@ -14,7 +14,7 @@ Hub**.
 This revision expands the plan to include the runtime-relevant
 `shell-orchestration` surface. After the Phase 6 inventory pass, the generated
 inventory contains 104 active shell entries, all backed by native
-implementations or the Rust runtime dispatcher, and 46 queued Python package
+implementations or the Rust runtime dispatcher, and 45 queued Python package
 modules. The Python queue is now a reachability-derived set: it includes only
 modules reached from surviving Python console entry points, direct build/
 acceptance harnesses, or documented dynamic-dispatch tables. Unreachable
@@ -442,6 +442,31 @@ Completed implementation:
 `kyth-exe-handler` is listed in `NATIVE_BINARIES`, so it is no longer an
 active Python runtime authority. Its Python implementation remains source-only
 rollback/parity material until the approved observation window closes.
+
+## Item 1 — Reachable shared-package modules
+
+**Status: in progress (1/46 complete).** This is the remaining Python half of
+the Rust migration. The reachability audit limits the work to modules that
+are still called by a supported console entry point, shell/build harness, or
+documented dynamic catalog. Each cutover must own the complete behavior,
+including mutations, destructive actions, persistence, failure handling, and
+rollback—not just read-only planning.
+
+- [x] ai_dev — packaged kyth-ai-dev owns setup, status, enter, start, stop,
+  model pull, provisioning, and destructive Distrobox removal. The Python
+  module remains an inactive parity/rollback fixture.
+- [ ] boot_health and its reachable persistence/recovery dependencies.
+- [ ] hardware_policy and its dynamic hardware-quirk apply path.
+- [ ] qualification and the acceptance/report execution path.
+- [ ] memory_tune, sysctl_compose, perf_gate, network_preset,
+  snapshot_timeline, sched_arbiter, gaming_resolve, containers, repos,
+  telemetry, and the remaining reachable support modules.
+
+After every module group: add unittest.TestCase parity coverage, wire the
+installed Rust entry point or caller, regenerate the inventory/report, run
+the focused and crate-wide gates, commit on testing, push origin/testing, and
+record the remaining queue here. Do not retire source fixtures until the
+installed-image and observation-window gates in Phase 7 pass.
 
 ## Phase 3 — Retire superseded `kyth_shared` fixture material
 

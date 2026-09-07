@@ -11,15 +11,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "ai_dev",
-      "owner": "fixture::src/kyth_shared/kyth_shared/ai_dev.py",
-      "path": "src/kyth_shared/kyth_shared/ai_dev.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "akmods_lock",
       "owner": "fixture::src/kyth_shared/kyth_shared/akmods_lock.py",
       "path": "src/kyth_shared/kyth_shared/akmods_lock.py",
@@ -2745,28 +2736,38 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 46,
+      "python-shared-package": 45,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 46,
+      "standalone": 45,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 231,
-    "active_python_entries": 46,
+    "active_entries": 230,
+    "active_python_entries": 45,
     "entries": 859,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 46
+      "queued": 45
     },
-    "superseded_entries": 98
+    "superseded_entries": 99
   },
   "superseded": [
+    {
+      "migration_priority": 3,
+      "name": "ai_dev",
+      "owner": "native::kyth-ai-dev",
+      "path": "src/kyth_shared/kyth_shared/ai_dev.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-ai-dev"
+    },
     {
       "migration_priority": 3,
       "name": "aio_max",
@@ -2794,7 +2795,7 @@
       "path": "src/kyth_shared/kyth_shared/apps.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "test-fixture",
-      "status": "queued",
+      "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-exe-handler"
     },
     {
@@ -2874,7 +2875,7 @@
       "path": "src/kyth_shared/kyth_shared/desktop/exe_handler.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "test-fixture",
-      "status": "queued",
+      "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-exe-handler"
     },
     {
@@ -2884,7 +2885,7 @@
       "path": "src/kyth_shared/kyth_shared/desktop/qt_threads.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "test-fixture",
-      "status": "queued",
+      "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-exe-handler"
     },
     {
@@ -2894,7 +2895,7 @@
       "path": "src/kyth_shared/kyth_shared/desktop/windows_installer.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "test-fixture",
-      "status": "queued",
+      "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-exe-handler"
     },
     {
@@ -3644,7 +3645,7 @@
       "path": "src/kyth_shared/kyth_shared/user_polish.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "test-fixture",
-      "status": "queued",
+      "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-user-polish"
     },
     {
@@ -3654,7 +3655,7 @@
       "path": "src/kyth_shared/kyth_shared/user_polish_flatpak.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "test-fixture",
-      "status": "queued",
+      "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-user-polish"
     },
     {

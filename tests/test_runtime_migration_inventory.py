@@ -159,11 +159,20 @@ class InventoryTest(unittest.TestCase):
 
         # The surviving Python console scripts are roots; their transitive
         # imports remain active until a native entry point replaces them.
-        for module in ("ai_dev", "boot_health", "hardware_policy", "qualification"):
+        for module in ("boot_health", "hardware_policy", "qualification"):
             path = f"src/kyth_shared/kyth_shared/{module}.py"
             self.assertIn(f"kyth_shared.{module}", reachable)
             self.assertTrue(by_path[path]["runtime_active"], path)
             self.assertEqual(by_path[path]["status"], "queued")
+
+        # ai_dev has a packaged native replacement, so its Python module is a
+        # rollback/parity fixture and is intentionally absent from the live
+        # Python roots.
+        ai_dev = by_path["src/kyth_shared/kyth_shared/ai_dev.py"]
+        self.assertNotIn("kyth_shared.ai_dev", reachable)
+        self.assertFalse(ai_dev["runtime_active"])
+        self.assertEqual(ai_dev["superseded_by"], "native::kyth-ai-dev")
+        self.assertEqual(ai_dev["status"], "explicitly-not-ported")
 
         # This source file is present in the installed compatibility package,
         # but no supported launcher or harness reaches it after the native
@@ -201,14 +210,15 @@ class InventoryTest(unittest.TestCase):
     def test_surviving_python_console_entry_point_is_not_silently_retired(self):
         checker = load_checker()
         roots = checker._python_console_roots()
-        self.assertIn("kyth_shared.ai_dev", roots)
+        self.assertNotIn("kyth_shared.ai_dev", roots)
         self.assertNotIn("kyth_shared.guardian", roots)
         item = next(
             item for item in load_inventory()["entries"]
             if item["path"] == "src/kyth_shared/kyth_shared/ai_dev.py"
         )
-        self.assertTrue(item["runtime_active"])
-        self.assertEqual(item["status"], "queued")
+        self.assertFalse(item["runtime_active"])
+        self.assertEqual(item["status"], "explicitly-not-ported")
+        self.assertEqual(item["superseded_by"], "native::kyth-ai-dev")
 
     def test_data_or_config_is_terminal_not_queued(self):
         entries = load_inventory()["entries"]
