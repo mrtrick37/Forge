@@ -159,6 +159,45 @@ class InventoryTest(unittest.TestCase):
             self.assertEqual(item["status"], "not-applicable", item["path"])
             self.assertFalse(item["runtime_active"], item["path"])
 
+    def test_shell_runtime_entries_have_function_level_ownership(self):
+        entries = load_inventory()["entries"]
+        shell = [
+            item for item in entries
+            if item["runtime_authority"] == "shell-orchestration"
+            and item["runtime_active"]
+        ]
+        self.assertGreater(len(shell), 0)
+        for item in shell:
+            self.assertTrue(item["function_inventory"], item["path"])
+            for function in item["function_inventory"]:
+                self.assertIn(function["ownership"], {"native", "shell", "exception"})
+                self.assertTrue(function["owner"], item["path"])
+
+    def test_native_shell_entries_do_not_retain_shell_function_ownership(self):
+        entries = load_inventory()["entries"]
+        native_shell = [
+            item for item in entries
+            if item["runtime_authority"] == "shell-orchestration"
+            and item["status"] == "done-native"
+        ]
+        self.assertGreater(len(native_shell), 0)
+        for item in native_shell:
+            self.assertEqual(
+                {function["ownership"] for function in item["function_inventory"]},
+                {"native"},
+                item["path"],
+            )
+
+    def test_build_shell_scripts_are_terminal_non_runtime_entries(self):
+        entries = load_inventory()["entries"]
+        scripts = [item for item in entries if item["surface"] == "shell-script"]
+        self.assertGreater(len(scripts), 0)
+        for item in scripts:
+            self.assertEqual(item["runtime_authority"], "build-only", item["path"])
+            self.assertEqual(item["status"], "not-applicable", item["path"])
+            self.assertFalse(item["runtime_active"], item["path"])
+            self.assertTrue(item["function_inventory"], item["path"])
+
     def test_tunable_registry_covers_all_python_aliases(self):
         rust = (ROOT / "src/kyth-shared-rs/src/system/tunable_registry.rs").read_text(encoding="utf-8")
         aliases = tunable_aliases()

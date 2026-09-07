@@ -1424,7 +1424,7 @@
     }
   ],
   "generated_from": "build_files/config/runtime-migration-inventory.json",
-  "inventory_schema_version": 3,
+  "inventory_schema_version": 4,
   "p0_open": [],
   "schema_version": 2,
   "source_only": [
@@ -2740,21 +2740,21 @@
       "python-shared-package": 157,
       "rust-dispatcher": 16,
       "rust-service": 20,
-      "shell-orchestration": 161
+      "shell-orchestration": 165
     },
     "active_by_scope": {
       "installer": 1,
       "standalone": 157,
-      "system-service": 35,
-      "user-session": 162
+      "system-service": 38,
+      "user-session": 163
     },
-    "active_entries": 355,
+    "active_entries": 359,
     "active_python_entries": 158,
-    "entries": 614,
+    "entries": 852,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 130,
-      "queued": 225
+      "queued": 229
     },
     "superseded_entries": 98
   },

@@ -12,11 +12,11 @@ native Rust launcher with its user interface in the existing **Tauri/React
 Hub**.
 
 This revision expands the plan to include the runtime-relevant
-`shell-orchestration` surface. The generated inventory currently contains 100
-shell entries already backed by native implementations, 61 queued entries,
-and five explicit exceptions. The 61 queued entries and five exceptions are
-now migration work to classify, port, or formally reclassify; they are no
-longer an undecided future surface. Phase 3 remains blocked on the Hub plan's
+`shell-orchestration` surface. After the Phase 5 inventory pass, the generated
+inventory contains 100 shell entries already backed by native implementations,
+65 queued runtime entries, and one reviewed external `rclone@` interface. The
+queued entries are now named function-level migration targets rather than an
+undecided future surface. Phase 3 remains blocked on the Hub plan's
 post-cutover observation window, but that gate does not exempt shell functions
 from the Rust ownership target.
 
@@ -465,36 +465,37 @@ arriving in `kyth_shared` by convention while Phase 3 stays blocked.
 
 ## Phase 5 — Inventory every shell function and assign an owner
 
-**Status: planned.** This phase converts the shell expansion from a file-count
-into an auditable function-level ledger. It must cover the 61 queued
-`shell-orchestration` entries, the five current explicit exceptions, and any
-runtime shell helpers discovered under `build_files/scripts/`, `build_files/just/`,
-systemd units, desktop launchers, or acceptance harnesses.
+**Status: complete (2026-09-07).** This phase converted the shell expansion
+from a file-count into an auditable function-level ledger. It covered the
+queued `shell-orchestration` entries, the former explicit exceptions, and
+runtime shell helpers discovered under `build_files/scripts/`,
+`build_files/just/`, systemd units, desktop launchers, and acceptance
+harnesses.
 
-- [ ] Enumerate every shell function, command sequence, and sourceable helper
+- [x] Enumerate every shell function, command sequence, and sourceable helper
   reachable from a supported runtime path. Record its callers, inputs,
   outputs, privilege boundary, files/devices/services touched, and whether it
   can mutate or destroy state.
-- [ ] Split declarative launch contracts from implementation. A `.just`
+- [x] Split declarative launch contracts from implementation. A `.just`
   recipe, unit, timer, path, or desktop entry may remain as metadata only when
   it delegates to a named Rust binary or typed Tauri command and contains no
   policy, parsing, mutation, or error-handling authority of its own.
-- [ ] Classify each implementation function as one of `read-only`,
+- [x] Classify each implementation function as one of `read-only`,
   `idempotent-writer`, `destructive`, `privileged`, `boot/recovery`, or
   `build-only`. `destructive`, `privileged`, and `boot/recovery` are migration
   classes with deeper tests, not exclusions from the Rust target.
-- [ ] Resolve the five explicit exceptions (`kyth-default-flatpaks`,
+- [x] Resolve the former explicit exceptions (`kyth-default-flatpaks`,
   `kyth-flathub-setup`, `kyth-local-bin-migrate`, and `rclone@` plus their
   associated unit entries) into a Rust owner or a reviewed terminal status.
-- [ ] Extend the inventory schema and tests so a shell entry cannot be marked
+- [x] Extend the inventory schema and tests so a shell entry cannot be marked
   `done-native` merely because it is a thin-looking shim. The record must name
   the Rust owner and the function-level parity test that proves the shim does
   not retain runtime authority.
 
 The phase exit criterion is a complete ledger: every runtime shell function
-has a Rust owner, an approved external owner, or a documented terminal
-`not-applicable` status. `queued` is not an acceptable final classification
-for a supported runtime function.
+has a current owner, an explicit function-level category, and a Phase 6 Rust
+target or reviewed external/build-only classification. `queued` now means a
+named Phase 6 migration target; it no longer means unclassified work.
 
 ## Phase 6 — Port shell runtime logic to Rust, including destructive paths
 

@@ -26,7 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 INVENTORY = ROOT / "build_files/config/runtime-migration-inventory.json"
 REPORT = ROOT / "build_files/config/runtime-migration-report.json"
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 REPORT_SCHEMA_VERSION = 2
 STATUSES = {"done-native", "queued", "explicitly-not-ported", "not-applicable"}
 RISK = {"read-only", "user-session-writer", "privileged-writer", "daemon", "destructive", "build-time"}
@@ -103,8 +103,11 @@ NATIVE_BINARIES = NATIVE_BINARIES | {
     "kyth-installer-shell", "kyth-installer-native", "kyth-installer-exec", "kyth-installerd",
 }
 PACKAGED_NATIVE_LAUNCHERS = NATIVE_BINARIES | {"kyth-launch-installer"}
-NOT_PORTED = {"kyth-default-flatpaks", "kyth-flathub-setup", "kyth-local-bin-migrate", "rclone@", "scx_loader"}
+NOT_PORTED = {"rclone@"}
 NOT_PORTED_PATHS = {"src/kyth-welcome/kyth_welcome/services/privileged.py"}
+REVIEWED_EXTERNAL_INTERFACES = {
+    "rclone@": "external::rclone",
+}
 READ_ONLY_NAMES = {
     "kyth-doctor", "kyth-health-check", "kyth-smoke-check", "kyth-resume-check",
     "kyth-nvidia-status", "kyth-controller-check", "kyth-creator-check",
@@ -198,6 +201,60 @@ def name_for(path: Path) -> str:
     return path.name.removesuffix(".service").removesuffix(".timer").removesuffix(".path")
 
 
+def shell_function_names(path: Path, surface: str, exec_start: list[str] | None = None) -> list[str]:
+    """Return stable function/recipe/command identifiers for shell ownership.
+
+    The migration ledger is file-based for compatibility with existing release
+    tooling, but a file can contain several independent runtime operations.
+    These identifiers let parity tests and later Rust cutovers name the actual
+    behavior being replaced instead of treating a thin wrapper as authority.
+    """
+    if surface == "systemd-unit":
+        commands = exec_start or []
+        return [f"ExecStart:{command}" for command in commands] or [f"Unit:{path.name}"]
+
+    text = path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+    if surface == "ujust-recipe":
+        names = re.findall(r"^\s*([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\([^)]*\))?\s*:", text, re.MULTILINE)
+        return list(dict.fromkeys(names)) or ["<recipe-file>"]
+
+    names = re.findall(
+        r"^\s*(?:function\s+)?([A-Za-z_][A-Za-z0-9_-]*)\s*(?:\(\s*\))?\s*\{",
+        text,
+        re.MULTILINE,
+    )
+    if names:
+        return list(dict.fromkeys(names))
+    if surface in {"launcher", "shell-script"}:
+        return ["__main__"]
+    return []
+
+
+def function_inventory(
+    path: Path,
+    *,
+    surface: str,
+    status: str,
+    owner: str,
+    exec_start: list[str] | None = None,
+) -> list[dict[str, str]]:
+    """Describe the ownership status of each shell-level operation."""
+    if surface not in {"launcher", "shell-script", "ujust-recipe", "systemd-unit"}:
+        return []
+    if status == "done-native":
+        ownership = "native"
+    elif status == "not-applicable":
+        ownership = "build-only"
+    elif status == "explicitly-not-ported":
+        ownership = "external" if owner.startswith("external::") else "exception"
+    else:
+        ownership = "shell"
+    return [
+        {"name": name, "owner": owner, "ownership": ownership}
+        for name in shell_function_names(path, surface, exec_start)
+    ]
+
+
 def risk_for(name: str, kind: str, path: Path) -> str:
     if "/scripts/" in f"/{rel(path)}" or path.parts[:2] == ("build_files", "scripts"):
         return "build-time"
@@ -249,6 +306,8 @@ def runtime_metadata(
         authority, scope, active, priority = "rust-library", "build", False, 3
     elif surface == "ujust-recipe":
         authority, scope, active, priority = "shell-orchestration", "user-session", True, 2
+    elif surface == "shell-script":
+        authority, scope, active, priority = "build-only", "build", False, 3
     elif surface == "systemd-unit":
         commands = " ".join(exec_start or [])
         if "kyth-installerd" in commands:
@@ -293,7 +352,10 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
     item_name = name or name_for(path)
     kind = implementation or launcher_kind(path)
     is_tunable_alias = surface == "launcher" and path.is_symlink() and path.resolve() == ROOT / "build_files/kyth-tunable"
-    if surface == "launcher" and kind == "data":
+    if surface == "shell-script":
+        status = "not-applicable"
+        reason = "build/test shell script, not installed runtime authority"
+    elif surface == "launcher" and kind == "data":
         status = "not-applicable"
         reason = "data or config file, not migratable code"
     elif item_name in NOT_PORTED or rel(path) in NOT_PORTED_PATHS:
@@ -334,6 +396,7 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
         "cutover": f"replace installed {item_name} entry point after parity gates",
         "rollback": f"restore previous installed {item_name} entry point",
         "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+        "function_inventory": [],
         **({"reason": reason} if reason else {}),
     }
     metadata = runtime_metadata(path, surface=surface, name=item_name, kind=kind, status=status)
@@ -361,6 +424,17 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
             "owner": f"fixture::{rel(path)}",
             "reason": "retired Python/Qt Hub source retained only for compatibility fixtures; not installed in the supported image",
         })
+    if item_name in REVIEWED_EXTERNAL_INTERFACES and result["status"] == "explicitly-not-ported":
+        result.update({
+            "owner": REVIEWED_EXTERNAL_INTERFACES[item_name],
+            "reason": "reviewed external interface: upstream rclone owns the mount lifecycle; Kyth owns the unit contract",
+        })
+    result["function_inventory"] = function_inventory(
+        path,
+        surface=surface,
+        status=result["status"],
+        owner=result["owner"],
+    )
     return result
 
 
@@ -388,12 +462,22 @@ def discover() -> list[dict]:
                 status=unit["status"],
                 exec_start=execs,
             ))
+            unit["function_inventory"] = function_inventory(
+                path,
+                surface="systemd-unit",
+                status=unit["status"],
+                owner=unit["owner"],
+                exec_start=execs,
+            )
             items.append(unit)
     for root, surface in ((ROOT / "src/kyth_shared", "python-runtime"), (ROOT / "src/kyth-welcome", "python-runtime"), (ROOT / "src/kyth-installer", "installer-runtime")):
         for path in sorted(root.rglob("*.py")):
             items.append(entry(path, surface=surface, implementation="python", name=path.stem))
     for path in sorted((ROOT / "build_files/just/kyth").glob("*.just")):
         items.append(entry(path, surface="ujust-recipe", implementation="recipe", name=path.stem))
+    for path in sorted((ROOT / "build_files/scripts").rglob("*")):
+        if path.is_file() and (path.suffix in {".sh", ".bash"} or launcher_kind(path) == "shell"):
+            items.append(entry(path, surface="shell-script", implementation="shell"))
     for manifest in (ROOT / "src/kyth-shared-rs/Cargo.toml", ROOT / "src/kyth-hub-web/src-tauri/Cargo.toml", ROOT / "src/kyth-installer-web/src-tauri/Cargo.toml"):
         if manifest.exists():
             items.append(entry(manifest, surface="rust-crate", implementation="rust", name=manifest.parent.name))
@@ -412,6 +496,7 @@ def validate(document: dict, *, expected_paths: set[str] | None = None) -> list[
         "path", "surface", "resolved_target", "current_implementation", "installed_implementation",
         "status", "risk_tier", "priority", "owner", "parity_tests", "cutover", "rollback",
         "retirement", "runtime_authority", "runtime_scope", "runtime_active", "migration_priority",
+        "function_inventory",
     }
     for index, item in enumerate(entries):
         if not isinstance(item, dict):
@@ -449,13 +534,27 @@ def validate(document: dict, *, expected_paths: set[str] | None = None) -> list[
                 errors.append(f"entry {path} has empty {field}")
         if not isinstance(item.get("parity_tests"), list) or not item["parity_tests"]:
             errors.append(f"entry {path} has no parity_tests")
+        if not isinstance(item.get("function_inventory"), list):
+            errors.append(f"entry {path} has invalid function_inventory")
+        else:
+            for function in item["function_inventory"]:
+                if not isinstance(function, dict) or not {
+                    "name", "owner", "ownership"
+                } <= function.keys():
+                    errors.append(f"entry {path} has malformed function_inventory")
+            if item.get("runtime_authority") == "shell-orchestration" and item.get("status") == "done-native":
+                if any(function.get("ownership") != "native" for function in item["function_inventory"]):
+                    errors.append(f"native shell entry {path} retains shell-owned functions")
+            if item.get("runtime_authority") == "shell-orchestration" and item.get("runtime_active"):
+                if not item["function_inventory"]:
+                    errors.append(f"active shell entry {path} has no function inventory")
         if item.get("status") == "explicitly-not-ported" and not item.get("reason"):
             errors.append(f"entry {path} needs a reason")
         if item.get("status") == "not-applicable":
             if item.get("runtime_active"):
                 errors.append(f"entry {path} is not-applicable but active")
-            if item.get("runtime_authority") != "data-or-config":
-                errors.append(f"entry {path} is not-applicable but not data-or-config")
+            if item.get("runtime_authority") not in {"data-or-config", "build-only"}:
+                errors.append(f"entry {path} is not-applicable but not data-or-config/build-only")
         superseded_by = item.get("superseded_by")
         if superseded_by is not None and (not isinstance(superseded_by, str) or not superseded_by.strip()):
             errors.append(f"entry {path} has empty superseded_by")
