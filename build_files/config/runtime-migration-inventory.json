@@ -519,50 +519,29 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
-      "cutover": "replace installed kyth-batteryd entry point after parity gates",
-      "installed_implementation": "python",
-      "migration_priority": 2,
-      "name": "kyth-batteryd",
-      "owner": "fixture::build_files/kyth-batteryd",
-      "parity_tests": [
-        "tests/"
-      ],
-      "path": "build_files/kyth-batteryd",
-      "priority": 1,
-      "resolved_target": "build_files/kyth-batteryd",
-      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
-      "rollback": "restore previous installed kyth-batteryd entry point",
-      "runtime_active": true,
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued",
-      "surface": "launcher"
-    },
-    {
       "current_implementation": "data",
       "cutover": "replace installed kyth-batteryd entry point after parity gates",
       "exec_start": [
         "/usr/bin/kyth-batteryd"
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-batteryd",
-      "owner": "fixture::build_files/kyth-batteryd.service",
+      "owner": "native::kyth-batteryd",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-batteryd.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-batteryd.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "daemon",
+      "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-batteryd entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {

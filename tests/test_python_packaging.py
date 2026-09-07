@@ -158,6 +158,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-web-app-categorize",
             "kyth-storage-sense",
             "kyth-duperemove",
+            "kyth-batteryd",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
