@@ -26,11 +26,35 @@ filesystem, or process plugins, and generic command bridges.
 
 P0 interpretation:
 
-- `python-installer` and `rust-transport-python-backend` are the remaining
-  installer authority and are the highest-priority migration target.
-- `python-shared-package` is an installed compatibility surface that should be
-  reduced by active entry point, not by deleting every parser or fixture at
-  once.
+- The installer cutover is complete: no `python-installer` authority remains
+  active and `p0_open_entries` is 0. The Python installer backend is
+  source-only parity material.
+- `python-shared-package` counts only reachable modules. Superseded rollback
+  fixtures carry `superseded_by` and are inactive — they are not migration
+  tasks until the Hub plan's observation window (Phase 3) retires them.
+- Reachability has three channels: static imports (including transitive) from
+  an active launcher/unit, a documented dynamic-dispatch table, and direct
+  shell-harness invocation (e.g. `qualification.py` via `vm-acceptance.sh`).
+- `data-or-config` entries are terminal (`not-applicable`), not queued work.
 - `source-only` entries are not runtime migration tasks.
 - Rust binaries, Rust services, and Rust dispatchers are counted separately
   from their retained Python source counterparts.
+
+Phase 0 reclassification (2026-09-07, inventory schema 2 → 3):
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Active entries | 499 | 399 |
+| Active Python entries | 294 | 202 (−92) |
+| `python-shared-package` active | 255 | 163 (−92 superseded fixtures) |
+| `python-runtime` active | 39 | 39 (unchanged — the real Phase 1/2 ledger) |
+| `data-or-config` active | 8 | 0 (terminal `not-applicable`) |
+| Superseded entries | n/a | 92 (`superseded_by: native::kyth-tunable-rs`) |
+| `p0_open_entries` | 0 | 0 |
+
+Reachability audit behind the 92: transitive static-import closure over the
+39 queued launchers plus a `build_files/scripts` harness scan. Only
+`sched_arbiter` (imported by `build_files/kyth-game-launch`) and `perf_gate`
+(used by `build_files/scripts/check-perf-gate.py`) remain reachable and stay
+active; all 94 tunable registry aliases verified present in
+`tunable_registry.rs` with 0 missing.

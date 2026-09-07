@@ -4,6 +4,14 @@
 The inventory is intentionally source-derived.  It records aliases and nested
 unit files separately because the installed executable is not always the
 source file that appears in build_files.
+
+A path-prefix rule alone cannot distinguish live Python from rollback-only
+Python: every ``.py`` file under ``src/kyth_shared/`` is not automatically
+an active migration task.  Modules whose entire runtime surface has a proven
+native replacement carry ``superseded_by`` and are inactive; only modules
+reachable — statically (including transitively) from an active
+launcher/unit, via a documented dynamic-dispatch table, or via direct
+shell-harness invocation — count toward ``active_python``.
 """
 
 from __future__ import annotations
@@ -18,9 +26,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 INVENTORY = ROOT / "build_files/config/runtime-migration-inventory.json"
 REPORT = ROOT / "build_files/config/runtime-migration-report.json"
-SCHEMA_VERSION = 2
-REPORT_SCHEMA_VERSION = 1
-STATUSES = {"done-native", "queued", "explicitly-not-ported"}
+SCHEMA_VERSION = 3
+REPORT_SCHEMA_VERSION = 2
+STATUSES = {"done-native", "queued", "explicitly-not-ported", "not-applicable"}
 RISK = {"read-only", "user-session-writer", "privileged-writer", "daemon", "destructive", "build-time"}
 UNIT_SUFFIXES = {".service", ".timer", ".path"}
 RUNTIME_AUTHORITIES = {
@@ -81,6 +89,47 @@ DAEMON_NAMES = {
     "kyth-sched", "kyth-sched-arbiter", "kyth-proton-cachyos-update", "kyth-rclone-update",
     "kyth-user-polish", "kyth-installerd",
 }
+# Phase 0 reachability audit (2026-09-07): 92 kyth_shared modules whose entire
+# runtime surface is superseded by the native tunable dispatcher
+# (kyth-tunable-rs / tunable_registry.rs — all 94 registry aliases verified
+# present, 0 missing). Excluded after a transitive static-import closure over
+# the 39 queued launchers plus a shell-harness scan: sched_arbiter (imported
+# by build_files/kyth-game-launch) and perf_gate (used by
+# build_files/scripts/check-perf-gate.py) remain reachable and stay active.
+# gaming_master/perf_audit dispatch targets overlap this same set; the two
+# dispatcher files themselves are unreachable and superseded with it.
+TUNABLE_SUPERSEDED_BY = "native::kyth-tunable-rs"
+SUPERSEDED_TUNABLE_MODULES = frozenset({
+    "aio_max", "ananicy_preset", "boot_loader", "bore_tune", "btrfs_autotune",
+    "btrfs_perf", "busy_poll", "busy_read", "compaction_tune", "dirty_expire",
+    "dirty_ratio", "distrobox_cache", "epp_ac", "fcitx_latency", "file_max",
+    "flatpak_prefetch", "flatpak_trim", "fscache_tune", "gaming_cfs",
+    "gaming_master", "gpu_power", "hdr_per_game", "hdr_store", "inotify_watches",
+    "io_tune", "irq_tune", "journal_tune", "kargs_preset", "kwin_latency",
+    "max_map_count", "mimalloc_preset", "min_free_kbytes", "net_backlog",
+    "net_latency", "netdev_budget", "numa_balancing", "numa_tune", "oom_gaming",
+    "overcommit_memory", "overlay_tune", "page_cluster", "pcie_aspm",
+    "perf_audit", "perf_cpu", "pipewire_gaming", "podman_btrfs", "psi_gaming",
+    "psi_poll", "readahead_preset", "rmem_default", "rmem_max", "sccache_preset",
+    "sched_autogroup", "sched_child", "sched_latency", "sched_nr_migrate",
+    "selinux_gaming", "shader_cache_size", "shader_tmpfs", "somaxconn",
+    "steam_deadzone", "swappiness", "system_audit", "tcp_ecn", "tcp_fastopen",
+    "tcp_fin_timeout", "tcp_keepalive", "tcp_mtu_probing", "tcp_no_metrics_save",
+    "tcp_notsent", "tcp_orphan_retries", "tcp_retries1", "tcp_retries2",
+    "tcp_sack", "tcp_slow_start", "tcp_timestamps", "tcp_window_scaling",
+    "telemetry_opt", "thp_collapse", "thp_tune", "trim_preset", "tunable",
+    "uksmd_preset", "vfs_cache_pressure", "vm_stat", "vm_watermark",
+    "windows_verify", "wine_sync", "wmem_default", "wmem_max", "work_cache",
+    "zswap_preset",
+})
+# Direct shell-harness invocation channel: kyth_shared modules run straight
+# from shell (build_files/scripts/*.sh, check-*.py) rather than any launcher.
+# These must never be marked superseded, even if a dispatch table names them.
+SHELL_HARNESS_MODULES = frozenset({
+    "qualification", "memory_tune", "sysctl_compose", "network_preset",
+    "snapshot_timeline", "gaming_resolve", "hardware_policy", "perf_gate",
+    "sched_arbiter",
+})
 
 
 def rel(path: Path) -> str:
@@ -178,7 +227,8 @@ def runtime_metadata(
         elif kind in {"shell", "alias"}:
             authority, priority = "shell-orchestration", 2
         else:
-            authority, priority = "data-or-config", 3
+            # Data/config files are not code: terminal state, never queued work.
+            authority, scope, active, priority = "data-or-config", "configuration", False, 3
 
     if status == "explicitly-not-ported" and authority != "source-only":
         # Third-party/declarative exceptions are not active migration targets.
@@ -197,7 +247,10 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
     item_name = name or name_for(path)
     kind = implementation or launcher_kind(path)
     is_tunable_alias = surface == "launcher" and path.is_symlink() and path.resolve() == ROOT / "build_files/kyth-tunable"
-    if item_name in NOT_PORTED or rel(path) in NOT_PORTED_PATHS:
+    if surface == "launcher" and kind == "data":
+        status = "not-applicable"
+        reason = "data or config file, not migratable code"
+    elif item_name in NOT_PORTED or rel(path) in NOT_PORTED_PATHS:
         status = "explicitly-not-ported"
         reason = "documented third-party or declarative build/runtime exception"
     elif (
@@ -212,7 +265,7 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
         status = "queued"
         reason = None
     owner = (
-        f"fixture::{rel(path)}" if status in {"queued", "explicitly-not-ported"}
+        f"fixture::{rel(path)}" if status in {"queued", "explicitly-not-ported", "not-applicable"}
         else "native::kyth-tunable-rs" if is_tunable_alias
         else f"native::{item_name}"
     )
@@ -225,7 +278,7 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
         "installed_implementation": (
             "native-launcher" if item_name == "kyth-launch-installer" and status == "done-native" else
             "rust" if status == "done-native" else
-            "not-installed" if status == "explicitly-not-ported" else kind
+            "not-installed" if status in {"explicitly-not-ported", "not-applicable"} else kind
         ),
         "status": status,
         "risk_tier": risk_for(item_name, kind, path),
@@ -238,6 +291,20 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
         **({"reason": reason} if reason else {}),
     }
     metadata = runtime_metadata(path, surface=surface, name=item_name, kind=kind, status=status)
+    result.update(metadata)
+    if (
+        surface == "python-runtime"
+        and rel(path) == f"src/kyth_shared/kyth_shared/{item_name}.py"
+        and item_name in SUPERSEDED_TUNABLE_MODULES
+    ):
+        # Proven native replacement: rollback fixture only, not active work.
+        # Reachability guard — shell-harness modules must never land here.
+        assert item_name not in SHELL_HARNESS_MODULES, f"reachable module marked superseded: {item_name}"
+        result.update({
+            "runtime_active": False,
+            "migration_priority": 3,
+            "superseded_by": TUNABLE_SUPERSEDED_BY,
+        })
     if metadata["runtime_authority"] == "source-only":
         result.update({
             "status": "explicitly-not-ported",
@@ -245,7 +312,6 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
             "owner": f"fixture::{rel(path)}",
             "reason": "retired Python/Qt Hub source retained only for compatibility fixtures; not installed in the supported image",
         })
-    result.update(metadata)
     return result
 
 
@@ -336,6 +402,17 @@ def validate(document: dict, *, expected_paths: set[str] | None = None) -> list[
             errors.append(f"entry {path} has no parity_tests")
         if item.get("status") == "explicitly-not-ported" and not item.get("reason"):
             errors.append(f"entry {path} needs a reason")
+        if item.get("status") == "not-applicable":
+            if item.get("runtime_active"):
+                errors.append(f"entry {path} is not-applicable but active")
+            if item.get("runtime_authority") != "data-or-config":
+                errors.append(f"entry {path} is not-applicable but not data-or-config")
+        superseded_by = item.get("superseded_by")
+        if superseded_by is not None and (not isinstance(superseded_by, str) or not superseded_by.strip()):
+            errors.append(f"entry {path} has empty superseded_by")
+        if item.get("runtime_authority") == "python-shared-package" and not item.get("runtime_active"):
+            if superseded_by != TUNABLE_SUPERSEDED_BY:
+                errors.append(f"entry {path} is inactive without a native owner")
     if expected_paths is not None:
         missing = expected_paths - seen
         extra = seen - expected_paths
@@ -365,7 +442,7 @@ def report(document: dict) -> dict:
         return dict(sorted(result.items()))
 
     def compact(item: dict) -> dict:
-        return {
+        base = {
             "path": item["path"],
             "name": item.get("name"),
             "runtime_authority": item["runtime_authority"],
@@ -374,6 +451,9 @@ def report(document: dict) -> dict:
             "migration_priority": item["migration_priority"],
             "owner": item["owner"],
         }
+        if item.get("superseded_by"):
+            base["superseded_by"] = item["superseded_by"]
+        return base
 
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
@@ -384,12 +464,19 @@ def report(document: dict) -> dict:
             "active_entries": len(active),
             "active_python_entries": len(active_python),
             "p0_open_entries": len(p0_open),
+            "superseded_entries": sum(1 for item in entries if item.get("superseded_by")),
             "active_by_authority": counts("runtime_authority", active),
             "active_by_scope": counts("runtime_scope", active),
             "status_by_active_entry": counts("status", active),
         },
         "p0_open": [compact(item) for item in sorted(p0_open, key=lambda row: row["path"])],
         "active_python": [compact(item) for item in sorted(active_python, key=lambda row: row["path"])],
+        "superseded": [
+            compact(item) for item in sorted(
+                (item for item in entries if item.get("superseded_by")),
+                key=lambda row: row["path"],
+            )
+        ],
         "source_only": [
             compact(item) for item in sorted(
                 (item for item in entries if item.get("runtime_authority") == "source-only"),

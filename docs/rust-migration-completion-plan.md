@@ -153,7 +153,7 @@ silently ignoring them.
 
 ## Phase 0 — Fix the classifier before trusting the queue
 
-- [ ] Add a `superseded_by` (or equivalent) field to inventory entries whose
+- [x] Add a `superseded_by` (or equivalent) field to inventory entries whose
   entire runtime surface has a proven native replacement, starting with
   `tunable.py` and the 93 distinct modules it dispatches to. Cross-check by
   diffing the module names each dynamic-dispatch table can reach against the
@@ -161,32 +161,34 @@ silently ignoring them.
   `tunable_registry.rs`. Adding this field is a schema change — bump
   `SCHEMA_VERSION` (currently `2` in `check-runtime-migration-inventory.py`)
   and update the validator's schema check accordingly.
-- [ ] Repeat the same check for `gaming_master.py`'s and `perf_audit.py`'s
+- [x] Repeat the same check for `gaming_master.py`'s and `perf_audit.py`'s
   dispatch tables against their Rust counterparts (if any exist yet); where no
   Rust counterpart exists, leave those modules active/queued.
-- [ ] Add direct shell-harness invocation as a recognized reachability
+- [x] Add direct shell-harness invocation as a recognized reachability
   channel (not just launcher/unit static or dynamic dispatch), so modules
   like `kyth_shared.qualification` — invoked from
   `build_files/scripts/vm-acceptance.sh` rather than any of the 41 launchers
   — aren't misclassified as dead by the new `superseded_by` logic. Audit
   `build_files/scripts/*.sh` for other `python3 -m kyth_shared.*` /
   `python3 -m kyth_shared` invocations before finalizing the reachable set.
-- [ ] Give `data-or-config` entries a terminal status distinct from `queued`
+- [x] Give `data-or-config` entries a terminal status distinct from `queued`
   (e.g. `not-applicable`) so config/desktop files stop appearing in the same
   bucket as genuine migration work.
-- [ ] Re-run `--generate` and confirm `active_python_entries` drops to
+- [x] Re-run `--generate` and confirm `active_python_entries` drops to
   reflect only genuinely reachable code. Record the before/after count in the
   regenerated `docs/runtime-migration-report.md`.
-- [ ] Document, in the checker's own docstring, that a path-prefix rule alone
+- [x] Document, in the checker's own docstring, that a path-prefix rule alone
   cannot distinguish live from rollback-only Python, since this exact gap is
   what produced the 296-entry overcount this plan starts from.
-- [ ] Note for whoever extends `tests/test_runtime_migration_inventory.py`:
+- [x] Note for whoever extends `tests/test_runtime_migration_inventory.py`:
   it is written as bare `test_*` functions, not `unittest.TestCase`
   subclasses, so it is **not** collected by CI's
   `python3 -m unittest discover -s tests -b` gate. It currently only runs if
   invoked directly or via a pytest-aware runner. Either convert it to
   `unittest.TestCase` style or confirm some other CI step actually collects
   it before relying on it to catch a Phase 0 regression.
+  (Done 2026-09-07: converted to `unittest.TestCase`, collected by
+  `unittest discover`, plus Phase 0 invariant tests.)
 
 This phase produces no Rust code. It is a prerequisite because every later
 phase's "done" count is meaningless while the starting count is inflated by

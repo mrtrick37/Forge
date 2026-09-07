@@ -695,7 +695,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-apply-update.desktop entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-apply-update.desktop",
       "owner": "fixture::build_files/kyth-apply-update.desktop",
@@ -703,15 +703,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-apply-update.desktop",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-apply-update.desktop",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-apply-update.desktop entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -761,7 +762,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-asus-supergfxd.rules entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-asus-supergfxd.rules",
       "owner": "fixture::build_files/kyth-asus-supergfxd.rules",
@@ -769,15 +770,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-asus-supergfxd.rules",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-asus-supergfxd.rules",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-asus-supergfxd.rules entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -1613,7 +1615,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-exe-handler.desktop entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-exe-handler.desktop",
       "owner": "fixture::build_files/kyth-exe-handler.desktop",
@@ -1621,15 +1623,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-exe-handler.desktop",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-exe-handler.desktop",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-exe-handler.desktop entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -2745,7 +2748,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-nearby-share.desktop entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-nearby-share.desktop",
       "owner": "fixture::build_files/kyth-nearby-share.desktop",
@@ -2753,15 +2756,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-nearby-share.desktop",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-nearby-share.desktop",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-nearby-share.desktop entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -3986,7 +3990,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-sched-profiles.toml entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-sched-profiles.toml",
       "owner": "fixture::build_files/kyth-sched-profiles.toml",
@@ -3994,15 +3998,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-sched-profiles.toml",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-sched-profiles.toml",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-sched-profiles.toml entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -4033,7 +4038,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-scripts entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-scripts",
       "owner": "fixture::build_files/kyth-scripts",
@@ -4041,15 +4046,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-scripts",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-scripts",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-scripts entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -5435,7 +5441,7 @@
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-web-apps.directory entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-web-apps.directory",
       "owner": "fixture::build_files/kyth-web-apps.directory",
@@ -5443,21 +5449,22 @@
         "tests/"
       ],
       "path": "build_files/kyth-web-apps.directory",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-web-apps.directory",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-web-apps.directory entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
       "current_implementation": "data",
       "cutover": "replace installed kyth-web-apps.menu entry point after parity gates",
-      "installed_implementation": "data",
+      "installed_implementation": "not-installed",
       "migration_priority": 3,
       "name": "kyth-web-apps.menu",
       "owner": "fixture::build_files/kyth-web-apps.menu",
@@ -5465,15 +5472,16 @@
         "tests/"
       ],
       "path": "build_files/kyth-web-apps.menu",
-      "priority": 1,
+      "priority": 0,
+      "reason": "data or config file, not migratable code",
       "resolved_target": "build_files/kyth-web-apps.menu",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-web-apps.menu entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "data-or-config",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_scope": "configuration",
+      "status": "not-applicable",
       "surface": "launcher"
     },
     {
@@ -9226,7 +9234,7 @@
       "current_implementation": "python",
       "cutover": "replace installed aio_max entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "aio_max",
       "owner": "fixture::src/kyth_shared/kyth_shared/aio_max.py",
       "parity_tests": [
@@ -9238,10 +9246,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed aio_max entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -9270,7 +9279,7 @@
       "current_implementation": "python",
       "cutover": "replace installed ananicy_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "ananicy_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/ananicy_preset.py",
       "parity_tests": [
@@ -9282,10 +9291,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed ananicy_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -9512,7 +9522,7 @@
       "current_implementation": "python",
       "cutover": "replace installed boot_loader entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "boot_loader",
       "owner": "fixture::src/kyth_shared/kyth_shared/boot_loader.py",
       "parity_tests": [
@@ -9524,17 +9534,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed boot_loader entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed bore_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "bore_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/bore_tune.py",
       "parity_tests": [
@@ -9546,17 +9557,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed bore_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed btrfs_autotune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "btrfs_autotune",
       "owner": "fixture::src/kyth_shared/kyth_shared/btrfs_autotune.py",
       "parity_tests": [
@@ -9568,17 +9580,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed btrfs_autotune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed btrfs_perf entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "btrfs_perf",
       "owner": "fixture::src/kyth_shared/kyth_shared/btrfs_perf.py",
       "parity_tests": [
@@ -9590,17 +9603,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed btrfs_perf entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed busy_poll entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "busy_poll",
       "owner": "fixture::src/kyth_shared/kyth_shared/busy_poll.py",
       "parity_tests": [
@@ -9612,17 +9626,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed busy_poll entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed busy_read entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "busy_read",
       "owner": "fixture::src/kyth_shared/kyth_shared/busy_read.py",
       "parity_tests": [
@@ -9634,10 +9649,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed busy_read entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -9754,7 +9770,7 @@
       "current_implementation": "python",
       "cutover": "replace installed compaction_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "compaction_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/compaction_tune.py",
       "parity_tests": [
@@ -9766,10 +9782,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed compaction_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10084,7 +10101,7 @@
       "current_implementation": "python",
       "cutover": "replace installed dirty_expire entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "dirty_expire",
       "owner": "fixture::src/kyth_shared/kyth_shared/dirty_expire.py",
       "parity_tests": [
@@ -10096,17 +10113,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed dirty_expire entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed dirty_ratio entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "dirty_ratio",
       "owner": "fixture::src/kyth_shared/kyth_shared/dirty_ratio.py",
       "parity_tests": [
@@ -10118,10 +10136,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed dirty_ratio entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10194,7 +10213,7 @@
       "current_implementation": "python",
       "cutover": "replace installed distrobox_cache entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "distrobox_cache",
       "owner": "fixture::src/kyth_shared/kyth_shared/distrobox_cache.py",
       "parity_tests": [
@@ -10206,10 +10225,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed distrobox_cache entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10260,7 +10280,7 @@
       "current_implementation": "python",
       "cutover": "replace installed epp_ac entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "epp_ac",
       "owner": "fixture::src/kyth_shared/kyth_shared/epp_ac.py",
       "parity_tests": [
@@ -10272,10 +10292,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed epp_ac entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10370,7 +10391,7 @@
       "current_implementation": "python",
       "cutover": "replace installed fcitx_latency entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "fcitx_latency",
       "owner": "fixture::src/kyth_shared/kyth_shared/fcitx_latency.py",
       "parity_tests": [
@@ -10382,17 +10403,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed fcitx_latency entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed file_max entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "file_max",
       "owner": "fixture::src/kyth_shared/kyth_shared/file_max.py",
       "parity_tests": [
@@ -10404,10 +10426,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed file_max entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10436,7 +10459,7 @@
       "current_implementation": "python",
       "cutover": "replace installed flatpak_prefetch entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "flatpak_prefetch",
       "owner": "fixture::src/kyth_shared/kyth_shared/flatpak_prefetch.py",
       "parity_tests": [
@@ -10448,17 +10471,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed flatpak_prefetch entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed flatpak_trim entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "flatpak_trim",
       "owner": "fixture::src/kyth_shared/kyth_shared/flatpak_trim.py",
       "parity_tests": [
@@ -10470,10 +10494,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed flatpak_trim entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10502,7 +10527,7 @@
       "current_implementation": "python",
       "cutover": "replace installed fscache_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "fscache_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/fscache_tune.py",
       "parity_tests": [
@@ -10514,10 +10539,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed fscache_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10568,7 +10594,7 @@
       "current_implementation": "python",
       "cutover": "replace installed gaming_cfs entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "gaming_cfs",
       "owner": "fixture::src/kyth_shared/kyth_shared/gaming_cfs.py",
       "parity_tests": [
@@ -10580,17 +10606,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed gaming_cfs entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed gaming_master entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "gaming_master",
       "owner": "fixture::src/kyth_shared/kyth_shared/gaming_master.py",
       "parity_tests": [
@@ -10602,10 +10629,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed gaming_master entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -10700,7 +10728,7 @@
       "current_implementation": "python",
       "cutover": "replace installed gpu_power entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "gpu_power",
       "owner": "fixture::src/kyth_shared/kyth_shared/gpu_power.py",
       "parity_tests": [
@@ -10712,10 +10740,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed gpu_power entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11030,7 +11059,7 @@
       "current_implementation": "python",
       "cutover": "replace installed hdr_per_game entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "hdr_per_game",
       "owner": "fixture::src/kyth_shared/kyth_shared/hdr_per_game.py",
       "parity_tests": [
@@ -11042,17 +11071,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed hdr_per_game entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed hdr_store entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "hdr_store",
       "owner": "fixture::src/kyth_shared/kyth_shared/hdr_store.py",
       "parity_tests": [
@@ -11064,10 +11094,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed hdr_store entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11096,7 +11127,7 @@
       "current_implementation": "python",
       "cutover": "replace installed inotify_watches entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "inotify_watches",
       "owner": "fixture::src/kyth_shared/kyth_shared/inotify_watches.py",
       "parity_tests": [
@@ -11108,10 +11139,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed inotify_watches entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11162,7 +11194,7 @@
       "current_implementation": "python",
       "cutover": "replace installed io_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "io_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/io_tune.py",
       "parity_tests": [
@@ -11174,17 +11206,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed io_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed irq_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "irq_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/irq_tune.py",
       "parity_tests": [
@@ -11196,17 +11229,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed irq_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed journal_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "journal_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/journal_tune.py",
       "parity_tests": [
@@ -11218,17 +11252,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed journal_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed kargs_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "kargs_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/kargs_preset.py",
       "parity_tests": [
@@ -11240,17 +11275,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed kargs_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed kwin_latency entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "kwin_latency",
       "owner": "fixture::src/kyth_shared/kyth_shared/kwin_latency.py",
       "parity_tests": [
@@ -11262,10 +11298,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed kwin_latency entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11316,7 +11353,7 @@
       "current_implementation": "python",
       "cutover": "replace installed max_map_count entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "max_map_count",
       "owner": "fixture::src/kyth_shared/kyth_shared/max_map_count.py",
       "parity_tests": [
@@ -11328,10 +11365,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed max_map_count entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11360,7 +11398,7 @@
       "current_implementation": "python",
       "cutover": "replace installed mimalloc_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "mimalloc_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/mimalloc_preset.py",
       "parity_tests": [
@@ -11372,17 +11410,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed mimalloc_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed min_free_kbytes entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "min_free_kbytes",
       "owner": "fixture::src/kyth_shared/kyth_shared/min_free_kbytes.py",
       "parity_tests": [
@@ -11394,17 +11433,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed min_free_kbytes entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed net_backlog entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "net_backlog",
       "owner": "fixture::src/kyth_shared/kyth_shared/net_backlog.py",
       "parity_tests": [
@@ -11416,17 +11456,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed net_backlog entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed net_latency entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "net_latency",
       "owner": "fixture::src/kyth_shared/kyth_shared/net_latency.py",
       "parity_tests": [
@@ -11438,17 +11479,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed net_latency entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed netdev_budget entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "netdev_budget",
       "owner": "fixture::src/kyth_shared/kyth_shared/netdev_budget.py",
       "parity_tests": [
@@ -11460,10 +11502,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed netdev_budget entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11492,7 +11535,7 @@
       "current_implementation": "python",
       "cutover": "replace installed numa_balancing entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "numa_balancing",
       "owner": "fixture::src/kyth_shared/kyth_shared/numa_balancing.py",
       "parity_tests": [
@@ -11504,17 +11547,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed numa_balancing entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed numa_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "numa_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/numa_tune.py",
       "parity_tests": [
@@ -11526,10 +11570,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed numa_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11580,7 +11625,7 @@
       "current_implementation": "python",
       "cutover": "replace installed oom_gaming entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "oom_gaming",
       "owner": "fixture::src/kyth_shared/kyth_shared/oom_gaming.py",
       "parity_tests": [
@@ -11592,17 +11637,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed oom_gaming entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed overcommit_memory entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "overcommit_memory",
       "owner": "fixture::src/kyth_shared/kyth_shared/overcommit_memory.py",
       "parity_tests": [
@@ -11614,10 +11660,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed overcommit_memory entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11646,7 +11693,7 @@
       "current_implementation": "python",
       "cutover": "replace installed overlay_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "overlay_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/overlay_tune.py",
       "parity_tests": [
@@ -11658,17 +11705,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed overlay_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed page_cluster entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "page_cluster",
       "owner": "fixture::src/kyth_shared/kyth_shared/page_cluster.py",
       "parity_tests": [
@@ -11680,17 +11728,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed page_cluster entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed pcie_aspm entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "pcie_aspm",
       "owner": "fixture::src/kyth_shared/kyth_shared/pcie_aspm.py",
       "parity_tests": [
@@ -11702,17 +11751,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed pcie_aspm entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed perf_audit entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "perf_audit",
       "owner": "fixture::src/kyth_shared/kyth_shared/perf_audit.py",
       "parity_tests": [
@@ -11724,17 +11774,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed perf_audit entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed perf_cpu entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "perf_cpu",
       "owner": "fixture::src/kyth_shared/kyth_shared/perf_cpu.py",
       "parity_tests": [
@@ -11746,10 +11797,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed perf_cpu entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11822,7 +11874,7 @@
       "current_implementation": "python",
       "cutover": "replace installed pipewire_gaming entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "pipewire_gaming",
       "owner": "fixture::src/kyth_shared/kyth_shared/pipewire_gaming.py",
       "parity_tests": [
@@ -11834,10 +11886,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed pipewire_gaming entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -11932,7 +11985,7 @@
       "current_implementation": "python",
       "cutover": "replace installed podman_btrfs entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "podman_btrfs",
       "owner": "fixture::src/kyth_shared/kyth_shared/podman_btrfs.py",
       "parity_tests": [
@@ -11944,10 +11997,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed podman_btrfs entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12064,7 +12118,7 @@
       "current_implementation": "python",
       "cutover": "replace installed psi_gaming entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "psi_gaming",
       "owner": "fixture::src/kyth_shared/kyth_shared/psi_gaming.py",
       "parity_tests": [
@@ -12076,17 +12130,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed psi_gaming entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed psi_poll entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "psi_poll",
       "owner": "fixture::src/kyth_shared/kyth_shared/psi_poll.py",
       "parity_tests": [
@@ -12098,10 +12153,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed psi_poll entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12196,7 +12252,7 @@
       "current_implementation": "python",
       "cutover": "replace installed readahead_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "readahead_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/readahead_preset.py",
       "parity_tests": [
@@ -12208,10 +12264,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed readahead_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12262,7 +12319,7 @@
       "current_implementation": "python",
       "cutover": "replace installed rmem_default entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "rmem_default",
       "owner": "fixture::src/kyth_shared/kyth_shared/rmem_default.py",
       "parity_tests": [
@@ -12274,17 +12331,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed rmem_default entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed rmem_max entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "rmem_max",
       "owner": "fixture::src/kyth_shared/kyth_shared/rmem_max.py",
       "parity_tests": [
@@ -12296,10 +12354,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed rmem_max entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12460,7 +12519,7 @@
       "current_implementation": "python",
       "cutover": "replace installed sccache_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "sccache_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/sccache_preset.py",
       "parity_tests": [
@@ -12472,10 +12531,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed sccache_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12504,7 +12564,7 @@
       "current_implementation": "python",
       "cutover": "replace installed sched_autogroup entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "sched_autogroup",
       "owner": "fixture::src/kyth_shared/kyth_shared/sched_autogroup.py",
       "parity_tests": [
@@ -12516,17 +12576,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed sched_autogroup entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed sched_child entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "sched_child",
       "owner": "fixture::src/kyth_shared/kyth_shared/sched_child.py",
       "parity_tests": [
@@ -12538,17 +12599,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed sched_child entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed sched_latency entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "sched_latency",
       "owner": "fixture::src/kyth_shared/kyth_shared/sched_latency.py",
       "parity_tests": [
@@ -12560,17 +12622,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed sched_latency entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed sched_nr_migrate entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "sched_nr_migrate",
       "owner": "fixture::src/kyth_shared/kyth_shared/sched_nr_migrate.py",
       "parity_tests": [
@@ -12582,10 +12645,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed sched_nr_migrate entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12636,7 +12700,7 @@
       "current_implementation": "python",
       "cutover": "replace installed selinux_gaming entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "selinux_gaming",
       "owner": "fixture::src/kyth_shared/kyth_shared/selinux_gaming.py",
       "parity_tests": [
@@ -12648,10 +12712,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed selinux_gaming entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12746,7 +12811,7 @@
       "current_implementation": "python",
       "cutover": "replace installed shader_cache_size entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "shader_cache_size",
       "owner": "fixture::src/kyth_shared/kyth_shared/shader_cache_size.py",
       "parity_tests": [
@@ -12758,17 +12823,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed shader_cache_size entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed shader_tmpfs entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "shader_tmpfs",
       "owner": "fixture::src/kyth_shared/kyth_shared/shader_tmpfs.py",
       "parity_tests": [
@@ -12780,10 +12846,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed shader_tmpfs entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12878,7 +12945,7 @@
       "current_implementation": "python",
       "cutover": "replace installed somaxconn entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "somaxconn",
       "owner": "fixture::src/kyth_shared/kyth_shared/somaxconn.py",
       "parity_tests": [
@@ -12890,17 +12957,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed somaxconn entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed steam_deadzone entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "steam_deadzone",
       "owner": "fixture::src/kyth_shared/kyth_shared/steam_deadzone.py",
       "parity_tests": [
@@ -12912,10 +12980,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed steam_deadzone entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -12944,7 +13013,7 @@
       "current_implementation": "python",
       "cutover": "replace installed swappiness entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "swappiness",
       "owner": "fixture::src/kyth_shared/kyth_shared/swappiness.py",
       "parity_tests": [
@@ -12956,10 +13025,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed swappiness entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -13736,7 +13806,7 @@
       "current_implementation": "python",
       "cutover": "replace installed system_audit entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "system_audit",
       "owner": "fixture::src/kyth_shared/kyth_shared/system_audit.py",
       "parity_tests": [
@@ -13748,10 +13818,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed system_audit entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -13802,7 +13873,7 @@
       "current_implementation": "python",
       "cutover": "replace installed tcp_ecn entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_ecn",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_ecn.py",
       "parity_tests": [
@@ -13814,17 +13885,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_ecn entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_fastopen entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_fastopen",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_fastopen.py",
       "parity_tests": [
@@ -13836,17 +13908,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_fastopen entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_fin_timeout entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_fin_timeout",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_fin_timeout.py",
       "parity_tests": [
@@ -13858,17 +13931,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_fin_timeout entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_keepalive entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_keepalive",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_keepalive.py",
       "parity_tests": [
@@ -13880,17 +13954,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_keepalive entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_mtu_probing entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_mtu_probing",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_mtu_probing.py",
       "parity_tests": [
@@ -13902,17 +13977,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_mtu_probing entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_no_metrics_save entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_no_metrics_save",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_no_metrics_save.py",
       "parity_tests": [
@@ -13924,17 +14000,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_no_metrics_save entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_notsent entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_notsent",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_notsent.py",
       "parity_tests": [
@@ -13946,17 +14023,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_notsent entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_orphan_retries entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_orphan_retries",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_orphan_retries.py",
       "parity_tests": [
@@ -13968,17 +14046,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_orphan_retries entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_retries1 entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_retries1",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_retries1.py",
       "parity_tests": [
@@ -13990,17 +14069,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_retries1 entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_retries2 entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_retries2",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_retries2.py",
       "parity_tests": [
@@ -14012,17 +14092,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_retries2 entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_sack entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_sack",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_sack.py",
       "parity_tests": [
@@ -14034,17 +14115,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_sack entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_slow_start entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_slow_start",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_slow_start.py",
       "parity_tests": [
@@ -14056,17 +14138,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_slow_start entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_timestamps entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_timestamps",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_timestamps.py",
       "parity_tests": [
@@ -14078,17 +14161,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_timestamps entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tcp_window_scaling entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tcp_window_scaling",
       "owner": "fixture::src/kyth_shared/kyth_shared/tcp_window_scaling.py",
       "parity_tests": [
@@ -14100,10 +14184,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tcp_window_scaling entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -14132,7 +14217,7 @@
       "current_implementation": "python",
       "cutover": "replace installed telemetry_opt entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "telemetry_opt",
       "owner": "fixture::src/kyth_shared/kyth_shared/telemetry_opt.py",
       "parity_tests": [
@@ -14144,10 +14229,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed telemetry_opt entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -14176,7 +14262,7 @@
       "current_implementation": "python",
       "cutover": "replace installed thp_collapse entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "thp_collapse",
       "owner": "fixture::src/kyth_shared/kyth_shared/thp_collapse.py",
       "parity_tests": [
@@ -14188,17 +14274,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed thp_collapse entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed thp_tune entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "thp_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/thp_tune.py",
       "parity_tests": [
@@ -14210,17 +14297,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed thp_tune entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed trim_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "trim_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/trim_preset.py",
       "parity_tests": [
@@ -14232,17 +14320,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed trim_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed tunable entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "tunable",
       "owner": "fixture::src/kyth_shared/kyth_shared/tunable.py",
       "parity_tests": [
@@ -14254,17 +14343,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed tunable entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed uksmd_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "uksmd_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/uksmd_preset.py",
       "parity_tests": [
@@ -14276,10 +14366,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed uksmd_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -14374,7 +14465,7 @@
       "current_implementation": "python",
       "cutover": "replace installed vfs_cache_pressure entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "vfs_cache_pressure",
       "owner": "fixture::src/kyth_shared/kyth_shared/vfs_cache_pressure.py",
       "parity_tests": [
@@ -14386,10 +14477,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed vfs_cache_pressure entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -14418,7 +14510,7 @@
       "current_implementation": "python",
       "cutover": "replace installed vm_stat entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "vm_stat",
       "owner": "fixture::src/kyth_shared/kyth_shared/vm_stat.py",
       "parity_tests": [
@@ -14430,17 +14522,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed vm_stat entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed vm_watermark entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "vm_watermark",
       "owner": "fixture::src/kyth_shared/kyth_shared/vm_watermark.py",
       "parity_tests": [
@@ -14452,10 +14545,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed vm_watermark entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -14550,7 +14644,7 @@
       "current_implementation": "python",
       "cutover": "replace installed windows_verify entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "windows_verify",
       "owner": "fixture::src/kyth_shared/kyth_shared/windows_verify.py",
       "parity_tests": [
@@ -14562,17 +14656,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed windows_verify entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed wine_sync entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "wine_sync",
       "owner": "fixture::src/kyth_shared/kyth_shared/wine_sync.py",
       "parity_tests": [
@@ -14584,17 +14679,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed wine_sync entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed wmem_default entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "wmem_default",
       "owner": "fixture::src/kyth_shared/kyth_shared/wmem_default.py",
       "parity_tests": [
@@ -14606,17 +14702,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed wmem_default entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed wmem_max entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "wmem_max",
       "owner": "fixture::src/kyth_shared/kyth_shared/wmem_max.py",
       "parity_tests": [
@@ -14628,17 +14725,18 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed wmem_max entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
       "current_implementation": "python",
       "cutover": "replace installed work_cache entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "work_cache",
       "owner": "fixture::src/kyth_shared/kyth_shared/work_cache.py",
       "parity_tests": [
@@ -14650,10 +14748,11 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed work_cache entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     },
     {
@@ -14704,7 +14803,7 @@
       "current_implementation": "python",
       "cutover": "replace installed zswap_preset entry point after parity gates",
       "installed_implementation": "python",
-      "migration_priority": 2,
+      "migration_priority": 3,
       "name": "zswap_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/zswap_preset.py",
       "parity_tests": [
@@ -14716,13 +14815,14 @@
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed zswap_preset entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued",
+      "superseded_by": "native::kyth-tunable-rs",
       "surface": "python-runtime"
     }
   ],
   "generated_from": "checkout discovery",
-  "schema_version": 2
+  "schema_version": 3
 }
