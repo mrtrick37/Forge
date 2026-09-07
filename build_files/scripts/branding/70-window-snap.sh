@@ -1,4 +1,5 @@
 # shellcheck shell=bash
 # ── Window snap parity (Win+Arrow 2x2) ───────────────────────────────────
-install -m 0755 /ctx/kyth-apply-window-snap /usr/bin/kyth-apply-window-snap
+# kyth-apply-window-snap is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 # window-snap.toml declarative hash-gated, kwriteconfig kwinrc + kglobalshortcutsrc

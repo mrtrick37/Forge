@@ -144,6 +144,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-apply-scaling",
             "kyth-apply-tailscale",
             "kyth-apply-vrr",
+            "kyth-apply-window-snap",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

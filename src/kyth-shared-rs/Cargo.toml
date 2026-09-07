@@ -210,6 +210,10 @@ path = "src/tailscale_apply_bin.rs"
 name = "kyth-apply-vrr"
 path = "src/vrr_apply_bin.rs"
 
+[[bin]]
+name = "kyth-apply-window-snap"
+path = "src/window_snap_apply_bin.rs"
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

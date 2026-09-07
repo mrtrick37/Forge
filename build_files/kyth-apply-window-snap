@@ -1,7 +1,0 @@
-#!/usr/bin/env python3
-"""kyth-apply-window-snap — apply window-snap.toml (offline)."""
-from kyth_shared.window_snap import apply_snap
-import sys
-applied=apply_snap()
-print(f"kyth-apply-window-snap: {len(applied)}")
-sys.exit(0)
