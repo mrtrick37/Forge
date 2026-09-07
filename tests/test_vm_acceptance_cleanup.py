@@ -60,6 +60,9 @@ class VmAcceptanceCleanupTests(unittest.TestCase):
                 root / "output" / "vm-acceptance",
                 root / "output" / "live-iso",
                 root / "tmp" / "kyth-rootful-btrfs-storage",
+                root / "tmp" / "kyth-rootful-btrfs-run",
+                root / "tmp" / "kyth-podman-test-root",
+                root / "tmp" / "kyth-podman-test-run",
                 root / "tmp" / "kyth-container-tmp",
             ]
             for path in disposable:
