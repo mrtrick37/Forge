@@ -36,15 +36,18 @@ DefaultDependencies=no
 After=local-fs.target
 Before=plasmalogin.service display-manager.service
 ConditionSecurity=selinux
-# StartLimit: this unit is Before=plasmalogin and WantedBy=multi-user;
-# without explicit limits a restart during the boot transaction could
-# hit systemd's default start-limit and fail a healthy boot (see
-# greenboot 10-kyth.conf for same pattern). Keep generous burst.
+# This unit gates plasmalogin.service, so it must never be able to fail
+# a healthy boot on its own account — rate limiting is disabled outright
+# (StartLimitIntervalSec=0) rather than tuned to some finite window.
 # Must live in [Unit], not [Service] — systemd logs "Unknown key
 # 'StartLimitIntervalSec' in section [Service], ignoring" otherwise and
-# silently drops both limits.
-StartLimitIntervalSec=300
-StartLimitBurst=5
+# silently drops the limit.
+StartLimitIntervalSec=0
+# DefaultDependencies=no above drops the implicit Conflicts=/Before=
+# shutdown.target too; restore it explicitly, same as the -full unit below,
+# so a reboot orders this oneshot's teardown instead of racing it.
+Conflicts=shutdown.target
+Before=shutdown.target
 
 [Service]
 Type=oneshot

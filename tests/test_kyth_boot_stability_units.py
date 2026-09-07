@@ -45,8 +45,10 @@ class BootStabilityUnitTests(unittest.TestCase):
 
         self.assertIn("Before=plasmalogin.service display-manager.service", fast_unit)
         self.assertIn("TimeoutStartSec=60", fast_service_sec)
-        self.assertIn("StartLimitIntervalSec=300", fast_unit_sec)
-        self.assertIn("StartLimitBurst=5", fast_unit_sec)
+        # Rate limiting is disabled outright (not just tuned) on the unit
+        # that gates plasmalogin.service — see kyth-selinux-relabel-home.
+        self.assertIn("StartLimitIntervalSec=0", fast_unit_sec)
+        self.assertIn("Conflicts=shutdown.target", fast_unit_sec)
         self.assertNotIn("StartLimit", fast_service_sec)
         self.assertNotIn("restorecon -RF -T0 /var/home", body.split("RELABELFULLEOF")[0])
 
