@@ -133,6 +133,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-apply-scx-preset",
             "kyth-apply-explorer",
             "kyth-apply-desktop-layout",
+            "kyth-apply-display-hdr",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):

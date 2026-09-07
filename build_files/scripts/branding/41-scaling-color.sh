@@ -6,4 +6,5 @@ if command -v colord >/dev/null 2>&1; then
 	mkdir -p /usr/share/color/icc/kyth
 fi
 install -m 0755 /ctx/kyth-apply-scaling /usr/bin/kyth-apply-scaling
-install -m 0755 /ctx/kyth-apply-display-hdr /usr/bin/kyth-apply-display-hdr
+# kyth-apply-display-hdr is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
