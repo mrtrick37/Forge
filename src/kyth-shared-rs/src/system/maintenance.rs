@@ -4,6 +4,9 @@
 //! from `kyth_shared.maintenance`. Deduplication database creation and the
 //! deduplication run itself stay with the caller.
 
+use sha2::{Digest, Sha256};
+use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 
 pub fn supports_dedupe_filesystem(filesystem: &str) -> bool {
@@ -41,6 +44,53 @@ pub fn dedupe_command(target: impl AsRef<Path>, hash_file: impl AsRef<Path>, ion
     command.push(hash_file.as_ref().display().to_string());
     command.push(target.as_ref().display().to_string());
     command
+}
+
+/// Default duperemove hash-database directory.
+pub const DUPE_HASH_DIR: &str = "/var/lib/kyth/duperemove";
+
+/// Create and validate a private, non-symlink duperemove hash database,
+/// mirroring `_secure_dedupe_hash_file`: the state dir must be a real
+/// directory owned by our euid (mode forced to 0700), and the database is
+/// opened `O_NOFOLLOW` and must be a regular file we own (mode 0600).
+pub fn secure_dedupe_hash_file(dir: &Path, state_dir: &Path) -> Result<PathBuf, String> {
+    std::fs::create_dir_all(state_dir)
+        .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
+    let dir_meta = std::fs::symlink_metadata(state_dir)
+        .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
+    if !dir_meta.is_dir() || dir_meta.file_type().is_symlink() {
+        return Err(format!("Unsafe duperemove state directory: {}", state_dir.display()));
+    }
+    if dir_meta.uid() != unsafe { libc::geteuid() } {
+        return Err(format!(
+            "Duperemove state directory has an unexpected owner: {}",
+            state_dir.display()
+        ));
+    }
+    std::fs::set_permissions(state_dir, std::fs::Permissions::from_mode(0o700))
+        .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
+    let canonical = std::fs::canonicalize(dir)
+        .map_err(|error| format!("Cannot resolve dedupe target: {error}"))?;
+    let mut hasher = Sha256::new();
+    hasher.update(canonical.as_os_str().as_bytes());
+    let hash_file = state_dir.join(format!("{:x}.hash", hasher.finalize()));
+    let file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .mode(0o600)
+        .open(&hash_file)
+        .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
+    let file_meta = file
+        .metadata()
+        .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
+    if !file_meta.is_file() || file_meta.uid() != unsafe { libc::geteuid() } {
+        return Err(format!("Unsafe duperemove hash database: {}", hash_file.display()));
+    }
+    file.set_permissions(std::fs::Permissions::from_mode(0o600))
+        .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
+    Ok(hash_file)
 }
 
 pub fn cleanup_flatpaks_command() -> Vec<String> {
@@ -194,6 +244,24 @@ mod tests {
         assert_eq!(parse_deletion_epoch("2026-07-20T09:30:00-05:00").unwrap(), naive);
         assert!(parse_deletion_epoch("not a date").is_none());
         assert!(parse_deletion_epoch("2026-07-20").is_none());
+    }
+
+    #[test]
+    fn secure_hash_database_is_private_and_rejects_symlinks() {
+        use std::os::unix::fs::PermissionsExt;
+        let work = tempdir().unwrap();
+        let target = work.path().join("Steam/steamapps/compatdata");
+        fs::create_dir_all(&target).unwrap();
+        let state = work.path().join("state");
+        let hash = secure_dedupe_hash_file(&target, &state).unwrap();
+        assert_eq!(hash.parent().unwrap(), state);
+        assert_eq!(fs::metadata(&state).unwrap().permissions().mode() & 0o777, 0o700);
+        assert_eq!(fs::metadata(&hash).unwrap().permissions().mode() & 0o777, 0o600);
+        let again = secure_dedupe_hash_file(&target, &state).unwrap();
+        assert_eq!(again, hash);
+        let link_state = work.path().join("link-state");
+        std::os::unix::fs::symlink(&state, &link_state).unwrap();
+        assert!(secure_dedupe_hash_file(&target, &link_state).is_err());
     }
 
     #[test]

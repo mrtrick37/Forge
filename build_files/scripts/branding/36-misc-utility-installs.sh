@@ -1,7 +1,8 @@
 # shellcheck shell=bash
 # ── Misc maintenance/utility tools ─────────────────────────────────────────────
 install -m 0755 /ctx/kyth-davinci-install /usr/bin/kyth-davinci-install
-install -m 0755 /ctx/kyth-duperemove /usr/bin/kyth-duperemove
+# kyth-duperemove is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 install -m 0755 /ctx/kyth-distrobox-root-launch /usr/bin/kyth-distrobox-root-launch
 # kyth-kali-desktop-fixup is the native Rust binary copied from the
 # hub-web-builder stage; no Python launcher remains in the source tree.
