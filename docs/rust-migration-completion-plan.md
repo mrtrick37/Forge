@@ -14,7 +14,7 @@ Hub**.
 This revision expands the plan to include the runtime-relevant
 `shell-orchestration` surface. After the Phase 6 inventory pass, the generated
 inventory contains 104 active shell entries, all backed by native
-implementations or the Rust runtime dispatcher, and 40 queued Python package
+implementations or the Rust runtime dispatcher, and no queued Python package
 modules. The Python queue is now a reachability-derived set: it includes only
 modules reached from surviving Python console entry points, direct build/
 acceptance harnesses, or documented dynamic-dispatch tables. Unreachable
@@ -36,7 +36,7 @@ Rust-ownership requirement explicit for non-Hub shell callers as well.
 
 ## Why this plan exists, and why it is not "port every package file"
 
-`build_files/config/runtime-migration-report.json` now lists 19 active Python
+`build_files/config/runtime-migration-report.json` now lists 0 active Python
 package entries. Before the reachability pass, all 157 non-superseded
 `src/kyth_shared/kyth_shared/*.py` files were stamped active by a single
 blanket rule in `check-runtime-migration-inventory.py`:
@@ -220,7 +220,7 @@ runtime behavior must have a Rust owner.
   terminal compatibility fixtures rather than queued runtime work.
 - [x] Add regression coverage for surviving Python entry points, direct
   shell/build harnesses, and the native hardware-policy boundary. The
-  checked-in inventory/report now show 19 active Python package entries (down
+  checked-in inventory/report now show 0 active Python package entries (down
   from 157 non-superseded package files) and 130 unreachable shared-package
   fixtures.
 - [x] Same defect, different file: `tests/test_kyth_doctor_native.py` used
@@ -447,7 +447,7 @@ rollback/parity material until the approved observation window closes.
 
 ## Item 1 — Reachable shared-package modules
 
-**Status: in progress (9/46 complete).** This is the remaining Python half of
+**Status: complete (46/46).** This was the remaining Python half of
 the Rust migration. The reachability audit limits the work to modules that
 are still called by a supported console entry point, shell/build harness, or
 documented dynamic catalog. Each cutover must own the complete behavior,
@@ -488,9 +488,12 @@ rollback—not just read-only planning.
   and bootc timeline collection plus the JSON wire shape. The CI preflight and
   source-tree launcher now call the native binary; the Python module remains
   only as an inactive parity/rollback fixture.
-- [ ] remaining reachable support modules,
-  sched_arbiter, gaming_resolve, containers, repos, telemetry, and the
-  remaining reachable support modules.
+- [x] shared support closure — Rust now owns the scheduler arbiter, gaming
+  version projection, repository rendering, Distrobox wrapper generation,
+  probe collection, bootc/query policy, hardware/network views, process
+  execution, runtime-output parsing, and the build/validation callers. The
+  Python support modules remain inactive parity/rollback fixtures; no active
+  shared-package Python entries remain.
 
 After every module group: add unittest.TestCase parity coverage, wire the
 installed Rust entry point or caller, regenerate the inventory/report, run

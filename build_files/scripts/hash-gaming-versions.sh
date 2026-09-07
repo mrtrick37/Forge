@@ -54,9 +54,23 @@ if [[ "${arg_val}" != "unset" && "${arg_val}" != "" && "${arg_val}" != "${comput
   fi
 fi
 
-# Also ensure Hub resolver and label would agree when pinned
-if ! PYTHONPATH=build_files/kyth_shared python3 -c "from kyth_shared.gaming_resolve import gaming_versions_label; print(gaming_versions_label())" >/dev/null; then
-  echo "gaming resolver import failed" >&2
+# Also ensure the native resolver and label path are callable. Prefer the
+# packaged binary, then a checkout build, then Cargo's locked fallback.
+gaming_support_cmd=()
+for candidate in \
+  /usr/bin/kyth-build-support \
+  "${repo_root}/src/kyth-shared-rs/target/release/kyth-build-support" \
+  "${repo_root}/src/kyth-shared-rs/target/debug/kyth-build-support"; do
+  if [[ -x "${candidate}" ]]; then
+    gaming_support_cmd=("${candidate}")
+    break
+  fi
+done
+if ((${#gaming_support_cmd[@]} == 0)); then
+  gaming_support_cmd=(cargo run --quiet --locked --manifest-path src/kyth-shared-rs/Cargo.toml --bin kyth-build-support --)
+fi
+if ! "${gaming_support_cmd[@]}" gaming-label >/dev/null; then
+  echo "native gaming resolver failed" >&2
   exit 1
 fi
 

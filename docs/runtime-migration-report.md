@@ -160,6 +160,13 @@ timeline. The CI preflight and source-tree compatibility launcher resolve the
 packaged or checkout Rust binary, while the Python module remains only as an
 inactive parity/rollback fixture.
 
+The remaining shared-package closure is also complete. Build-time repository
+rendering, gaming metadata projection, and Distrobox wrapper generation use
+`kyth-build-support`; validation uses the native `kyth-probe`; and the Rust
+shared crate owns scheduler, bootc, hardware, network, process, and runtime
+output behavior. The generated report now has zero active Python package
+entries; retained Python modules are parity/rollback fixtures only.
+
 The package is still installed for compatibility and rollback tooling, but a
 package path alone is no longer evidence of runtime authority. The checked-in
 inventory records `source-only` plus an explicit reason for each unreachable

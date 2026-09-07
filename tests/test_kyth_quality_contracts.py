@@ -54,6 +54,29 @@ class QualityContractsTests(unittest.TestCase):
         self.assertTrue(launcher.startswith("#!/usr/bin/env bash"))
         self.assertNotIn("kyth_shared.snapshot_timeline", launcher)
 
+    def test_shared_package_build_callers_use_native_boundaries(self):
+        hash_gate = (ROOT / "build_files/scripts/hash-gaming-versions.sh").read_text()
+        self.assertIn("kyth-build-support", hash_gate)
+        self.assertNotIn("kyth_shared.gaming_resolve", hash_gate)
+
+        for path in (
+            ROOT / "build_files/scripts/packages/12-vram-latency-and-copr-disable.sh",
+            ROOT / "build_files/scripts/packages/19-vscode.sh",
+            ROOT / "build_files/scripts/packages/21-windows-management-tools.sh",
+            ROOT / "build_files/scripts/packages/23-tailscale.sh",
+        ):
+            source = path.read_text()
+            self.assertIn("kyth-build-support", source, path.name)
+            self.assertNotIn("kyth_shared.", source, path.name)
+
+        optimization = (ROOT / "build_files/scripts/optimization-report.py").read_text()
+        self.assertIn("kyth-probe", optimization)
+        self.assertNotIn("from kyth_shared.system.probe", optimization)
+
+        dockerfile = (ROOT / "Dockerfile").read_text()
+        self.assertIn("--bin kyth-build-support", dockerfile)
+        self.assertIn("/usr/bin/kyth-build-support", dockerfile)
+
     def test_validation_tool_archives_do_not_require_archive_owners(self):
         installer = (ROOT / "build_files/scripts/install-validation-tools.sh").read_text()
         self.assertIn("--no-same-owner", installer)

@@ -45,24 +45,37 @@ def _probe_collector_count() -> int:
 
 def _runtime_metrics() -> dict[str, object]:
     metrics: dict[str, object] = {}
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT / "build_files/kyth_shared")
     started = time.perf_counter()
-    probe_code = (
-        "import json; from kyth_shared.system.probe import collect_probe_results; "
-        "r=collect_probe_results(); print(json.dumps({"
-        "'probe_result_count':len(r),'probe_status_counts':{s:sum(x.status.value==s for x in r.values()) "
-        "for s in ('available','unavailable','failed')}}))"
-    )
-    probed = subprocess.run(
-        [sys.executable, "-c", probe_code], cwd=ROOT, env=env,
-        capture_output=True, text=True, check=False,
-    )
+    probe_cmd: list[str] | None = None
+    for candidate in (
+        Path("/usr/bin/kyth-probe"),
+        ROOT / "src/kyth-shared-rs/target/release/kyth-probe",
+        ROOT / "src/kyth-shared-rs/target/debug/kyth-probe",
+    ):
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            probe_cmd = [str(candidate), "--print-only"]
+            break
+    if probe_cmd is None:
+        probe_cmd = [
+            "cargo", "run", "--quiet", "--locked",
+            "--manifest-path", "src/kyth-shared-rs/Cargo.toml",
+            "--bin", "kyth-probe", "--", "--print-only",
+        ]
+    probed = subprocess.run(probe_cmd, cwd=ROOT, capture_output=True, text=True, check=False)
     metrics["probe_duration_ms"] = round((time.perf_counter() - started) * 1000, 2)
     if probed.returncode:
         metrics["probe_error"] = probed.stderr.strip().splitlines()[-1]
     else:
-        metrics.update(json.loads(probed.stdout))
+        document = json.loads(probed.stdout)
+        sections = document if isinstance(document, dict) else {}
+        metrics.update({
+            "probe_result_count": len(sections),
+            "probe_status_counts": {
+                "available": sum(value is not None for value in sections.values()),
+                "unavailable": sum(value is None for value in sections.values()),
+                "failed": 0,
+            },
+        })
     return metrics
 
 

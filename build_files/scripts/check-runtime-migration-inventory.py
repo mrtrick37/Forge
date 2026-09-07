@@ -70,6 +70,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-ai-dev"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-boot-health"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-hardware-policy", "kyth-qualify", "kyth-memory-tune", "kyth-sysctl-compose"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-build-support"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-desktop-layout"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-display-hdr"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-input"}
@@ -180,6 +181,23 @@ NATIVE_REPLACED_MODULES = {
     "qt_threads": "native::kyth-exe-handler",
     "windows_installer": "native::kyth-exe-handler",
     "snapshot_timeline": "native::kyth-snapshot-timeline",
+    "__init__": "native::kyth-shared-rs",
+    "commands": "native::kyth-shared-rs::commands",
+    "containers": "native::kyth-build-support",
+    "gaming_resolve": "native::kyth-build-support",
+    "repos": "native::kyth-build-support",
+    "runtime_output": "native::kyth-shared-rs::system::runtime_output",
+    "sched_arbiter": "native::kyth-tunable-rs",
+    "bootc": "native::kyth-shared-rs::system::bootc",
+    "bootc_policy": "native::kyth-shared-rs::system::bootc_policy",
+    "bootc_query": "native::kyth-shared-rs::system::bootc_query",
+    "controllers": "native::kyth-shared-rs::system::controllers",
+    "hardware_native": "native::kyth-hardware-policy",
+    "hardware_view": "native::kyth-shared-rs::system::hardware_view",
+    "network_identity": "native::kyth-shared-rs::system::network_identity",
+    "probe": "native::kyth-probe",
+    "process": "native::kyth-shared-rs::system::process",
+    "system_probe": "native::kyth-shared-rs::system::system_probe",
 }
 SUPERSEDED_TUNABLE_MODULES = frozenset({
     "aio_max", "ananicy_preset", "boot_loader", "bore_tune", "btrfs_autotune",
@@ -208,8 +226,6 @@ SUPERSEDED_TUNABLE_MODULES = frozenset({
 # from shell (build_files/scripts/*.sh, check-*.py) rather than any launcher.
 # These must never be marked superseded, even if a dispatch table names them.
 SHELL_HARNESS_MODULES = frozenset({
-    "gaming_resolve",
-    "sched_arbiter",
 })
 
 # Python console scripts are installed before the native image layer copies

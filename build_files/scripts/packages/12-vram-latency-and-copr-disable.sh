@@ -26,13 +26,10 @@ source "../lib/gaming-coprs.sh"
 # bootstrap above). The repo is disabled afterwards so it does not persist
 # as an active package source in the final image.
 mkdir -p /etc/yum.repos.d
-python3 -c "
-from kyth_shared.repos import load_repo_specs
-for repo in load_repo_specs():
-    if repo.name == 'terra':
-        with open('/etc/yum.repos.d/terra.repo', 'w') as f:
-            f.write(repo.render_yum_repo())
-"
+/usr/bin/kyth-build-support repo-render \
+	--config /ctx/config/repos.json \
+	--name terra \
+	--output /etc/yum.repos.d/terra.repo
 
 if dnf5 install -y --skip-unavailable \
 	dmemcg-booster \
@@ -46,10 +43,4 @@ fi
 dnf5 config-manager setopt terra.enabled=0
 
 # Disable COPRs so they don't persist in the final image
-python3 -c "
-from kyth_shared.repos import GAMING_COPRS
-import subprocess
-for copr in GAMING_COPRS:
-    subprocess.run(['dnf5', 'copr', 'disable', '-y', copr], check=False)
-"
-
+/usr/bin/kyth-build-support disable-gaming-coprs

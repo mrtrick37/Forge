@@ -142,12 +142,10 @@ class InventoryTest(unittest.TestCase):
         checker = load_checker()
         entries = load_inventory()["entries"]
         by_name = {item["name"]: item for item in entries if item["surface"] == "python-runtime"}
-        # sched_arbiter is imported by build_files/kyth-game-launch; the
-        # remaining shell-harness modules stay live until native callers land.
-        for name in ("sched_arbiter",):
-            item = by_name[name]
-            self.assertTrue(item["runtime_active"], name)
-            self.assertNotIn("superseded_by", item, name)
+        # The remaining build/validation callers now use Rust boundaries; no
+        # shared-package module remains reachable from an active harness.
+        self.assertEqual(checker.python_reachable_modules(), set())
+        self.assertFalse([item for item in by_name.values() if item["runtime_active"]])
         self.assertFalse(set(checker.SUPERSEDED_TUNABLE_MODULES) & set(checker.SHELL_HARNESS_MODULES))
 
     def test_python_package_queue_uses_reachability_not_path_prefix(self):

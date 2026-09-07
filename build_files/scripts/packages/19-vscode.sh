@@ -6,11 +6,8 @@ set -euo pipefail
 # VS Code is provided via the kyth-ai-dev container to keep the immutable core slim.
 # Host wrapper transparently delegates to the container or prompts setup on first run.
 
-python3 -c "
-from pathlib import Path
-from kyth_shared.containers import write_distrobox_wrapper
-write_distrobox_wrapper(Path('/usr/bin/code'), 'code', 'Visual Studio Code')
-"
+/usr/bin/kyth-build-support container-wrapper \
+	--tool code --description "Visual Studio Code" --output /usr/bin/code
 
 
 # No GUI launcher is installed here: setup (triggered by the CLI wrapper above,

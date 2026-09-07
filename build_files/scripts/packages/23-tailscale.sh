@@ -12,12 +12,8 @@ set -euo pipefail
 # and disabling it immediately keeps it from persisting as an active package
 # source in images that never opt in.
 mkdir -p /etc/yum.repos.d
-python3 -c "
-from kyth_shared.repos import load_repo_specs
-for repo in load_repo_specs():
-    if repo.name == 'tailscale-stable':
-        with open('/etc/yum.repos.d/tailscale-stable.repo', 'w') as f:
-            f.write(repo.render_yum_repo())
-"
+/usr/bin/kyth-build-support repo-render \
+	--config /ctx/config/repos.json \
+	--name tailscale-stable \
+	--output /etc/yum.repos.d/tailscale-stable.repo
 dnf5 config-manager setopt tailscale-stable.enabled=0
-

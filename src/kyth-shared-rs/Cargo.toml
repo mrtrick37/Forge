@@ -319,6 +319,10 @@ name = "kyth-runtime"
 path = "src/runtime_bin.rs"
 
 [[bin]]
+name = "kyth-build-support"
+path = "src/build_support_bin.rs"
+
+[[bin]]
 name = "kyth-ai-dev"
 path = "src/ai_dev_bin.rs"
 
