@@ -179,6 +179,7 @@ NATIVE_REPLACED_MODULES = {
     "exe_handler": "native::kyth-exe-handler",
     "qt_threads": "native::kyth-exe-handler",
     "windows_installer": "native::kyth-exe-handler",
+    "snapshot_timeline": "native::kyth-snapshot-timeline",
 }
 SUPERSEDED_TUNABLE_MODULES = frozenset({
     "aio_max", "ananicy_preset", "boot_loader", "bore_tune", "btrfs_autotune",
@@ -207,7 +208,7 @@ SUPERSEDED_TUNABLE_MODULES = frozenset({
 # from shell (build_files/scripts/*.sh, check-*.py) rather than any launcher.
 # These must never be marked superseded, even if a dispatch table names them.
 SHELL_HARNESS_MODULES = frozenset({
-    "snapshot_timeline", "gaming_resolve",
+    "gaming_resolve",
     "sched_arbiter",
 })
 

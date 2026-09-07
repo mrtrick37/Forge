@@ -45,6 +45,15 @@ class QualityContractsTests(unittest.TestCase):
         preflight = (ROOT / "build_files/scripts/ci-preflight.sh").read_text()
         self.assertIn("./build_files/scripts/run-quality.sh", preflight)
 
+    def test_snapshot_preflight_uses_native_owner(self):
+        preflight = (ROOT / "build_files/scripts/ci-preflight.sh").read_text()
+        self.assertIn("kyth-snapshot-timeline", preflight)
+        self.assertNotIn("from kyth_shared.snapshot_timeline", preflight)
+
+        launcher = (ROOT / "build_files/kyth-snapshot-timeline").read_text()
+        self.assertTrue(launcher.startswith("#!/usr/bin/env bash"))
+        self.assertNotIn("kyth_shared.snapshot_timeline", launcher)
+
     def test_validation_tool_archives_do_not_require_archive_owners(self):
         installer = (ROOT / "build_files/scripts/install-validation-tools.sh").read_text()
         self.assertIn("--no-same-owner", installer)

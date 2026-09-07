@@ -1,20 +1,19 @@
-#!/usr/bin/env python3
-"""kyth-snapshot-timeline — CLI for snapshot timeline (offline, json)."""
-import argparse, json, sys
-from kyth_shared.snapshot_timeline import snapshot_timeline
+#!/usr/bin/env bash
+# Source-tree compatibility caller. The installed implementation is Rust.
+set -euo pipefail
 
-def main(argv=None):
-    p=argparse.ArgumentParser(prog="kyth-snapshot-timeline")
-    p.add_argument("--json", action="store_true")
-    p.add_argument("--limit", type=int, default=20)
-    args=p.parse_args(argv)
-    rows=snapshot_timeline(limit=args.limit)
-    if args.json:
-        print(json.dumps([r.__dict__ for r in rows], indent=2))
-    else:
-        for r in rows:
-            print(f"{r.type:12} {r.id:12} {r.description}")
-    return 0
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "${script_dir}/.." && pwd)"
 
-if __name__=="__main__":
-    raise SystemExit(main())
+for candidate in \
+	/usr/bin/kyth-snapshot-timeline \
+	"${repo_root}/src/kyth-shared-rs/target/release/kyth-snapshot-timeline" \
+	"${repo_root}/src/kyth-shared-rs/target/debug/kyth-snapshot-timeline"; do
+	if [[ -x "${candidate}" && "${candidate}" != "${BASH_SOURCE[0]}" ]]; then
+		exec "${candidate}" "$@"
+	fi
+done
+
+exec cargo run --quiet \
+	--manifest-path "${repo_root}/src/kyth-shared-rs/Cargo.toml" \
+	--bin kyth-snapshot-timeline -- "$@"

@@ -185,6 +185,12 @@ class InventoryTest(unittest.TestCase):
         self.assertEqual(hardware_policy["superseded_by"], "native::kyth-hardware-policy")
         self.assertEqual(hardware_policy["status"], "explicitly-not-ported")
 
+        snapshot = by_path["src/kyth_shared/kyth_shared/snapshot_timeline.py"]
+        self.assertNotIn("kyth_shared.snapshot_timeline", reachable)
+        self.assertFalse(snapshot["runtime_active"])
+        self.assertEqual(snapshot["superseded_by"], "native::kyth-snapshot-timeline")
+        self.assertEqual(snapshot["status"], "explicitly-not-ported")
+
         # This source file is present in the installed compatibility package,
         # but no supported launcher or harness reaches it after the native
         # cutovers. It must not inflate the migration queue.

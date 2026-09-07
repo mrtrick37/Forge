@@ -65,15 +65,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "snapshot_timeline",
-      "owner": "fixture::src/kyth_shared/kyth_shared/snapshot_timeline.py",
-      "path": "src/kyth_shared/kyth_shared/snapshot_timeline.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "__init__",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/__init__.py",
       "path": "src/kyth_shared/kyth_shared/system/__init__.py",
@@ -2682,26 +2673,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 19,
+      "python-shared-package": 18,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 19,
+      "standalone": 18,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 204,
-    "active_python_entries": 19,
+    "active_entries": 203,
+    "active_python_entries": 18,
     "entries": 860,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 19
+      "queued": 18
     },
-    "superseded_entries": 106
+    "superseded_entries": 107
   },
   "superseded": [
     {
@@ -3403,6 +3394,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "snapshot_timeline",
+      "owner": "native::kyth-snapshot-timeline",
+      "path": "src/kyth_shared/kyth_shared/snapshot_timeline.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-snapshot-timeline"
     },
     {
       "migration_priority": 3,

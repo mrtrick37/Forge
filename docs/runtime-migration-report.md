@@ -155,6 +155,11 @@ persistence. The sysconfig fragment is only a native invocation wrapper.
 loading, atomic resolved.conf update, rollback behavior, and TTL marker. The
 Python network-preset module remains only as a parity/rollback fixture.
 
+`kyth-snapshot-timeline` is the native owner of the snapshot/deployment
+timeline. The CI preflight and source-tree compatibility launcher resolve the
+packaged or checkout Rust binary, while the Python module remains only as an
+inactive parity/rollback fixture.
+
 The package is still installed for compatibility and rollback tooling, but a
 package path alone is no longer evidence of runtime authority. The checked-in
 inventory records `source-only` plus an explicit reason for each unreachable

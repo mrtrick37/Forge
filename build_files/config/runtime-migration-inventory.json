@@ -5513,7 +5513,7 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
+      "current_implementation": "shell",
       "cutover": "replace installed kyth-snapshot-timeline entry point after parity gates",
       "function_inventory": [
         {
@@ -21920,23 +21920,25 @@
       "current_implementation": "python",
       "cutover": "replace installed snapshot_timeline entry point after parity gates",
       "function_inventory": [],
-      "installed_implementation": "python",
-      "migration_priority": 2,
+      "installed_implementation": "python-fixture",
+      "migration_priority": 3,
       "name": "snapshot_timeline",
-      "owner": "fixture::src/kyth_shared/kyth_shared/snapshot_timeline.py",
+      "owner": "native::kyth-snapshot-timeline",
       "parity_tests": [
         "tests/"
       ],
       "path": "src/kyth_shared/kyth_shared/snapshot_timeline.py",
       "priority": 1,
+      "reason": "retained shared-package compatibility module is superseded by a packaged native Rust owner",
       "resolved_target": "src/kyth_shared/kyth_shared/snapshot_timeline.py",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "user-session-writer",
       "rollback": "restore previous installed snapshot_timeline entry point",
-      "runtime_active": true,
+      "runtime_active": false,
       "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-snapshot-timeline",
       "surface": "python-runtime"
     },
     {

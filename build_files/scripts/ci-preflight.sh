@@ -20,7 +20,24 @@ echo "==> Snapshot dry-run (release gate)"
 # (build_files/scripts/check-perf-gate.py) — this used to be a second,
 # separate call that passed current_ms=None and could only ever print a
 # trivial dry-run, never actually check anything.
-PYTHONPATH=build_files/kyth_shared python3 -c "from kyth_shared.snapshot_timeline import snapshot_timeline; snaps=snapshot_timeline(limit=3); print(f\"snapshot dry-run: {len(snaps)} entries\")" 2>&1 | head -n 5 || echo "snapshot dry-run: no timeline"
+snapshot_timeline_cmd=()
+for candidate in \
+	/usr/bin/kyth-snapshot-timeline \
+	"${repo_root}/src/kyth-shared-rs/target/release/kyth-snapshot-timeline" \
+	"${repo_root}/src/kyth-shared-rs/target/debug/kyth-snapshot-timeline"; do
+	if [[ -x "${candidate}" ]]; then
+		snapshot_timeline_cmd=("${candidate}")
+		break
+	fi
+done
+if ((${#snapshot_timeline_cmd[@]} == 0)); then
+	snapshot_timeline_cmd=(cargo run --quiet --manifest-path src/kyth-shared-rs/Cargo.toml --bin kyth-snapshot-timeline --)
+fi
+if snapshot_json="$("${snapshot_timeline_cmd[@]}" --json --limit 3 2>/dev/null)"; then
+	printf 'snapshot dry-run: %s entries\n' "$(jq -r 'length' <<<"${snapshot_json}")"
+else
+	echo "snapshot dry-run: no timeline"
+fi
 
 echo "==> GitHub quality parity"
 ./build_files/scripts/run-quality.sh

@@ -447,7 +447,7 @@ rollback/parity material until the approved observation window closes.
 
 ## Item 1 — Reachable shared-package modules
 
-**Status: in progress (8/46 complete).** This is the remaining Python half of
+**Status: in progress (9/46 complete).** This is the remaining Python half of
 the Rust migration. The reachability audit limits the work to modules that
 are still called by a supported console entry point, shell/build harness, or
 documented dynamic catalog. Each cutover must own the complete behavior,
@@ -484,9 +484,13 @@ rollback—not just read-only planning.
 - [x] network_preset — existing `kyth-apply-network` owns validated preset
   loading and atomic resolved.conf writes with rollback/TTL semantics. Its
   Python module is now an inactive parity fixture.
+- [x] snapshot_timeline — packaged `kyth-snapshot-timeline` owns Snapper/Btrfs
+  and bootc timeline collection plus the JSON wire shape. The CI preflight and
+  source-tree launcher now call the native binary; the Python module remains
+  only as an inactive parity/rollback fixture.
 - [ ] remaining reachable support modules,
-  snapshot_timeline, sched_arbiter, gaming_resolve, containers, repos,
-  telemetry, and the remaining reachable support modules.
+  sched_arbiter, gaming_resolve, containers, repos, telemetry, and the
+  remaining reachable support modules.
 
 After every module group: add unittest.TestCase parity coverage, wire the
 installed Rust entry point or caller, regenerate the inventory/report, run
