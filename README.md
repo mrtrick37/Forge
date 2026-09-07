@@ -4,357 +4,150 @@
 
 # KythOS
 
-**An opinionated Fedora Atomic desktop for gaming, work, and recovery.**
+**A calm Linux desktop for people coming from Windows—built for games, work, creativity, and a way back when something goes wrong.**
 
-KythOS 44 · Based on Fedora Kinoite · KDE Plasma 6 · bootc · Atomic updates · Graphical installer
-
-[Download stable](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-latest.iso) · [Download testing](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-testing.iso) · [Report a bug](https://github.com/kyth-os/kyth/issues) · [Discussions](https://github.com/kyth-os/kyth/discussions)
+[Download stable](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-latest.iso) · [Try testing](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-testing.iso) · [Get help](https://github.com/kyth-os/kyth/discussions) · [Report a bug](https://github.com/kyth-os/kyth/issues)
 
 [![Build](https://github.com/kyth-os/kyth/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/kyth-os/kyth/actions/workflows/build.yml)
 [![Live ISO](https://github.com/kyth-os/kyth/actions/workflows/build-live-iso.yml/badge.svg)](https://github.com/kyth-os/kyth/actions/workflows/build-live-iso.yml)
 [![CVE Scan](https://github.com/kyth-os/kyth/actions/workflows/cve-scan.yml/badge.svg)](https://github.com/kyth-os/kyth/actions/workflows/cve-scan.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/kyth-os/kyth/badge)](https://securityscorecards.dev/viewer/?uri=github.com/kyth-os/kyth)
-[![Container](https://img.shields.io/badge/GHCR-ghcr.io%2Fkyth-os%2Fkyth-73daca?logo=github)](https://github.com/kyth-os/kyth/pkgs/container/kyth)
-
-<img src="build_files/wallpaper/kyth-wallpaper.svg" alt="KythOS desktop wallpaper" width="100%">
 
 </div>
 
-## What KythOS is
+## Linux without the scavenger hunt
 
-KythOS is a bootable, installable Linux desktop built from a versioned OCI
-image. It combines Fedora Kinoite and KDE Plasma with a graphical installer,
-gaming and creator tooling, hardware helpers, a guided first-run experience,
-and a System Hub for updates, diagnostics, networking, and repair.
+KythOS is a ready-to-install Linux desktop for an x86-64 PC. It pairs KDE Plasma with thoughtful defaults for gaming, everyday work, creative tools, and recovery—without asking you to turn system administration into a hobby.
 
-The operating system is updated as a complete deployment with `bootc`. An
-update is staged before reboot and the previous deployment remains available
-from the boot menu. KythOS can therefore ship useful defaults and newer gaming
-technology without giving up a practical recovery path.
+If you are moving from Windows, the biggest difference is simple: KythOS guides the things that need guidance and keeps the complicated parts available when you actually need them. **Kyth Hub** is the place to start. It helps you set up your computer, find apps, bring over games and files, understand updates, and get help when something feels off.
 
-KythOS is a personal daily-driver project, not a general-purpose Fedora spin or
-a promise that every Windows application and anti-cheat system works on Linux.
-Its priorities are:
+KythOS is not a promise that every Windows program, anti-cheat system, driver, or vendor utility will work on Linux. It is an opinionated daily driver that makes those boundaries clear before they become surprises.
 
-1. **Reliability** — updates, repair tools, diagnostics, and rollback must leave
-   the user a way back.
-2. **Stability** — the desktop should remain predictable outside performance
-   workloads.
-3. **Performance** — gaming and creator workloads get targeted tuning rather
-   than permanent system-wide aggression.
-4. **Clarity** — strong defaults should be visible, explainable, and reversible.
-
-## Download and install
-
-| Channel | Image tag | Intended use | ISO |
-| --- | --- | --- | --- |
-| Stable | `latest` | Current daily-driver release | [kyth-live-latest.iso](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-latest.iso) |
-| Testing | `testing` | New work before stable promotion | [kyth-live-testing.iso](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-testing.iso) |
-
-Moving channel releases and immutable archived builds are published on GitHub:
-[stable releases](https://github.com/kyth-os/kyth/releases/tag/iso-latest) and
-[testing releases](https://github.com/kyth-os/kyth/releases/tag/iso-testing).
-
-Practical requirements are an x86-64 PC, a USB drive, and at least 8 GB of RAM
-for the live environment. The standard image installs offline; optional image
-variants require a network connection. Back up important data before changing
-disk partitions.
-
-1. Download the ISO for the channel you want.
-2. Write it to a USB drive with Fedora Media Writer, Balena Etcher, Ventoy, or
-   another raw-image tool.
-3. Boot the USB drive and open **Install KythOS**.
-4. Choose the target disk and installation layout, then create the local user.
-5. Let the installer verify and deploy the pinned KythOS image embedded in the ISO.
-6. Reboot, open **Kyth Hub**, and complete the first-run checklist.
-
-The installer uses `bootc install to-disk` under a local graphical frontend.
-Before changing disk state, it verifies the embedded OCI manifest against the
-digest pinned by the ISO build, checks power safety, and writes a redacted
-transaction report. Final target checks must pass before the UI reports success.
-
-### Verify an ISO
-
-Each release includes a SHA-256 checksum, a keyless Cosign bundle, metadata, and
-GitHub build provenance. Download the files for the same ISO release, then run:
-
-```bash
-sha256sum -c kyth-live-CHANNEL.iso-CHECKSUM
-
-cosign verify-blob \
-  --bundle kyth-live-CHANNEL.iso.bundle \
-  --certificate-identity-regexp '^https://github\.com/kyth-os/kyth/\.github/workflows/build-live-iso\.yml@refs/heads/(main|testing)$' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  kyth-live-CHANNEL.iso
-
-gh attestation verify kyth-live-CHANNEL.iso \
-  --repo kyth-os/kyth \
-  --signer-workflow kyth-os/kyth/.github/workflows/build-live-iso.yml
-```
-
-Replace `CHANNEL` with the basename from the release, such as `latest` or
-`testing`.
-
-## Day-to-day system management
-
-Most administration is available in System Hub. The equivalent terminal paths
-are useful for recovery and automation:
-
-```bash
-ujust status                    # booted, staged, and rollback deployments
-ujust kyth-upgrade              # stage OS updates and update Flatpaks
-ujust switch-channel testing   # stage the testing channel
-ujust switch-channel stable    # return to the stable channel
-ujust hardware-policy          # matched profiles, quirks, and applied state
-```
-
-Channel or kernel switches create a new bootc deployment and take effect after
-reboot. The previous deployment remains selectable from the boot menu.
-
-For advanced use, the image can be addressed directly:
-
-```bash
-sudo bootc switch ghcr.io/kyth-os/kyth:latest
-sudo bootc switch ghcr.io/kyth-os/kyth:testing
-sudo bootc upgrade
-bootc status
-```
-
-KythOS does not maintain long-lived historical release branches. Stable and
-testing are moving channels; immutable artifacts remain available for audit and
-recovery, but old artifacts do not receive security updates.
-
-## Kyth Hub
+## Start with Kyth Hub
 
 <div align="center">
-<img src="docs/system-hub-home.png" alt="Kyth Hub" width="100%">
+<img src="docs/system-hub-home.png" alt="The Kyth Hub home screen" width="100%">
 </div>
 
-Kyth Hub is the main control surface for setup and support. Pages are loaded
-on demand so opening the Hub does not initialize every probe and service at
-once. Shared probe and update snapshots also prevent multiple pages and
-notifications from repeating the same expensive checks.
+Kyth Hub is the guided control center for KythOS. Instead of sending you through settings panels, terminal commands, and web searches, it gives you one clear next step and keeps the useful controls close by.
 
-| Area | Current capabilities |
+| In Kyth Hub | What it helps you do |
 | --- | --- |
-| Home | Health orb, the one next step, and destination tiles for Play, Apps, This PC, and Move In |
-| Play | Launcher setup, installed-library status, ProtonDB context, controllers, and performance boost |
-| Apps | Flatpak discovery, familiar alternatives, and work setup |
-| This PC | Updates, hardware, Guardian, diagnostics, repair, and advanced tools under More |
-| Move In | Files, saves, cloud storage, network shares, and VPN |
+| **Home** | See your PC’s health, what needs attention, and where to go next. |
+| **Play** | Set up game launchers, check compatibility context, connect controllers, and use performance tools when a game needs them. |
+| **Apps** | Find Linux apps, familiar alternatives, and a work-ready setup. |
+| **This PC** | Install updates, check hardware, run diagnostics, and use repair tools. |
+| **Move In** | Bring across files and saves; connect cloud storage, network shares, and VPNs. |
 
-### VPN
+Kyth Hub is designed to explain an action before it takes it. If there is a meaningful choice—such as an update, a repair path, or a Windows installer—it should be understandable and reversible where possible.
 
-KythOS includes a standalone **VPN Connect** application and the same VPN page
-inside Hub. Both use one shared implementation built around
-`openconnect`, with saved connection settings, redacted logs, gateway probing,
-and a GlobalProtect SAML browser flow. The standalone window is single-instance
-and stays alive while a connection worker is active.
+## What changes when you leave Windows
 
-## Gaming, work, and creator setup
+Most day-to-day applications on KythOS come from the App Store and Flathub rather than from downloading installers from the web. That means updates and permissions are handled in one place, and the base system stays focused on being a reliable desktop.
 
-KythOS keeps the base image focused on host integration while installing most
-desktop applications from Flathub. Kyth Hub and the shipped `ujust` recipes
-cover the rest.
+You can still encounter a Windows `.exe` or `.msi`. Kyth Hub can point you toward a Linux equivalent, explain the compatibility trade-off, or guide an appropriate Windows-app workflow through Bottles. It does not pretend every installer is safe or suitable to run.
 
-### Gaming
+Before switching, check the things that are personal to your setup:
 
-- Steam, Lutris, Heroic, Bottles, Prism Launcher, and other launchers are
-  available through guided Flatpak installs.
-- Proton-CachyOS, GE-Proton management, protontricks, winetricks, and
-  `umu-launcher` cover common compatibility paths.
-- Gamescope presets, GameMode, MangoHud, vkBasalt, sched-ext controls, and
-  capture helpers are integrated without pretending every title needs every
-  optimization.
-- Controller diagnostics and setup cover common Xbox, PlayStation, Nintendo,
-  and remapping workflows.
-- Windows migration tools can find Steam libraries, copy saves, and help move
-  selected files from NTFS installations.
+- Some multiplayer games with Windows-only or kernel-level anti-cheat do not run on Linux.
+- Some Adobe, enterprise, hardware-vendor, and driver-dependent applications need a Linux alternative, a web version, a virtual machine, or a Windows PC.
+- Your own games deserve a quick compatibility check before you erase or repurpose a Windows installation.
 
-Publisher policy still decides whether kernel-level anti-cheat supports Linux.
-Check the [gaming validation matrix](docs/gaming-validation-matrix.md) and
-[recorded results](docs/gaming-results/) before relying on a specific title.
+The [gaming compatibility guide](docs/gaming-validation-matrix.md), [recorded game results](docs/gaming-results/README.md), and [everyday-use notes](docs/works-better-here.md) are there when you want the detail.
 
-### Work and creation
+## Bring your games, files, and saves
 
-- Work setup includes browser apps, office and email choices, compatible fonts,
-  focus tools, cloud storage, network shares, and Windows data migration.
-- Creator setup includes OBS Studio, Kdenlive, Audacity, GIMP, OpenDeck, and a
-  guided DaVinci Resolve packaging workflow.
-- Development options include container tooling, Distrobox, Homebrew
-  integration, editors, GitHub CLI, `jq`, `yq`, `direnv`, and modern shell
-  utilities.
-- An optional Kali Distrobox provides security tools without mixing Kali
-  packages into the immutable host image.
+KythOS is built to make a move practical, not ceremonial. Steam libraries on Windows drives can be found and copied, common launchers can be installed from Hub, and the migration area covers cloud storage, shared folders, VPNs, and personal files.
 
-## Architecture
+For game saves, let cloud sync finish on Windows first and keep an external backup. Launch the game once on KythOS to create its Linux or Proton environment, restore the save, then confirm it in-game before deleting anything. The [game-save migration guide](docs/game-save-migration.md) walks through the safe version of that process.
 
-| Layer | Implementation |
-| --- | --- |
-| Base image | `ghcr.io/ublue-os/kinoite-main:44`, rebuilt in `build_base/` |
-| Final OS | `Dockerfile` plus ordered package, sysconfig, branding, and helper fragments in `build_files/scripts/` |
-| Desktop | KDE Plasma 6 Wayland (software-compose rescue; XWayland for games) |
-| Deployment | OCI image published at `ghcr.io/kyth-os/kyth` and installed/updated with bootc |
-| Kernel | Fedora-signed kernel by default; CachyOS is an optional image variant |
-| Installer | Local-only Python installer service and graphical kiosk frontend, deploying a pinned image with bootc |
-| System Hub | React frontend embedded in the Tauri/Rust shell at `src/kyth-hub-web/` |
-| Runtime services | Update watcher, shared probe cache, notifications, scheduler controls, hardware setup, and focused helpers |
-| User applications | Primarily Flatpaks, keeping application lifecycle separate from the host deployment |
+## Updates on your schedule, with a way back
 
-The image is deliberately composed from small ordered fragments. Packages,
-system configuration, branding, systemd units, desktop integration, and user
-recipes remain reviewable without turning the main Dockerfile into the whole
-operating system.
+An operating-system update is prepared as a complete next version of KythOS. You restart when you are ready; if the new version is not right for you, the previous one remains available from the boot menu.
 
-```text
-Fedora Kinoite / Universal Blue base
-              │
-       KythOS base layer
-              │
-   final OCI desktop image ──── GHCR
-              │
-       live ISO installer
-              │
-      bootc deployment on disk
-              │
- atomic updates + rollback deployments
-```
+That recovery path is part of the product, not a last-minute repair trick. Kyth Hub shows what is happening and offers the relevant checks and repair tools instead of making you memorize a recovery procedure. Read about [how update safety works](docs/update-safety.md) when you want the full picture.
 
-See [Architecture](docs/architecture.md) and the
-[security model](docs/security-model.md) for the detailed component and trust
-boundaries. The [health-aware update lifecycle](docs/update-safety.md) explains
-boot validation, automatic rollback, rollout rings, and digest quarantine.
-The [Guardian design](docs/guardian.md) documents local-AI resource, privacy,
-and repair-policy boundaries.
-The [hardware policy](docs/hardware-policy.md) documents device matching,
-managed quirks, and the generated [support matrix](docs/hardware-support-matrix.md).
+## Built for the desktop, backed by Rust
 
-## Security and release integrity
+Kyth Hub uses a responsive Tauri and React interface backed by focused Rust services for system actions, updates, checks, and installer handling. In plain terms: the interface can stay approachable while the work underneath remains deliberate, bounded, and easy to inspect.
 
-- SELinux remains enforcing on installed systems.
-- Release workflows use short-lived GitHub Actions identity for keyless signing
-  and provenance rather than storing a long-lived signing key in the repository.
-- OCI releases include SBOM and signature artifacts; ISO releases include
-  checksums, Cosign bundles, metadata, and GitHub attestations.
-- CI validates workflow syntax, containers, shell, Python, structured config,
-  systemd units, Just recipes, committed-secret patterns, unit tests, Codacy,
-  CodeQL, and vulnerability data.
-- The live installer's web service binds locally and protects state-changing
-  actions with a session token.
-- Privileged desktop actions use installed, scoped helpers and normal
-  authentication boundaries.
+Rust is not the point of using KythOS; dependable desktop behavior is. It is one of the ways the project keeps important work close to the operating system instead of turning Hub into a terminal-first control panel.
 
-Report suspected vulnerabilities through
-[GitHub private vulnerability reporting](https://github.com/kyth-os/kyth/security/advisories/new),
-not a public issue. See [SECURITY.md](SECURITY.md) for scope and response policy.
+## Install KythOS
 
-## Build and test locally
+| Channel | Choose it when | Download |
+| --- | --- | --- |
+| **Stable** | You want the current daily-driver release. | [Download stable ISO](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-latest.iso) |
+| **Testing** | You want to help try new work before it reaches stable. | [Download testing ISO](https://pub-9a3cc72972ea44c4ae7504ee7cda1fa6.r2.dev/kyth-live-testing.iso) |
 
-The development path assumes Linux, Git, Docker, Python 3, and
-[`just`](https://github.com/casey/just). QEMU and SPICE are needed for native
-live-ISO testing. Some release checks download their pinned analysis tools on
-first use.
+You need an x86-64 PC, a USB drive, and at least 8 GB of RAM for the live environment. **Back up anything important before changing partitions or selecting an install disk.**
 
-```bash
-git clone https://github.com/kyth-os/kyth.git
-cd kyth
+1. Download the ISO for the channel you chose.
+2. Write it to a USB drive with [Fedora Media Writer](https://fedoraproject.org/workstation/download/), Balena Etcher, Ventoy, or another raw-image writer.
+3. Boot from that USB drive and choose **Install KythOS**.
+4. Read the disk-selection screen carefully, choose the installation layout, and create your local user.
+5. After the first restart, open **Kyth Hub** and follow its short setup checklist.
 
-just test                 # Python unit tests
-just validate             # GitHub validation parity
-just ci-preflight         # validation + Codacy + CodeQL
-just check-dockerfile     # Docker build frontend checks
-```
+If you are installing alongside Windows, make a recovery drive and a current backup first. The installer can guide an installation, but it cannot make an unsafe disk choice safe. Stable and testing release records are also available on [GitHub](https://github.com/kyth-os/kyth/releases).
 
-Build and boot paths:
+## Is KythOS for you?
 
-```bash
-just build                         # base layer and final localhost/kyth:latest image
-just build-live-iso                # ISO from the stable channel image
-just build-live-iso testing        # ISO from the testing channel image
-just rebuild-live-iso-local        # ISO embedding the local image
-just run-live-iso-native-local     # fresh native QEMU test of the local ISO
-just preview-installer             # browser preview; does not touch disks
-```
+KythOS is a good fit if you want a desktop that is ready for Steam and modern Linux apps, prefer guided maintenance to manual tuning, and value updates with a recovery path.
 
-Optional image profiles are disabled unless requested. Sched-ext remains opt-in
-until KythOS ships a userspace scheduler matched to its kernel ABI:
+Take a closer look before switching full-time if your work depends on a particular Windows-only application, a company-managed device policy, a specialized driver, or a game with uncertain anti-cheat support. You can boot the USB drive first and explore without installing; keeping Windows available during a gradual move is completely reasonable.
 
-```bash
-ENABLE_SCX=1 just build
-ENABLE_GAMING_PERIPHERALS=1 just build
-ENABLE_VIRTUALIZATION_HOST=1 just build
-ENABLE_KSM=1 just build
-```
+## Support, privacy, and project status
 
-Install the tracked hooks once per clone to run staged-file checks and the same
-pre-push validation used by maintainers:
+Ask questions in [GitHub Discussions](https://github.com/kyth-os/kyth/discussions) and file reproducible problems in [GitHub Issues](https://github.com/kyth-os/kyth/issues). A support snapshot from Kyth Hub excludes stored passwords, browser sessions, SMB credentials, and cloud OAuth tokens.
 
-```bash
-just install-git-hooks
-```
+KythOS enables Fedora’s anonymous DNF CountMe mechanism: Fedora receives an age bucket during a weekly repository request. KythOS does not create an account, send a per-machine identifier, or claim an install count from Fedora’s aggregate.
 
-### Repository map
+KythOS is licensed under [Apache License 2.0](LICENSE) and is not affiliated with Fedora, Universal Blue, KDE, Valve, CachyOS, or any game publisher.
 
-| Path | Purpose |
-| --- | --- |
-| `Dockerfile` | Final desktop image assembly |
-| `build_base/` | Shared base image and kernel-flavor construction |
-| `build_files/` | Installed helpers, units, configuration, packages, branding, Hub, and installer source |
-| `src/kyth-hub-web/` | React/Tauri System Hub frontend and Rust command shell |
-| `build_files/kyth-welcome/` | Transitional service helpers and standalone VPN support; not the Hub UI |
-| `build_files/kyth-installer/` | Installer application packaged into the live environment |
-| `build_files/just/` | Installed `ujust` recipes for system administration |
-| `installer/` | Live ISO payload assembly |
-| `tests/` | Unit and construction tests for installer, Hub, helpers, and release logic |
-| `.github/workflows/` | Validation, image, ISO, signing, provenance, and security automation |
-| `docs/` | Design, operations, security, support, and validation detail |
+<details>
+<summary><strong>Technical documentation and contributor resources</strong></summary>
 
-### Branch and release flow
+This section is for people who want the implementation, validation, and release detail behind the desktop experience.
 
-- `testing` builds the `:testing` image and testing ISO channel.
-- `main` builds the stable `:latest` image and stable ISO channel.
-- Maintainer work is committed and pushed directly to `testing`; this
-  repository does not use a PR publishing step for that workflow.
-- Promotion to stable happens only after automated validation and relevant
-  live-ISO or real-hardware checks.
-
-Changes that affect boot, login, networking, audio, GPU setup, updates, the
-installer, or privileged helpers should include an automated regression test
-where practical and a documented manual recovery path where automation cannot
-cover the hardware behavior.
-
-## Documentation
+### Design, safety, and support
 
 - [Architecture](docs/architecture.md)
 - [Stability principles](docs/stability-principles.md)
+- [Security model](docs/security-model.md) and [security reporting policy](SECURITY.md)
+- [Update safety and recovery lifecycle](docs/update-safety.md)
+- [Guardian design and repair-policy boundaries](docs/guardian.md)
+- [Hardware policy](docs/hardware-policy.md) and [hardware support matrix](docs/hardware-support-matrix.md)
+- [Release support policy](docs/release-support.md)
 - [Daily-driver validation](docs/daily-driver-validation.md)
-- [Hardware policy](docs/hardware-policy.md)
-- [Hardware support matrix](docs/hardware-support-matrix.md)
-- [Security model](docs/security-model.md)
-- [Release support](docs/release-support.md)
-- [Dependency management](docs/dependency-management.md)
-- [Optimization measurements](docs/optimization-budgets.md)
+
+### Gaming and migration evidence
+
 - [Gaming validation matrix](docs/gaming-validation-matrix.md)
+- [Recorded gaming results](docs/gaming-results/README.md)
+- [Windows game-save migration](docs/game-save-migration.md)
 - [Modding on KythOS](docs/modding-on-kythos.md)
-- [Game-save migration](docs/game-save-migration.md)
-- [Governance](docs/governance.md)
-- [Roadmap](docs/roadmap.md)
 
-## Support, privacy, and license
+### Hub, Rust, installer, and migration work
 
-Use [GitHub Issues](https://github.com/kyth-os/kyth/issues) for reproducible
-defects and [Discussions](https://github.com/kyth-os/kyth/discussions) for
-general questions. A support snapshot can be created from System Hub without
-including stored passwords, browser sessions, SMB credentials, or cloud OAuth
-tokens.
+- [Runtime migration report](docs/runtime-migration-report.md)
+- [Rust migration completion plan](docs/rust-migration-completion-plan.md)
+- [Kyth Hub migration finalization plan](docs/kyth-hub-migration-finalization-plan.md)
+- [Kyth Hub Rust release checklist](docs/system-hub-rust-release-checklist.md)
+- [Installer migration plan](docs/installer-migration-plan.md)
+- [Installer API contract](docs/installer-api-contract.md) and [feature-parity record](docs/installer-feature-parity.md)
 
-KythOS enables Fedora's DNF CountMe mechanism. Fedora receives an anonymous age
-bucket during a weekly repository request; KythOS does not create an account,
-send a per-machine identifier, or claim an install count from Fedora's
-aggregate.
+### Local development and release verification
 
-The project is licensed under [Apache License 2.0](LICENSE). KythOS is not
-affiliated with Fedora, Universal Blue, KDE, Valve, CachyOS, or any game
-publisher.
+The development path assumes Linux, Git, Docker, Python 3, and [`just`](https://github.com/casey/just). QEMU and SPICE are used for native live-ISO checks. The project’s tracked commands cover the normal local workflow:
 
-<!-- gitlab push test 2026-08-23: verify CI triggers on testing -->
+```bash
+just test                 # unit tests
+just validate             # GitHub validation parity
+just ci-preflight         # validation, quality, and security checks
+just build                # assemble a local image
+just build-live-iso       # create an ISO from the stable channel image
+just run-live-iso-native-local  # boot a fresh local ISO in QEMU
+```
+
+See the [dependency guide](docs/dependency-management.md), [optimization measurements](docs/optimization-budgets.md), and the repository’s `AGENTS.md` for contributor conventions and publishing rules.
+
+</details>
