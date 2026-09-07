@@ -9,7 +9,7 @@ StartLimitBurst=3
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/scx_loader
+ExecStart=/usr/bin/kyth-runtime scx-loader-service
 Restart=on-failure
 RestartSec=5
 # This loads/manages the sched_ext scheduler itself, unlike the plain

@@ -499,8 +499,9 @@ named Phase 6 migration target; it no longer means unclassified work.
 
 ## Phase 6 — Port shell runtime logic to Rust, including destructive paths
 
-**Status: in progress (launcher and systemd runtime boundary complete; recipe
-and acceptance lifecycle ports remain).** Port in risk order, but do not stop
+**Status: complete for implementation (launcher, systemd, recipe, and
+acceptance runtime boundaries are Rust-owned; exact-image proof remains in
+Phase 7).** Port in risk order, but do not stop
 after read-only coverage. Rust owns the full behavior of each function: input validation,
 policy decisions, bounded execution, privilege transitions, mutation,
 destructive confirmation, structured status, redaction, and recovery.
@@ -521,11 +522,16 @@ destructive confirmation, structured status, redaction, and recovery.
    dispatch, Secure Boot entry points, boot verification, Greenboot state, and
    filesystem mutation. These workflows use fixed allowlists, bounded
    execution, and atomic writes.
-5. **Remaining.** Port the 14 `ujust` recipe files to typed Rust recipe
-   commands, then port boot/recovery and acceptance lifecycle functions with
-   disposable-image tests. `kyth-vm-acceptance-guest run` remains intentionally
-   queued until its destructive install/update/rollback matrix is implemented
-   and observed; it must not be relabeled native by inventory metadata.
+5. **Complete for implementation.** The installed `ujust` import graph now
+   reaches only `build_files/just/kyth/native.just`; every retained recipe
+   name enters the Rust dispatcher, and unsupported names fail explicitly
+   unless an installed ELF owner exists. The old domain recipe files remain
+   source/parity fixtures. `kyth-vm-acceptance-guest run` is also Rust-owned:
+   its firmware gate, live-media installer, digest-tracked update/rollback
+   state machine, bounded destructive commands, evidence reporting, and
+   failure power-off path are implemented in `system::vm_acceptance`.
+   Disposable-image execution and the final Hub interaction evidence remain
+   Phase 7 release gates, not inventory excuses for Python ownership.
 
 Every cutover must retain a rollback fixture until the corresponding
 installed-image and promoted-image checks pass. A shell compatibility wrapper
@@ -556,11 +562,10 @@ and installed behavior.
 - `active_python_entries` in the generated report reflects only Python that
   is reachable from a real launcher/unit/harness — no entry is active solely
   because of a path-prefix rule.
-- Of the 41 currently-listed `python-runtime` launchers: 40 are ported to
-  native Rust entry points (`NATIVE_BINARIES`) as of 2026-09-07. Only
-  `kyth-vm-acceptance-guest` remains deferred to the Hub plan's post-cutover
-  acceptance gate (see "Not a phase" above). The runtime ledger reaches zero
-  only after that independently controlled gate has closed.
+- Of the 41 currently-listed `python-runtime` launchers: all 41 now resolve to
+  native Rust entry points (`NATIVE_BINARIES`) as of 2026-09-07. The
+  `kyth-vm-acceptance-guest` source module remains only as a rollback/parity
+  fixture; its installed launcher and destructive `run` lifecycle are Rust.
 - Every port has a `unittest.TestCase`-based parity test collected by
   `python3 -m unittest discover -s tests -b`.
 - Every runtime-relevant shell function is Rust-owned, including functions

@@ -40,11 +40,11 @@
         {
           "name": "<recipe-file>",
           "owner": "fixture::build_files/just/kyth/common.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "common",
       "owner": "fixture::build_files/just/kyth/common.just",
       "parity_tests": [
@@ -52,14 +52,15 @@
       ],
       "path": "build_files/just/kyth/common.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/common.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed common entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -69,41 +70,41 @@
         {
           "name": "install-boxbuddy",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "ai-dev-status",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "ai-dev-setup",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "ai-dev-enter",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "ai-dev-start",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "ai-dev-stop",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "ai-dev-remove",
           "owner": "fixture::build_files/just/kyth/containers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "containers",
       "owner": "fixture::build_files/just/kyth/containers.just",
       "parity_tests": [
@@ -111,14 +112,80 @@
       ],
       "path": "build_files/just/kyth/containers.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/containers.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed containers entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed kali entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "export-kali-apps",
+          "owner": "fixture::build_files/just/kyth/containers/kali.just",
+          "ownership": "build-only"
+        }
+      ],
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
+      "name": "kali",
+      "owner": "fixture::build_files/just/kyth/containers/kali.just",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/containers/kali.just",
+      "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+      "resolved_target": "build_files/just/kyth/containers/kali.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed kali entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed waydroid entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "setup-waydroid",
+          "owner": "fixture::build_files/just/kyth/containers/waydroid.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "remove-waydroid",
+          "owner": "fixture::build_files/just/kyth/containers/waydroid.just",
+          "ownership": "build-only"
+        }
+      ],
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
+      "name": "waydroid",
+      "owner": "fixture::build_files/just/kyth/containers/waydroid.just",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/containers/waydroid.just",
+      "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+      "resolved_target": "build_files/just/kyth/containers/waydroid.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed waydroid entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -128,31 +195,31 @@
         {
           "name": "startup-apps",
           "owner": "fixture::build_files/just/kyth/desktop-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "install-ms-fonts",
           "owner": "fixture::build_files/just/kyth/desktop-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "setup-printer",
           "owner": "fixture::build_files/just/kyth/desktop-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "firmware-update",
           "owner": "fixture::build_files/just/kyth/desktop-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "windows-verify",
           "owner": "fixture::build_files/just/kyth/desktop-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "desktop-tools",
       "owner": "fixture::build_files/just/kyth/desktop-tools.just",
       "parity_tests": [
@@ -160,14 +227,15 @@
       ],
       "path": "build_files/just/kyth/desktop-tools.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/desktop-tools.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed desktop-tools entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -177,21 +245,21 @@
         {
           "name": "setup-kyth-dev-box",
           "owner": "fixture::build_files/just/kyth/dev-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "install-vscode",
           "owner": "fixture::build_files/just/kyth/dev-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "install-jetbrains-toolbox",
           "owner": "fixture::build_files/just/kyth/dev-tools.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "dev-tools",
       "owner": "fixture::build_files/just/kyth/dev-tools.just",
       "parity_tests": [
@@ -199,14 +267,15 @@
       ],
       "path": "build_files/just/kyth/dev-tools.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/dev-tools.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed dev-tools entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -216,21 +285,21 @@
         {
           "name": "kerver",
           "owner": "fixture::build_files/just/kyth/diagnostics.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "device-info",
           "owner": "fixture::build_files/just/kyth/diagnostics.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "resume-check",
           "owner": "fixture::build_files/just/kyth/diagnostics.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "diagnostics",
       "owner": "fixture::build_files/just/kyth/diagnostics.just",
       "parity_tests": [
@@ -238,14 +307,15 @@
       ],
       "path": "build_files/just/kyth/diagnostics.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/diagnostics.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed diagnostics entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -255,26 +325,26 @@
         {
           "name": "setup-boot-windows-steam",
           "owner": "fixture::build_files/just/kyth/dualboot.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "dualboot-status",
           "owner": "fixture::build_files/just/kyth/dualboot.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "reclaim-windows",
           "owner": "fixture::build_files/just/kyth/dualboot.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "fix-dualboot-clock",
           "owner": "fixture::build_files/just/kyth/dualboot.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "dualboot",
       "owner": "fixture::build_files/just/kyth/dualboot.just",
       "parity_tests": [
@@ -282,14 +352,15 @@
       ],
       "path": "build_files/just/kyth/dualboot.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/dualboot.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed dualboot entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -299,11 +370,11 @@
         {
           "name": "gaming-stack-status",
           "owner": "fixture::build_files/just/kyth/gaming.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "gaming",
       "owner": "fixture::build_files/just/kyth/gaming.just",
       "parity_tests": [
@@ -311,14 +382,320 @@
       ],
       "path": "build_files/just/kyth/gaming.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/gaming.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed gaming entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed games entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "install-battlenet",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-epic-launcher",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-ea-app",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-ubisoft-connect",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-steam",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-lutris",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-heroic",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-bottles",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-prismlauncher",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-itch",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-retroarch",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-ludusavi",
+          "owner": "fixture::build_files/just/kyth/gaming/games.just",
+          "ownership": "build-only"
+        }
+      ],
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
+      "name": "games",
+      "owner": "fixture::build_files/just/kyth/gaming/games.just",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/gaming/games.just",
+      "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+      "resolved_target": "build_files/just/kyth/gaming/games.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed games entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed hardware entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "hardware-policy",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "hardware-inventory",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "hardware-policy-apply",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "export-steam-games",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "controller-check",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-lact",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "corectrl",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-coolercontrol",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-piper",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-openrgb",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-solaar",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-racing-wheel-drivers",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-oversteer",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-asus-tools",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-vesktop",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "fix-ntfs-drives",
+          "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+          "ownership": "build-only"
+        }
+      ],
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
+      "name": "hardware",
+      "owner": "fixture::build_files/just/kyth/gaming/hardware.just",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/gaming/hardware.just",
+      "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+      "resolved_target": "build_files/just/kyth/gaming/hardware.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed hardware entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed performance entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "install-gpu-screen-recorder",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-goverlay",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-mangojuice",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-obs",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "enable-obs-capture",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-lsfg-vk",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "game-boost",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "preheat-shaders",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "health-check",
+          "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+          "ownership": "build-only"
+        }
+      ],
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
+      "name": "performance",
+      "owner": "fixture::build_files/just/kyth/gaming/performance.just",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/gaming/performance.just",
+      "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+      "resolved_target": "build_files/just/kyth/gaming/performance.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed performance entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed proton entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "update-proton-cachyos",
+          "owner": "fixture::build_files/just/kyth/gaming/proton.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "install-umu",
+          "owner": "fixture::build_files/just/kyth/gaming/proton.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "toggle-fsr4",
+          "owner": "fixture::build_files/just/kyth/gaming/proton.just",
+          "ownership": "build-only"
+        },
+        {
+          "name": "toggle-nvapi",
+          "owner": "fixture::build_files/just/kyth/gaming/proton.just",
+          "ownership": "build-only"
+        }
+      ],
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
+      "name": "proton",
+      "owner": "fixture::build_files/just/kyth/gaming/proton.just",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/gaming/proton.just",
+      "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+      "resolved_target": "build_files/just/kyth/gaming/proton.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed proton entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -328,21 +705,21 @@
         {
           "name": "nvidia-status",
           "owner": "fixture::build_files/just/kyth/gpu-drivers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "install-nvidia-driver",
           "owner": "fixture::build_files/just/kyth/gpu-drivers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "install-displaylink",
           "owner": "fixture::build_files/just/kyth/gpu-drivers.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "gpu-drivers",
       "owner": "fixture::build_files/just/kyth/gpu-drivers.just",
       "parity_tests": [
@@ -350,14 +727,45 @@
       ],
       "path": "build_files/just/kyth/gpu-drivers.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/gpu-drivers.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed gpu-drivers entry point",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
+      "surface": "ujust-recipe"
+    },
+    {
+      "current_implementation": "recipe",
+      "cutover": "replace installed native entry point after parity gates",
+      "function_inventory": [
+        {
+          "name": "<recipe-file>",
+          "owner": "native::kyth-runtime",
+          "ownership": "native"
+        }
+      ],
+      "installed_implementation": "rust",
+      "migration_priority": 2,
+      "name": "native",
+      "owner": "native::kyth-runtime",
+      "parity_tests": [
+        "tests/"
+      ],
+      "path": "build_files/just/kyth/native.just",
+      "priority": 0,
+      "reason": "installed recipe manifest delegates every recipe to kyth-runtime",
+      "resolved_target": "build_files/just/kyth/native.just",
+      "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
+      "risk_tier": "build-time",
+      "rollback": "restore previous installed native entry point",
       "runtime_active": true,
       "runtime_authority": "shell-orchestration",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "ujust-recipe"
     },
     {
@@ -367,36 +775,36 @@
         {
           "name": "gaming-mode",
           "owner": "fixture::build_files/just/kyth/performance.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "balanced-mode",
           "owner": "fixture::build_files/just/kyth/performance.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "system-audit",
           "owner": "fixture::build_files/just/kyth/performance.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "hdr-per-game",
           "owner": "fixture::build_files/just/kyth/performance.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "enable-bpftune",
           "owner": "fixture::build_files/just/kyth/performance.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "disable-bpftune",
           "owner": "fixture::build_files/just/kyth/performance.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "performance",
       "owner": "fixture::build_files/just/kyth/performance.just",
       "parity_tests": [
@@ -404,14 +812,15 @@
       ],
       "path": "build_files/just/kyth/performance.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/performance.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed performance entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -421,11 +830,11 @@
         {
           "name": "probe-json",
           "owner": "fixture::build_files/just/kyth/probe.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "probe",
       "owner": "fixture::build_files/just/kyth/probe.just",
       "parity_tests": [
@@ -433,14 +842,15 @@
       ],
       "path": "build_files/just/kyth/probe.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/probe.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed probe entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -450,11 +860,11 @@
         {
           "name": "list-presets",
           "owner": "fixture::build_files/just/kyth/role-presets.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "role-presets",
       "owner": "fixture::build_files/just/kyth/role-presets.just",
       "parity_tests": [
@@ -462,14 +872,15 @@
       ],
       "path": "build_files/just/kyth/role-presets.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/role-presets.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed role-presets entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -479,16 +890,16 @@
         {
           "name": "secureboot-status",
           "owner": "fixture::build_files/just/kyth/secureboot.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "enroll-secureboot",
           "owner": "fixture::build_files/just/kyth/secureboot.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "secureboot",
       "owner": "fixture::build_files/just/kyth/secureboot.just",
       "parity_tests": [
@@ -496,14 +907,15 @@
       ],
       "path": "build_files/just/kyth/secureboot.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/secureboot.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed secureboot entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -513,21 +925,21 @@
         {
           "name": "setup-sunshine",
           "owner": "fixture::build_files/just/kyth/streaming.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "setup-vr",
           "owner": "fixture::build_files/just/kyth/streaming.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "setup-tailscale",
           "owner": "fixture::build_files/just/kyth/streaming.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "streaming",
       "owner": "fixture::build_files/just/kyth/streaming.just",
       "parity_tests": [
@@ -535,14 +947,15 @@
       ],
       "path": "build_files/just/kyth/streaming.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/streaming.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed streaming entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -552,26 +965,26 @@
         {
           "name": "kyth-upgrade",
           "owner": "fixture::build_files/just/kyth/system-updates.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "apply-staged",
           "owner": "fixture::build_files/just/kyth/system-updates.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "status",
           "owner": "fixture::build_files/just/kyth/system-updates.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         },
         {
           "name": "update-health",
           "owner": "fixture::build_files/just/kyth/system-updates.just",
-          "ownership": "shell"
+          "ownership": "build-only"
         }
       ],
-      "installed_implementation": "recipe",
-      "migration_priority": 2,
+      "installed_implementation": "not-installed",
+      "migration_priority": 3,
       "name": "system-updates",
       "owner": "fixture::build_files/just/kyth/system-updates.just",
       "parity_tests": [
@@ -579,14 +992,15 @@
       ],
       "path": "build_files/just/kyth/system-updates.just",
       "priority": 1,
+      "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
       "resolved_target": "build_files/just/kyth/system-updates.just",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed system-updates entry point",
-      "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
-      "runtime_scope": "user-session",
-      "status": "queued",
+      "runtime_active": false,
+      "runtime_authority": "build-only",
+      "runtime_scope": "build",
+      "status": "not-applicable",
       "surface": "ujust-recipe"
     },
     {
@@ -1011,7 +1425,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-browser-wallet-defaults.service",
-      "priority": 1,
+      "priority": 0,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-browser-wallet-defaults.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -1303,31 +1717,31 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-runtime flathub-setup",
-          "owner": "native::kyth-default-flatpaks",
+          "owner": "native::kyth-runtime",
           "ownership": "native"
         },
         {
           "name": "ExecStart:/usr/bin/kyth-runtime default-flatpaks",
-          "owner": "native::kyth-default-flatpaks",
+          "owner": "native::kyth-runtime",
           "ownership": "native"
         }
       ],
       "installed_implementation": "rust",
-      "migration_priority": 2,
+      "migration_priority": 1,
       "name": "kyth-default-flatpaks",
-      "owner": "native::kyth-default-flatpaks",
+      "owner": "native::kyth-runtime",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-default-flatpaks.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-default-flatpaks.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-default-flatpaks entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
       "status": "done-native",
       "surface": "systemd-unit"
@@ -1540,7 +1954,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-duperemove.timer",
-      "priority": 0,
+      "priority": 1,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-duperemove.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -1807,26 +2221,26 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/bin/kyth-runtime flathub-setup",
-          "owner": "native::kyth-flathub-setup",
+          "owner": "native::kyth-runtime",
           "ownership": "native"
         }
       ],
       "installed_implementation": "rust",
-      "migration_priority": 2,
+      "migration_priority": 1,
       "name": "kyth-flathub-setup",
-      "owner": "native::kyth-flathub-setup",
+      "owner": "native::kyth-runtime",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-flathub-setup.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-flathub-setup.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "read-only",
       "rollback": "restore previous installed kyth-flathub-setup entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
       "status": "done-native",
       "surface": "systemd-unit"
@@ -2334,7 +2748,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-guardian.timer",
-      "priority": 0,
+      "priority": 1,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-guardian.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -3097,7 +3511,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-mok-rotate.timer",
-      "priority": 0,
+      "priority": 1,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-mok-rotate.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -3826,7 +4240,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-probe-user.service",
-      "priority": 1,
+      "priority": 0,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-probe-user.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -3921,7 +4335,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-probe.timer",
-      "priority": 0,
+      "priority": 1,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-probe.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -3985,7 +4399,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-proton-cachyos-update.timer",
-      "priority": 0,
+      "priority": 1,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-proton-cachyos-update.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -4233,7 +4647,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-rgb.service",
-      "priority": 1,
+      "priority": 0,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-rgb.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -4386,7 +4800,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-sched-arbiter.service",
-      "priority": 1,
+      "priority": 0,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-sched-arbiter.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -4727,7 +5141,7 @@
       "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-scx-loader",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "read-only",
+      "risk_tier": "destructive",
       "rollback": "restore previous installed kyth-scx-loader entry point",
       "runtime_active": true,
       "runtime_authority": "rust-dispatcher",
@@ -4739,31 +5153,31 @@
       "current_implementation": "data",
       "cutover": "replace installed kyth-scx-loader entry point after parity gates",
       "exec_start": [
-        "/usr/bin/scx_loader"
+        "/usr/bin/kyth-runtime scx-loader-service"
       ],
       "function_inventory": [
         {
-          "name": "ExecStart:/usr/bin/scx_loader",
-          "owner": "native::kyth-scx-loader",
+          "name": "ExecStart:/usr/bin/kyth-runtime scx-loader-service",
+          "owner": "native::kyth-runtime",
           "ownership": "native"
         }
       ],
       "installed_implementation": "rust",
-      "migration_priority": 2,
+      "migration_priority": 1,
       "name": "kyth-scx-loader",
-      "owner": "native::kyth-scx-loader",
+      "owner": "native::kyth-runtime",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-scx-loader.service",
       "priority": 0,
-      "reason": "native Rust crate or installed unit is already declared/packaged",
+      "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-scx-loader.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "read-only",
+      "risk_tier": "destructive",
       "rollback": "restore previous installed kyth-scx-loader entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
       "status": "done-native",
       "surface": "systemd-unit"
@@ -5251,7 +5665,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-storage-maint.service",
-      "priority": 1,
+      "priority": 0,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-storage-maint.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -6039,7 +6453,7 @@
         "tests/"
       ],
       "path": "build_files/kyth-update-watcher.timer",
-      "priority": 0,
+      "priority": 1,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/kyth-update-watcher.timer",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
@@ -6082,32 +6496,33 @@
       "surface": "launcher"
     },
     {
-      "current_implementation": "python",
+      "current_implementation": "shell",
       "cutover": "replace installed kyth-vm-acceptance-guest entry point after parity gates",
       "function_inventory": [
         {
           "name": "__main__",
-          "owner": "fixture::build_files/kyth-vm-acceptance-guest",
-          "ownership": "shell"
+          "owner": "native::kyth-vm-acceptance-guest",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "python",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-vm-acceptance-guest",
-      "owner": "fixture::build_files/kyth-vm-acceptance-guest",
+      "owner": "native::kyth-vm-acceptance-guest",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-vm-acceptance-guest",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-vm-acceptance-guest",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
-      "risk_tier": "read-only",
+      "risk_tier": "destructive",
       "rollback": "restore previous installed kyth-vm-acceptance-guest entry point",
       "runtime_active": true,
-      "runtime_authority": "python-runtime",
+      "runtime_authority": "rust-dispatcher",
       "runtime_scope": "user-session",
-      "status": "queued",
+      "status": "done-native",
       "surface": "launcher"
     },
     {
@@ -6119,27 +6534,28 @@
       "function_inventory": [
         {
           "name": "ExecStart:/usr/libexec/kyth-vm-acceptance-guest run",
-          "owner": "fixture::build_files/kyth-vm-acceptance.service",
-          "ownership": "shell"
+          "owner": "native::kyth-vm-acceptance",
+          "ownership": "native"
         }
       ],
-      "installed_implementation": "data",
-      "migration_priority": 2,
+      "installed_implementation": "rust",
+      "migration_priority": 1,
       "name": "kyth-vm-acceptance",
-      "owner": "fixture::build_files/kyth-vm-acceptance.service",
+      "owner": "native::kyth-vm-acceptance",
       "parity_tests": [
         "tests/"
       ],
       "path": "build_files/kyth-vm-acceptance.service",
-      "priority": 1,
+      "priority": 0,
+      "reason": "native Rust crate or installed unit is already declared/packaged",
       "resolved_target": "build_files/kyth-vm-acceptance.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",
       "risk_tier": "build-time",
       "rollback": "restore previous installed kyth-vm-acceptance entry point",
       "runtime_active": true,
-      "runtime_authority": "shell-orchestration",
+      "runtime_authority": "rust-service",
       "runtime_scope": "system-service",
-      "status": "queued",
+      "status": "done-native",
       "surface": "systemd-unit"
     },
     {
@@ -13691,7 +14107,7 @@
         "tests/"
       ],
       "path": "build_files/scripts/sysconfig/systemd/kyth-boot-rw.service",
-      "priority": 1,
+      "priority": 0,
       "reason": "unit delegates to an installed Rust owner",
       "resolved_target": "build_files/scripts/sysconfig/systemd/kyth-boot-rw.service",
       "retirement": "retain source fixture until exact-image acceptance and rollback qualification",

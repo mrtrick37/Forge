@@ -1,7 +1,4 @@
-//! Read-only VM acceptance guest reporting.
-//!
-//! The lifecycle `run` command remains owned by the Python fixture until the
-//! destructive installer/update/rollback acceptance matrix is complete.
+//! VM acceptance guest entry point.
 
 use std::{path::Path, process::ExitCode, time::Duration};
 
@@ -85,7 +82,7 @@ fn report() -> Report {
 
 fn usage() {
     eprintln!(
-        "Usage: kyth-vm-acceptance-guest <enabled|report|decode-bootc|count-deployments> [--json]"
+        "Usage: kyth-vm-acceptance-guest <enabled|run|report|decode-bootc|count-deployments> [--json]"
     );
 }
 
@@ -108,6 +105,13 @@ fn main() -> ExitCode {
                 ExitCode::from(1)
             }
         }
+        "run" if args.len() == 1 => match kyth_shared::system::vm_acceptance::run() {
+            Ok(code) => code,
+            Err(error) => {
+                eprintln!("kyth-vm-acceptance-guest: {error}");
+                ExitCode::from(1)
+            }
+        },
         "report" if args.len() <= 2 => {
             let value = report();
             if json {

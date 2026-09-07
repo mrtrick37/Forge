@@ -64,6 +64,21 @@ class RustRuntimeDispatcherTest(unittest.TestCase):
         self.assertIn("--bin kyth-runtime", dockerfile)
         self.assertIn("/build/kyth-runtime /usr/bin/kyth-runtime", dockerfile)
 
+    def test_recipe_import_graph_and_acceptance_launcher_are_native(self):
+        root_recipe = (ROOT / "build_files/just/kyth.just").read_text(encoding="utf-8")
+        self.assertIn('import "kyth/native.just"', root_recipe)
+        native_recipe = (ROOT / "build_files/just/kyth/native.just").read_text(encoding="utf-8")
+        self.assertIn("exec /usr/bin/kyth-runtime recipe", native_recipe)
+        guest = (ROOT / "build_files/kyth-vm-acceptance-guest").read_text(encoding="utf-8")
+        self.assertIn("exec /usr/bin/kyth-vm-acceptance-guest", guest)
+        unit = (ROOT / "build_files/kyth-vm-acceptance.service").read_text(encoding="utf-8")
+        self.assertIn("ExecStart=/usr/libexec/kyth-vm-acceptance-guest run", unit)
+
+    def test_recipe_fallback_rejects_shell_shims(self):
+        text = RUNTIME.read_text(encoding="utf-8")
+        self.assertIn('bytes.starts_with(b"\\x7fELF")', text)
+        self.assertIn("recipe {name} has no Rust owner", text)
+
 
 if __name__ == "__main__":
     unittest.main()

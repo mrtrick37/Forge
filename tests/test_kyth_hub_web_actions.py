@@ -247,6 +247,12 @@ class HubWebCoverageTests(unittest.TestCase):
         # recipes belong in a CommandLine, where the argument is visible.
         signatures = {}
         for path in (ROOT / "build_files" / "just").rglob("*.just"):
+            # The installed native manifest intentionally accepts an argv
+            # tail so Rust can validate it. Its defaults and policy are not
+            # implemented by just, so this UI check applies only to the
+            # legacy source recipe fixtures.
+            if path.name == "native.just":
+                continue
             for match in re.finditer(
                 r"^([a-z][a-z0-9-]*)((?:\s+[^:\n]*)?):(?!=)", path.read_text(encoding="utf-8"), re.M
             ):

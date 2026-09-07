@@ -44,6 +44,10 @@ fn require_args(args: &[String], min: usize, max: Option<usize>) {
     if args.len() < min || max.is_some_and(|value| args.len() > value) { usage(); }
 }
 
+fn is_native_executable(path: &Path) -> bool {
+    fs::read(path).is_ok_and(|bytes| bytes.starts_with(b"\x7fELF"))
+}
+
 fn validate_token(value: &str, label: &str) -> Result<(), String> {
     if value.is_empty() || value.len() > 256 || value.bytes().any(|byte| byte == 0 || byte == b'\n' || byte == b'\r') {
         return Err(format!("invalid {label}"));
@@ -253,8 +257,50 @@ fn gamescope(args: &[String]) -> io::Result<ExitCode> {
     run(program, child_args)
 }
 
+fn recipe(args: &[String]) -> io::Result<ExitCode> {
+    require_args(args, 1, None);
+    let name = args[0].as_str();
+    let forwarded = &args[1..];
+    let (operation, operation_args): (&str, Vec<String>) = match name {
+        "update" | "kyth-upgrade" | "full-update" => ("full-update", forwarded.to_vec()),
+        "apply-staged" => ("finalize-staged", forwarded.to_vec()),
+        "status" | "update-health" => ("boot-verify", forwarded.to_vec()),
+        "probe-json" => ("probe", vec!["--print-only".into()]),
+        "device-info" | "kerver" | "snappy-bench" => (name, forwarded.to_vec()),
+        "smoke-check" => ("smoke-check", forwarded.to_vec()),
+        "resume-check" => ("resume-check", forwarded.to_vec()),
+        "post-update-check" => ("post-update-check", forwarded.to_vec()),
+        "perf-gate" => ("perf-gate", forwarded.to_vec()),
+        "nvidia-status" => ("nvidia-status", forwarded.to_vec()),
+        "windows-verify" => ("windows-verify", forwarded.to_vec()),
+        "secureboot-status" => ("mok-status", forwarded.to_vec()),
+        "enroll-secureboot" => ("enroll-mok", forwarded.to_vec()),
+        "gamescope" | "game-scope" => ("gamescope", forwarded.to_vec()),
+        "game-hdr" => ("gamescope", std::iter::once("hdr".into()).chain(forwarded.iter().cloned()).collect()),
+        "gaming-mode" => ("performance-mode", vec!["gaming".into()]),
+        "balanced-mode" => ("performance-mode", vec!["balanced".into()]),
+        "scx" => ("scx", forwarded.to_vec()),
+        "nvme-tuning" => ("nvme-tuning", forwarded.to_vec()),
+        "readahead-run" => ("readahead-run", forwarded.to_vec()),
+        "preheat-shaders" => ("shader-preheat", forwarded.to_vec()),
+        "fix-ntfs-drives" => ("storage-gate", forwarded.to_vec()),
+        "game-boost" => ("game-boost", forwarded.to_vec()),
+        "health-check" => ("health-check", forwarded.to_vec()),
+        "list-presets" => { println!("Available presets: everyday, gaming, dev, creator"); return Ok(ExitCode::SUCCESS); }
+        _ => {
+            let binary_name = format!("/usr/bin/kyth-{name}");
+            if !is_native_executable(Path::new(&binary_name)) {
+                return Err(io::Error::new(io::ErrorKind::Unsupported, format!("recipe {name} has no Rust owner")));
+            }
+            return run(&binary_name, forwarded);
+        }
+    };
+    delegate(operation, &operation_args)
+}
+
 fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
     match name {
+        "recipe" => recipe(args),
         "apply-update" => run("/usr/bin/kyth-safe-upgrade", args),
         "full-update" => {
             let steps = [
@@ -284,6 +330,7 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
         "nvme-tuning" => nvme_tuning(args),
         "davinci-install" => davinci_install(args),
         "scx" | "scx-loader" => scx(args),
+        "scx-loader-service" => run("/usr/bin/scx_loader", args),
         "windows-import" => windows_import(args),
         "gamescope" => gamescope(args),
         "isolate-game" => { require_args(args, 2, None); let mut command = vec!["--user".into(), "--scope".into(), "--slice=gaming.slice".into(), "--property".into(), "PrivateTmp=yes".into(), "--property".into(), "SystemCallFilter=@system-service".into(), "--".into()]; command.extend_from_slice(&args[1..]); run("systemd-run", &command) }
@@ -313,7 +360,16 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
             Ok(ExitCode::SUCCESS)
         }
         "vpnc-script" => run("resolvectl", &["status".into()]),
-        "vm-acceptance-guest" => Err(io::Error::new(io::ErrorKind::Unsupported, "acceptance lifecycle is gated on the disposable-image Phase 7 proof")),
+        "finalize-staged" => run("/usr/libexec/kyth-finalize-staged", args),
+        "probe" => run("/usr/bin/kyth-probe", args),
+        "smoke-check" => run("/usr/bin/kyth-smoke-check", args),
+        "resume-check" => run("/usr/bin/kyth-resume-check", args),
+        "post-update-check" => run("/usr/bin/kyth-post-update-check", args),
+        "nvidia-status" => run("/usr/bin/kyth-nvidia-status", args),
+        "windows-verify" => run("/usr/bin/kyth-windows-verify", args),
+        "game-boost" => run("/usr/bin/kyth-game-boost", args),
+        "health-check" => run("/usr/bin/kyth-health-check", args),
+        "vm-acceptance-guest" => run("/usr/bin/kyth-vm-acceptance-guest", args),
         _ => Err(io::Error::new(io::ErrorKind::InvalidInput, format!("unsupported runtime operation: {name}"))),
     }
 }

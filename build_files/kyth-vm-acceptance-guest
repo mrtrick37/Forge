@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""Compatibility launcher for packaged VM acceptance guest logic."""
-
-from kyth_shared.vm_acceptance import main
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+#!/usr/bin/env bash
+# Stable source-tree launch contract; the packaged implementation is Rust.
+exec /usr/bin/kyth-vm-acceptance-guest "$@"

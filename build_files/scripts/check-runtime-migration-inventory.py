@@ -61,7 +61,9 @@ NATIVE_BINARIES = {
     "kyth-ai-perfd", "kyth-perf-gate-rs",
 }
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-doctor", "kyth-health-check", "kyth-smoke-check", "kyth-resume-check", "kyth-nvidia-status", "kyth-controller-check", "kyth-creator-check", "kyth-exe-compat", "kyth-snapshot-timeline", "kyth-print-check", "kyth-windows-verify", "kyth-tunable", "kyth-configure-session", "kyth-set-resolution", "kyth-set-kickoff-icon", "kyth-greeter-compositor", "kyth-config-apply"}
-NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-tunable-rs", "kyth-game-boost"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-tunable-rs", "kyth-game-boost", "kyth-vm-acceptance-guest"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-scx-loader"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-runtime"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-desktop-layout"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-display-hdr"}
@@ -126,7 +128,7 @@ READ_ONLY_NAMES = {
     "kyth-doctor", "kyth-health-check", "kyth-smoke-check", "kyth-resume-check",
     "kyth-nvidia-status", "kyth-controller-check", "kyth-creator-check",
     "kyth-exe-compat", "kyth-snapshot-timeline", "kyth-print-check",
-    "kyth-windows-verify", "kyth-vm-acceptance-guest",
+    "kyth-windows-verify",
 }
 WRITER_NAMES = {
     "kyth-apply-desktop-layout", "kyth-apply-role-preset", "kyth-configure-session",
@@ -146,6 +148,7 @@ SHELL_HELPER_LAUNCHERS = {
     "kyth-perf-report-common.sh", "kyth-report-common.sh",
 }
 SOURCE_ALIAS_LAUNCHERS = {"kyth-hub-web", "kyth-welcome"}
+NATIVE_RECIPE_FILES = {"native.just"}
 # Phase 0 reachability audit (2026-09-07): 92 kyth_shared modules whose entire
 # runtime surface is superseded by the native tunable dispatcher
 # (kyth-tunable-rs / tunable_registry.rs — all 94 registry aliases verified
@@ -276,6 +279,8 @@ def function_inventory(
 def risk_for(name: str, kind: str, path: Path) -> str:
     if "/scripts/" in f"/{rel(path)}" or path.parts[:2] == ("build_files", "scripts"):
         return "build-time"
+    if name in {"kyth-vm-acceptance-guest", "kyth-scx-loader"}:
+        return "destructive"
     if name in READ_ONLY_NAMES or name in NATIVE_BINARIES and name not in {"kyth-network-share"}:
         return "read-only"
     if name in WRITER_NAMES:
@@ -383,12 +388,18 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
     elif surface == "launcher" and kind == "data":
         status = "not-applicable"
         reason = "data or config file, not migratable code"
+    elif surface == "ujust-recipe" and path.name in NATIVE_RECIPE_FILES:
+        status = "done-native"
+        reason = "installed recipe manifest delegates every recipe to kyth-runtime"
     elif item_name in NOT_PORTED or rel(path) in NOT_PORTED_PATHS:
         status = "explicitly-not-ported"
         reason = "documented third-party or declarative build/runtime exception"
     elif (
         implementation == "rust"
-        or (surface == "systemd-unit" and item_name in NATIVE_BINARIES)
+        or (
+            surface == "systemd-unit"
+            and any(binary in path.read_text(encoding="utf-8", errors="replace") for binary in NATIVE_BINARIES)
+        )
         or (surface == "launcher" and item_name in PACKAGED_NATIVE_LAUNCHERS)
         or is_tunable_alias
     ):
@@ -399,6 +410,7 @@ def entry(path: Path, *, surface: str, implementation: str | None = None, name: 
         reason = None
     owner = (
         f"fixture::{rel(path)}" if status in {"queued", "explicitly-not-ported", "not-applicable"}
+        else "native::kyth-runtime" if surface == "ujust-recipe" and path.name in NATIVE_RECIPE_FILES
         else "native::kyth-tunable-rs" if is_tunable_alias
         else f"native::{item_name}"
     )
@@ -542,8 +554,27 @@ def discover() -> list[dict]:
     for root, surface in ((ROOT / "src/kyth_shared", "python-runtime"), (ROOT / "src/kyth-welcome", "python-runtime"), (ROOT / "src/kyth-installer", "installer-runtime")):
         for path in sorted(root.rglob("*.py")):
             items.append(entry(path, surface=surface, implementation="python", name=path.stem))
-    for path in sorted((ROOT / "build_files/just/kyth").glob("*.just")):
-        items.append(entry(path, surface="ujust-recipe", implementation="recipe", name=path.stem))
+    active_just_paths = active_just_imports()
+    for path in sorted((ROOT / "build_files/just/kyth").rglob("*.just")):
+        item = entry(path, surface="ujust-recipe", implementation="recipe", name=path.stem)
+        if path not in active_just_paths and path.name not in NATIVE_RECIPE_FILES:
+            item.update({
+                "status": "not-applicable",
+                "installed_implementation": "not-installed",
+                "owner": f"fixture::{rel(path)}",
+                "reason": "retained recipe parity fixture is not imported by the installed Rust recipe manifest",
+                "runtime_authority": "build-only",
+                "runtime_scope": "build",
+                "runtime_active": False,
+                "migration_priority": 3,
+                "function_inventory": function_inventory(
+                    path,
+                    surface="ujust-recipe",
+                    status="not-applicable",
+                    owner=f"fixture::{rel(path)}",
+                ),
+            })
+        items.append(item)
     for path in sorted((ROOT / "build_files/scripts").rglob("*")):
         if path.is_file() and (path.suffix in {".sh", ".bash"} or launcher_kind(path) == "shell"):
             items.append(entry(path, surface="shell-script", implementation="shell"))
@@ -551,6 +582,24 @@ def discover() -> list[dict]:
         if manifest.exists():
             items.append(entry(manifest, surface="rust-crate", implementation="rust", name=manifest.parent.name))
     return sorted(items, key=lambda item: item["path"])
+
+
+def active_just_imports() -> set[Path]:
+    """Resolve the justfile import graph used by the installed image."""
+    root = ROOT / "build_files/just/kyth.just"
+    active: set[Path] = set()
+    pending = [root]
+    while pending:
+        current = pending.pop()
+        if current in active or not current.exists():
+            continue
+        active.add(current)
+        text = current.read_text(encoding="utf-8", errors="replace")
+        for raw in re.findall(r"import\??\s+['\"]([^'\"]+)['\"]", text):
+            target = (current.parent / raw).resolve()
+            if target.suffix == ".just":
+                pending.append(target)
+    return active
 
 
 def validate(document: dict, *, expected_paths: set[str] | None = None) -> list[str]:

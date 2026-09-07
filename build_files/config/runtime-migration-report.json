@@ -2,15 +2,6 @@
   "active_python": [
     {
       "migration_priority": 2,
-      "name": "kyth-vm-acceptance-guest",
-      "owner": "fixture::build_files/kyth-vm-acceptance-guest",
-      "path": "build_files/kyth-vm-acceptance-guest",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "__init__",
       "owner": "fixture::src/kyth_shared/kyth_shared/__init__.py",
       "path": "src/kyth_shared/kyth_shared/__init__.py",
@@ -2754,25 +2745,24 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 1,
       "python-shared-package": 157,
-      "rust-dispatcher": 51,
-      "rust-service": 25,
-      "shell-orchestration": 121
+      "rust-dispatcher": 52,
+      "rust-service": 29,
+      "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
       "standalone": 157,
       "system-service": 38,
-      "user-session": 159
+      "user-session": 146
     },
-    "active_entries": 355,
-    "active_python_entries": 158,
-    "entries": 852,
+    "active_entries": 342,
+    "active_python_entries": 157,
+    "entries": 859,
     "p0_open_entries": 0,
     "status_by_active_entry": {
-      "done-native": 182,
-      "queued": 173
+      "done-native": 185,
+      "queued": 157
     },
     "superseded_entries": 98
   },

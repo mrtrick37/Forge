@@ -24,7 +24,8 @@ def _completed(returncode: int = 0, stdout: str = "") -> subprocess.CompletedPro
 
 class VmAcceptanceTests(unittest.TestCase):
     def test_launchers_parse(self):
-        subprocess.run(["python3", "-m", "py_compile", str(GUEST)], check=True)
+        subprocess.run(["bash", "-n", str(GUEST)], check=True)
+        self.assertIn("/usr/bin/kyth-vm-acceptance-guest", GUEST.read_text(encoding="utf-8"))
         subprocess.run(["bash", "-n", str(HOST)], check=True)
 
     def test_guest_is_firmware_gated_and_covers_lifecycle(self):
@@ -476,6 +477,9 @@ class MainEntrypointTests(unittest.TestCase):
         docker = (ROOT / "Dockerfile").read_text(encoding="utf-8")
         branding = (ROOT / "build_files/scripts/branding/35-diagnostic-script-installs.sh").read_text(encoding="utf-8")
         self.assertIn('name = "kyth-vm-acceptance-guest"', cargo)
+        rust = (ROOT / "src/kyth-shared-rs/src/system/vm_acceptance.rs").read_text(encoding="utf-8")
+        for phase in ("LIVE_READY", "INSTALL_COMPLETE", "INSTALLED_READY", "UPDATE_STAGED", "UPDATE_BOOTED", "ROLLBACK_STAGED", "ROLLBACK_BOOTED", "COMPLETE", "FAILED"):
+            self.assertIn(phase, rust)
         self.assertIn("/build/kyth-vm-acceptance-guest /usr/bin/kyth-vm-acceptance-guest", docker)
         self.assertIn("/ctx/kyth-vm-acceptance-guest /usr/libexec/kyth-vm-acceptance-guest", branding)
         self.assertNotIn("ExecCondition=", UNIT.read_text(encoding="utf-8"))
