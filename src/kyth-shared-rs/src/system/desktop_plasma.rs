@@ -243,6 +243,122 @@ pub fn evaluate_plasma_argv(qdbus: &str, script: &str) -> Vec<String> {
     vec![qdbus.into(), "org.kde.plasmashell".into(), "/PlasmaShell".into(), "org.kde.PlasmaShell.evaluateScript".into(), script.into()]
 }
 
+/// Launcher sets for `kyth-apply-role-preset`, mirroring
+/// `apply_role_preset` (`work`/`both` use the everyday set).
+pub const EVERYDAY_LAUNCHERS: [&str; 7] = [
+    "applications:kyth-welcome.desktop",
+    "applications:kyth-app-store.desktop",
+    "applications:com.brave.Browser.desktop",
+    "applications:org.kde.dolphin.desktop",
+    "applications:org.libreoffice.LibreOffice.desktop",
+    "applications:eu.betterbird.Betterbird.desktop",
+    "applications:org.kde.konsole.desktop",
+];
+
+pub const GAMING_LAUNCHERS: [&str; 7] = [
+    "applications:kyth-welcome.desktop",
+    "applications:kyth-app-store.desktop",
+    "applications:com.valvesoftware.Steam.desktop",
+    "applications:com.brave.Browser.desktop",
+    "applications:dev.vencord.Vesktop.desktop",
+    "applications:org.kde.dolphin.desktop",
+    "applications:org.kde.konsole.desktop",
+];
+
+/// Mirrors the launcher's alias normalization (`work`/`both` → `everyday`);
+/// unknown profiles are `None` (usage + exit 64 upstream).
+pub fn normalize_role_arg(arg: &str) -> Option<&'static str> {
+    match arg {
+        "work" | "both" | "everyday" => Some("everyday"),
+        "gaming" => Some("gaming"),
+        "dev" => Some("dev"),
+        "creator" => Some("creator"),
+        _ => None,
+    }
+}
+
+/// Which layout set a validated profile applies (`dev`/`creator` reuse the
+/// everyday layout, exactly as the Python launcher passed it).
+pub fn role_layout_target(profile: &str) -> &'static str {
+    match profile {
+        "gaming" => "gaming",
+        _ => "everyday",
+    }
+}
+
+pub fn role_launchers(layout: &str) -> Option<&'static [&'static str; 7]> {
+    match layout {
+        "gaming" => Some(&GAMING_LAUNCHERS),
+        "everyday" => Some(&EVERYDAY_LAUNCHERS),
+        _ => None,
+    }
+}
+
+/// Profile stamp written by `apply_role_preset`
+/// (`~/.local/share/kyth/profile`, best-effort upstream).
+pub fn profile_stamp_path(home: impl AsRef<Path>) -> PathBuf {
+    home.as_ref().join(".local/share/kyth/profile")
+}
+
+/// Renders the role-preset Plasma widget-update script, matching the Python
+/// `js_script` f-string shape (double-quoted CSV header, single braces).
+pub fn render_role_script(launchers_csv: &str, tray_csv: &str, hidden_csv: &str) -> String {
+    format!(
+        "var launchers = \"{launchers_csv}\";\nvar trayItems = \"{tray_csv}\";\nvar hiddenTrayItems = \"{hidden_csv}\";\n{ROLE_SCRIPT_TAIL}\n"
+    )
+}
+
+const ROLE_SCRIPT_TAIL: &str = r#"
+function writeConfig(object, groups, values) {
+    try {
+        object.currentConfigGroup = groups;
+        for (var key in values) {
+            object.writeConfig(key, values[key]);
+        }
+        object.reloadConfig();
+    } catch (e) {
+    }
+}
+
+for (var p = 0; p < panelIds.length; ++p) {
+    var panel = panelById(panelIds[p]);
+    if (!panel || !panel.widgets) {
+        continue;
+    }
+    var widgets = panel.widgets();
+    for (var i = 0; i < widgets.length; ++i) {
+        var widget = widgets[i];
+        if (widget.type === "org.kde.plasma.icontasks") {
+            writeConfig(widget, ["General"], {
+                "launchers": launchers,
+                "showOnlyCurrentDesktop": false,
+                "showOnlyCurrentScreen": false,
+                "showOnlyCurrentActivity": false,
+                "groupingStrategy": 1,
+                "maxStripes": 1,
+                "showToolTips": true,
+                "wheelEnabled": "AllTask",
+                "indicateAudioStreams": true,
+                "highlightWindows": true,
+                "middleClickAction": "NewInstance"
+            });
+        } else if (widget.type === "org.kde.plasma.systemtray") {
+            writeConfig(widget, ["General"], {
+                "extraItems": trayItems,
+                "hiddenItems": hiddenTrayItems,
+                "knownItems": trayItems + "," + hiddenTrayItems,
+                "showAllItems": false
+            });
+        } else if (widget.type === "org.kde.plasma.digitalclock") {
+            writeConfig(widget, ["Appearance"], {
+                "showDate": false,
+                "dateFormat": "shortDate",
+                "showSeconds": false
+            });
+        }
+    }
+}"#;
+
 /// Common roots used by the Python launcher discovery helper.
 pub fn default_application_roots(home: impl AsRef<Path>) -> Vec<PathBuf> {
     let home = home.as_ref();
@@ -299,6 +415,30 @@ mod tests {
         // Stamp check runs before the flag check: --initial on a stamped
         // layout still exits 0 unless --force is given.
         assert_eq!(decide_layout(false, true, Some("kyth-comfort-v4"), None), LayoutDecision::AlreadyCurrent);
+    }
+
+    #[test]
+    fn role_arg_normalization_and_layout_target() {
+        assert_eq!(normalize_role_arg("work"), Some("everyday"));
+        assert_eq!(normalize_role_arg("both"), Some("everyday"));
+        assert_eq!(normalize_role_arg("dev"), Some("dev"));
+        assert_eq!(normalize_role_arg("nope"), None);
+        assert_eq!(role_layout_target("dev"), "everyday");
+        assert_eq!(role_layout_target("gaming"), "gaming");
+        assert_eq!(role_launchers("everyday").unwrap().len(), 7);
+        assert!(role_launchers("dev").is_none());
+    }
+
+    #[test]
+    fn role_script_matches_python_template_shape() {
+        let script = render_role_script("A,B", "t1", "h1");
+        // Pinned against the Python js_script f-string output, verified
+        // byte-identical (1774 chars with these CSVs; 2066 with real ones).
+        assert_eq!(script.len(), 1774);
+        assert!(script.starts_with("var launchers = \"A,B\";\nvar trayItems = \"t1\";\nvar hiddenTrayItems = \"h1\";\n\nfunction writeConfig"));
+        assert!(script.ends_with("    }\n}\n"));
+        assert!(!script.contains("{{") && !script.contains("}}"));
+        assert!(script.contains("panelById(panelIds[p])"));
     }
 
     #[test]

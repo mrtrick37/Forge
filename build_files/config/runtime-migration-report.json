@@ -2,15 +2,6 @@
   "active_python": [
     {
       "migration_priority": 2,
-      "name": "kyth-apply-role-preset",
-      "owner": "fixture::build_files/kyth-apply-role-preset",
-      "path": "build_files/kyth-apply-role-preset",
-      "runtime_authority": "python-runtime",
-      "runtime_scope": "user-session",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "kyth-apply-scaling",
       "owner": "fixture::build_files/kyth-apply-scaling",
       "path": "build_files/kyth-apply-scaling",
@@ -3060,7 +3051,7 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-runtime": 31,
+      "python-runtime": 30,
       "python-shared-package": 163,
       "rust-dispatcher": 16,
       "rust-service": 11,
@@ -3070,15 +3061,15 @@
       "installer": 1,
       "standalone": 163,
       "system-service": 35,
-      "user-session": 192
+      "user-session": 191
     },
-    "active_entries": 391,
-    "active_python_entries": 194,
-    "entries": 644,
+    "active_entries": 390,
+    "active_python_entries": 193,
+    "entries": 643,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 120,
-      "queued": 271
+      "queued": 270
     },
     "superseded_entries": 92
   },

@@ -140,6 +140,7 @@ class PythonPackagingTests(unittest.TestCase):
             "kyth-apply-plasma",
             "kyth-apply-quicksettings",
             "kyth-apply-rgb",
+            "kyth-apply-role-preset",
         )
         for entry_point in entry_points:
             with self.subTest(entry_point=entry_point):
