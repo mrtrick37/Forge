@@ -59,6 +59,8 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     cargo build --release --locked && \
     cp target/release/kyth-hub-shell /build/kyth-hub-shell && \
     (cd /build/kyth-shared-rs && cargo build --release --locked --features telemetry-writer --bin kyth-runtime --bin kyth-ai-dev --bin kyth-probe --bin kyth-guardian --bin kyth-update-watcher --bin kyth-network-share --bin kyth-telem --bin kyth-privileged --bin kyth-post-update-check --bin kyth-firstboot-app-status --bin kyth-steam-game-export --bin kyth-hub-desktop-entries --bin kyth-safe-upgrade --bin kyth-bootc-guard --bin kyth-finalize-staged --bin kyth-btrfs-maint --bin kyth-ai-perfd --bin kyth-perf-gate-rs --bin kyth-doctor --bin kyth-health-check --bin kyth-smoke-check --bin kyth-resume-check --bin kyth-nvidia-status --bin kyth-controller-check --bin kyth-creator-check --bin kyth-exe-compat --bin kyth-snapshot-timeline --bin kyth-print-check --bin kyth-windows-verify --bin kyth-vm-acceptance-guest --bin kyth-tunable --bin kyth-tunable-rs --bin kyth-game-boost --bin kyth-configure-session --bin kyth-set-resolution --bin kyth-set-kickoff-icon --bin kyth-greeter-compositor --bin kyth-config-apply --bin kyth-apply-scx-preset --bin kyth-apply-explorer --bin kyth-apply-desktop-layout --bin kyth-apply-display-hdr --bin kyth-apply-input --bin kyth-apply-network --bin kyth-apply-pipewire-latency --bin kyth-apply-plasma --bin kyth-apply-quicksettings --bin kyth-apply-rgb --bin kyth-apply-role-preset --bin kyth-apply-scaling --bin kyth-apply-tailscale --bin kyth-apply-vrr --bin kyth-apply-window-snap --bin kyth-driver-switch --bin kyth-kali-desktop-fixup --bin kyth-ntfs-repair --bin kyth-performance-mode --bin kyth-refresh-boot-splash-initramfs --bin kyth-refresh-taskbar-pins --bin kyth-report-issue --bin kyth-session-snapshot --bin kyth-setup-devcontainer --bin kyth-setup-transfer --bin kyth-vscode-wallet --bin kyth-web-app-categorize --bin kyth-storage-sense --bin kyth-duperemove --bin kyth-batteryd --bin kyth-cloud-mount --bin kyth-save-sync --bin kyth-backup --bin kyth-game-launch --bin kyth-dynamic-lock --bin kyth-proton-cachyos-update --bin kyth-rclone-update --bin kyth-sched --bin kyth-user-polish --bin kyth-exe-handler) && \
+    (cd /build/kyth-shared-rs && cargo build --release --locked --bin kyth-boot-health) && \
+    cp /build/kyth-shared-rs/target/release/kyth-boot-health /build/kyth-boot-health && \
     cp /build/kyth-shared-rs/target/release/kyth-runtime /build/kyth-runtime && \
     cp /build/kyth-shared-rs/target/release/kyth-probe /build/kyth-probe && \
     cp /build/kyth-shared-rs/target/release/kyth-guardian /build/kyth-guardian && \
@@ -284,6 +286,7 @@ COPY --from=hub-web-builder --chmod=0755 /build/kyth-sched /usr/bin/kyth-sched
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-user-polish /usr/bin/kyth-user-polish
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-exe-handler /usr/bin/kyth-exe-handler
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-ai-dev /usr/bin/kyth-ai-dev
+COPY --from=hub-web-builder --chmod=0755 /build/kyth-boot-health /usr/bin/kyth-boot-health
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-tunable-rs /usr/bin/kyth-tunable-rs
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-game-boost /usr/bin/kyth-game-boost
 ARG SYSCONFIG_HASH=unset

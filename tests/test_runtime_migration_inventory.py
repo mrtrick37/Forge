@@ -159,7 +159,7 @@ class InventoryTest(unittest.TestCase):
 
         # The surviving Python console scripts are roots; their transitive
         # imports remain active until a native entry point replaces them.
-        for module in ("boot_health", "hardware_policy", "qualification"):
+        for module in ("hardware_policy", "qualification"):
             path = f"src/kyth_shared/kyth_shared/{module}.py"
             self.assertIn(f"kyth_shared.{module}", reachable)
             self.assertTrue(by_path[path]["runtime_active"], path)
@@ -173,6 +173,12 @@ class InventoryTest(unittest.TestCase):
         self.assertFalse(ai_dev["runtime_active"])
         self.assertEqual(ai_dev["superseded_by"], "native::kyth-ai-dev")
         self.assertEqual(ai_dev["status"], "explicitly-not-ported")
+
+        boot_health = by_path["src/kyth_shared/kyth_shared/boot_health.py"]
+        self.assertNotIn("kyth_shared.boot_health", reachable)
+        self.assertFalse(boot_health["runtime_active"])
+        self.assertEqual(boot_health["superseded_by"], "native::kyth-boot-health")
+        self.assertEqual(boot_health["status"], "explicitly-not-ported")
 
         # This source file is present in the installed compatibility package,
         # but no supported launcher or harness reaches it after the native
@@ -211,6 +217,7 @@ class InventoryTest(unittest.TestCase):
         checker = load_checker()
         roots = checker._python_console_roots()
         self.assertNotIn("kyth_shared.ai_dev", roots)
+        self.assertNotIn("kyth_shared.boot_health", roots)
         self.assertNotIn("kyth_shared.guardian", roots)
         item = next(
             item for item in load_inventory()["entries"]

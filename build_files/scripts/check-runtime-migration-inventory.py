@@ -67,6 +67,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-tunable-rs", "kyth-game-boost", "kyth
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-scx-loader"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-runtime"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-ai-dev"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-boot-health"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-desktop-layout"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-display-hdr"}
@@ -164,6 +165,7 @@ NATIVE_RECIPE_FILES = {"native.just"}
 TUNABLE_SUPERSEDED_BY = "native::kyth-tunable-rs"
 NATIVE_REPLACED_MODULES = {
     "ai_dev": "native::kyth-ai-dev",
+    "boot_health": "native::kyth-boot-health",
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
     "apps": "native::kyth-exe-handler",

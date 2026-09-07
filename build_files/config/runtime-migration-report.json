@@ -20,27 +20,9 @@
     },
     {
       "migration_priority": 2,
-      "name": "atomic",
-      "owner": "fixture::src/kyth_shared/kyth_shared/atomic.py",
-      "path": "src/kyth_shared/kyth_shared/atomic.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "atomic_io",
       "owner": "fixture::src/kyth_shared/kyth_shared/atomic_io.py",
       "path": "src/kyth_shared/kyth_shared/atomic_io.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "boot_health",
-      "owner": "fixture::src/kyth_shared/kyth_shared/boot_health.py",
-      "path": "src/kyth_shared/kyth_shared/boot_health.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -290,15 +272,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "boot_runtime",
-      "owner": "fixture::src/kyth_shared/kyth_shared/system/boot_runtime.py",
-      "path": "src/kyth_shared/kyth_shared/system/boot_runtime.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "bootc",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/bootc.py",
       "path": "src/kyth_shared/kyth_shared/system/bootc.py",
@@ -383,24 +356,6 @@
       "name": "telemetry",
       "owner": "fixture::src/kyth_shared/kyth_shared/telemetry.py",
       "path": "src/kyth_shared/kyth_shared/telemetry.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "update_coordinator",
-      "owner": "fixture::src/kyth_shared/kyth_shared/update_coordinator.py",
-      "path": "src/kyth_shared/kyth_shared/update_coordinator.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "wayland_compose",
-      "owner": "fixture::src/kyth_shared/kyth_shared/wayland_compose.py",
-      "path": "src/kyth_shared/kyth_shared/wayland_compose.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -1781,6 +1736,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "atomic",
+      "owner": "fixture::src/kyth_shared/kyth_shared/atomic.py",
+      "path": "src/kyth_shared/kyth_shared/atomic.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "attest",
       "owner": "fixture::src/kyth_shared/kyth_shared/attest.py",
       "path": "src/kyth_shared/kyth_shared/attest.py",
@@ -2438,6 +2402,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "boot_runtime",
+      "owner": "fixture::src/kyth_shared/kyth_shared/system/boot_runtime.py",
+      "path": "src/kyth_shared/kyth_shared/system/boot_runtime.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "btrfs_status",
       "owner": "fixture::src/kyth_shared/kyth_shared/system/btrfs_status.py",
       "path": "src/kyth_shared/kyth_shared/system/btrfs_status.py",
@@ -2672,6 +2645,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "update_coordinator",
+      "owner": "fixture::src/kyth_shared/kyth_shared/update_coordinator.py",
+      "path": "src/kyth_shared/kyth_shared/update_coordinator.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "update_status",
       "owner": "fixture::src/kyth_shared/kyth_shared/update_status.py",
       "path": "src/kyth_shared/kyth_shared/update_status.py",
@@ -2708,6 +2690,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "wayland_compose",
+      "owner": "fixture::src/kyth_shared/kyth_shared/wayland_compose.py",
+      "path": "src/kyth_shared/kyth_shared/wayland_compose.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "window_snap",
       "owner": "fixture::src/kyth_shared/kyth_shared/window_snap.py",
       "path": "src/kyth_shared/kyth_shared/window_snap.py",
@@ -2736,26 +2727,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 45,
+      "python-shared-package": 40,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 45,
+      "standalone": 40,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 230,
-    "active_python_entries": 45,
+    "active_entries": 225,
+    "active_python_entries": 40,
     "entries": 859,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 45
+      "queued": 40
     },
-    "superseded_entries": 99
+    "superseded_entries": 100
   },
   "superseded": [
     {
@@ -2797,6 +2788,16 @@
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported",
       "superseded_by": "native::kyth-exe-handler"
+    },
+    {
+      "migration_priority": 3,
+      "name": "boot_health",
+      "owner": "native::kyth-boot-health",
+      "path": "src/kyth_shared/kyth_shared/boot_health.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-boot-health"
     },
     {
       "migration_priority": 3,

@@ -14,7 +14,7 @@ Hub**.
 This revision expands the plan to include the runtime-relevant
 `shell-orchestration` surface. After the Phase 6 inventory pass, the generated
 inventory contains 104 active shell entries, all backed by native
-implementations or the Rust runtime dispatcher, and 45 queued Python package
+implementations or the Rust runtime dispatcher, and 40 queued Python package
 modules. The Python queue is now a reachability-derived set: it includes only
 modules reached from surviving Python console entry points, direct build/
 acceptance harnesses, or documented dynamic-dispatch tables. Unreachable
@@ -445,7 +445,7 @@ rollback/parity material until the approved observation window closes.
 
 ## Item 1 — Reachable shared-package modules
 
-**Status: in progress (1/46 complete).** This is the remaining Python half of
+**Status: in progress (2/46 complete).** This is the remaining Python half of
 the Rust migration. The reachability audit limits the work to modules that
 are still called by a supported console entry point, shell/build harness, or
 documented dynamic catalog. Each cutover must own the complete behavior,
@@ -455,7 +455,10 @@ rollback—not just read-only planning.
 - [x] ai_dev — packaged kyth-ai-dev owns setup, status, enter, start, stop,
   model pull, provisioning, and destructive Distrobox removal. The Python
   module remains an inactive parity/rollback fixture.
-- [ ] boot_health and its reachable persistence/recovery dependencies.
+- [x] boot_health — packaged kyth-boot-health owns schema-1 state persistence,
+  quarantine transitions, required checks, rollback execution, retry, and
+  quarantine clearing. The Python module remains an inactive parity/rollback
+  fixture.
 - [ ] hardware_policy and its dynamic hardware-quirk apply path.
 - [ ] qualification and the acceptance/report execution path.
 - [ ] memory_tune, sysctl_compose, perf_gate, network_preset,

@@ -44,25 +44,25 @@ Phase 0 reclassification (2026-09-07, inventory schema 4):
 
 | Metric | Before | After |
 | --- | --- | --- |
-| Active entries | 499 | 230 |
-| Active Python entries | 294 | 45 |
-| `python-shared-package` active | 255 | 45 (reachability-derived) |
+| Active entries | 499 | 225 |
+| Active Python entries | 294 | 40 |
+| `python-shared-package` active | 255 | 40 (reachability-derived) |
 | `python-runtime` active | 39 | 0 (all installed launcher entries are native) |
 | `data-or-config` active | 8 | 0 (terminal `not-applicable`) |
-| Superseded entries | n/a | 99 (native rollback fixtures) |
+| Superseded entries | n/a | 100 (native rollback fixtures) |
 | `p0_open_entries` | 0 | 0 |
 
 Reachability audit: the checker now computes a transitive AST import closure
-from the three surviving Python console-script roots (`boot_health`,
-`hardware_policy`, and `qualification`), scans direct `build_files/scripts`
+from the two surviving Python console-script roots (`hardware_policy`,
+and `qualification`), scans direct `build_files/scripts`
 imports, preserves explicit shell-harness channels, and expands the
-documented `hardware_quirks` importlib catalog. The resulting 45 active
+documented `hardware_quirks` importlib catalog. The resulting 40 active
 package modules remain queued; 111 unreachable shared-package modules are
 classified as source-only compatibility fixtures. The first reachable module,
 `ai_dev`, is now owned by the packaged `kyth-ai-dev` Rust binary; its Python
 source is retained as an inactive rollback/parity fixture. All 94 tunable
 registry aliases remain verified against `tunable_registry.rs` with 0 missing,
-and the 99 native rollback fixtures remain inactive.
+and the 100 native rollback fixtures remain inactive.
 
 User-polish cutover (2026-09-07, after the 38-port baseline):
 
@@ -101,8 +101,8 @@ Reachability closure (2026-09-07):
 | Metric | Result |
 | --- | ---: |
 | Inventory entries | 859 |
-| Active entries | 230 |
-| Active Python package entries | 45 |
+| Active entries | 225 |
+| Active Python package entries | 40 |
 | Unreachable shared-package fixtures | 111 |
 | Active shell entries | 104 |
 | Open priority-0 entries | 0 |
@@ -111,15 +111,20 @@ Reachable-package cutover (2026-09-07):
 
 | Metric | Before | After |
 | --- | ---: | ---: |
-| Active Python package entries | 46 | 45 |
-| Native shared-package owners | 0 | 1 (`kyth-ai-dev`) |
-| Superseded native rollback fixtures | 98 | 99 |
+| Active Python package entries | 45 | 40 |
+| Native shared-package owners | 1 | 2 (`kyth-ai-dev`, `kyth-boot-health`) |
+| Superseded native rollback fixtures | 99 | 100 |
 
 `kyth-ai-dev` now owns setup, status, enter, start, stop, model pull, and
 destructive box removal. Its Rust controller retains bounded execution,
 validated model input, GPU-aware creation flags, atomic host-volume policy,
 and redacted child output; the Python module remains only for parity and
 rollback qualification.
+
+`kyth-boot-health` now owns schema-1 persistence, required boot checks,
+quarantine transitions, destructive bootc rollback, rollback retry, and
+explicit quarantine clearing. Its Python implementation remains only for
+parity and rollback qualification.
 
 The package is still installed for compatibility and rollback tooling, but a
 package path alone is no longer evidence of runtime authority. The checked-in
