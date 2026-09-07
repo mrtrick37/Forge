@@ -36,7 +36,7 @@ Rust-ownership requirement explicit for non-Hub shell callers as well.
 
 ## Why this plan exists, and why it is not "port every package file"
 
-`build_files/config/runtime-migration-report.json` now lists 28 active Python
+`build_files/config/runtime-migration-report.json` now lists 23 active Python
 package entries. Before the reachability pass, all 157 non-superseded
 `src/kyth_shared/kyth_shared/*.py` files were stamped active by a single
 blanket rule in `check-runtime-migration-inventory.py`:
@@ -220,8 +220,8 @@ runtime behavior must have a Rust owner.
   terminal compatibility fixtures rather than queued runtime work.
 - [x] Add regression coverage for surviving Python entry points, direct
   shell/build harnesses, and the native hardware-policy boundary. The
-  checked-in inventory/report now show 28 active Python package entries (down
-  from 157 non-superseded package files) and 121 unreachable shared-package
+  checked-in inventory/report now show 23 active Python package entries (down
+  from 157 non-superseded package files) and 126 unreachable shared-package
   fixtures.
 - [x] Same defect, different file: `tests/test_kyth_doctor_native.py` used
   bare `def test_*():` module-level functions, not `unittest.TestCase`
@@ -447,7 +447,7 @@ rollback/parity material until the approved observation window closes.
 
 ## Item 1 — Reachable shared-package modules
 
-**Status: in progress (3/46 complete).** This is the remaining Python half of
+**Status: in progress (4/46 complete).** This is the remaining Python half of
 the Rust migration. The reachability audit limits the work to modules that
 are still called by a supported console entry point, shell/build harness, or
 documented dynamic catalog. Each cutover must own the complete behavior,
@@ -467,7 +467,11 @@ rollback—not just read-only planning.
   transitions, state/report persistence, and failure semantics. The Python
   policy and per-quirk modules remain inactive parity fixtures; probe callers
   consume the native status JSON boundary.
-- [ ] qualification and the acceptance/report execution path.
+- [x] qualification and the acceptance/report execution path — packaged
+  `kyth-qualify` owns sentinel parsing, acceptance reports, markdown/JSON
+  persistence, and regression-budget gates. `vm-acceptance.sh` invokes the
+  native binary; the Python implementation remains an inactive parity/rollback
+  fixture.
 - [ ] memory_tune, sysctl_compose, perf_gate, network_preset,
   snapshot_timeline, sched_arbiter, gaming_resolve, containers, repos,
   telemetry, and the remaining reachable support modules.

@@ -68,7 +68,7 @@ NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-scx-loader"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-runtime"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-ai-dev"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-boot-health"}
-NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-hardware-policy"}
+NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-hardware-policy", "kyth-qualify"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-scx-preset"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-desktop-layout"}
 NATIVE_BINARIES = NATIVE_BINARIES | {"kyth-apply-display-hdr"}
@@ -168,6 +168,7 @@ NATIVE_REPLACED_MODULES = {
     "ai_dev": "native::kyth-ai-dev",
     "boot_health": "native::kyth-boot-health",
     "hardware_policy": "native::kyth-hardware-policy",
+    "qualification": "native::kyth-qualify",
     "user_polish": "native::kyth-user-polish",
     "user_polish_flatpak": "native::kyth-user-polish",
     "apps": "native::kyth-exe-handler",
@@ -202,7 +203,7 @@ SUPERSEDED_TUNABLE_MODULES = frozenset({
 # from shell (build_files/scripts/*.sh, check-*.py) rather than any launcher.
 # These must never be marked superseded, even if a dispatch table names them.
 SHELL_HARNESS_MODULES = frozenset({
-    "qualification", "memory_tune", "sysctl_compose", "network_preset",
+    "memory_tune", "sysctl_compose", "network_preset",
     "snapshot_timeline", "gaming_resolve", "perf_gate",
     "sched_arbiter",
 })

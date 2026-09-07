@@ -63,6 +63,8 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     cp /build/kyth-shared-rs/target/release/kyth-boot-health /build/kyth-boot-health && \
     (cd /build/kyth-shared-rs && cargo build --release --locked --bin kyth-hardware-policy) && \
     cp /build/kyth-shared-rs/target/release/kyth-hardware-policy /build/kyth-hardware-policy && \
+    (cd /build/kyth-shared-rs && cargo build --release --locked --bin kyth-qualify) && \
+    cp /build/kyth-shared-rs/target/release/kyth-qualify /build/kyth-qualify && \
     cp /build/kyth-shared-rs/target/release/kyth-runtime /build/kyth-runtime && \
     cp /build/kyth-shared-rs/target/release/kyth-probe /build/kyth-probe && \
     cp /build/kyth-shared-rs/target/release/kyth-guardian /build/kyth-guardian && \
@@ -290,6 +292,7 @@ COPY --from=hub-web-builder --chmod=0755 /build/kyth-exe-handler /usr/bin/kyth-e
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-ai-dev /usr/bin/kyth-ai-dev
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-boot-health /usr/bin/kyth-boot-health
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-hardware-policy /usr/bin/kyth-hardware-policy
+COPY --from=hub-web-builder --chmod=0755 /build/kyth-qualify /usr/bin/kyth-qualify
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-tunable-rs /usr/bin/kyth-tunable-rs
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-game-boost /usr/bin/kyth-game-boost
 ARG SYSCONFIG_HASH=unset

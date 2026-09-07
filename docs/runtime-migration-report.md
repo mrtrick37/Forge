@@ -57,7 +57,7 @@ from the surviving Python console-script root (`qualification`), scans direct
 `build_files/scripts` imports, and preserves explicit shell-harness channels.
 The native `kyth-hardware-policy` boundary owns the former hardware-policy and
 hardware-quirk catalog paths, so those Python files are no longer reachability
-roots. The resulting 28 active package modules remain queued; 121 unreachable
+roots. The resulting 23 active package modules remain queued; 126 unreachable
 shared-package modules are classified as source-only compatibility fixtures.
 The first reachable module,
 `ai_dev`, is now owned by the packaged `kyth-ai-dev` Rust binary; its Python
@@ -112,9 +112,9 @@ Reachable-package cutover (2026-09-07):
 
 | Metric | Before | After |
 | --- | ---: | ---: |
-| Active Python package entries | 45 | 28 |
-| Native shared-package owners | 2 | 3 (`kyth-ai-dev`, `kyth-boot-health`, `kyth-hardware-policy`) |
-| Superseded native rollback fixtures | 99 | 101 |
+| Active Python package entries | 45 | 23 |
+| Native shared-package owners | 3 | 4 (`kyth-ai-dev`, `kyth-boot-health`, `kyth-hardware-policy`, `kyth-qualify`) |
+| Superseded native rollback fixtures | 99 | 102 |
 
 `kyth-ai-dev` now owns setup, status, enter, start, stop, model pull, and
 destructive box removal. Its Rust controller retains bounded execution,
@@ -133,6 +133,11 @@ NVIDIA akmods/kernel transitions, atomic state/report persistence, and failure
 semantics. The validation shell harness and remaining Python probe callers use
 the native binary; the Python policy and per-quirk modules remain only as
 parity/rollback fixtures.
+
+`kyth-qualify` now owns VM acceptance sentinel parsing, schema-1 JSON/Markdown
+report persistence, and regression-budget evaluation. `vm-acceptance.sh` uses
+the native CLI with a checkout/build fallback; the Python qualification module
+remains only for parity and rollback qualification.
 
 The package is still installed for compatibility and rollback tooling, but a
 package path alone is no longer evidence of runtime authority. The checked-in

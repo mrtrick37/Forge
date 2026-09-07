@@ -38,15 +38,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "health",
-      "owner": "fixture::src/kyth_shared/kyth_shared/health.py",
-      "path": "src/kyth_shared/kyth_shared/health.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "memory_tune",
       "owner": "fixture::src/kyth_shared/kyth_shared/memory_tune.py",
       "path": "src/kyth_shared/kyth_shared/memory_tune.py",
@@ -74,24 +65,6 @@
     },
     {
       "migration_priority": 2,
-      "name": "performance",
-      "owner": "fixture::src/kyth_shared/kyth_shared/performance.py",
-      "path": "src/kyth_shared/kyth_shared/performance.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "qualification",
-      "owner": "fixture::src/kyth_shared/kyth_shared/qualification.py",
-      "path": "src/kyth_shared/kyth_shared/qualification.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
       "name": "repos",
       "owner": "fixture::src/kyth_shared/kyth_shared/repos.py",
       "path": "src/kyth_shared/kyth_shared/repos.py",
@@ -113,15 +86,6 @@
       "name": "sched_arbiter",
       "owner": "fixture::src/kyth_shared/kyth_shared/sched_arbiter.py",
       "path": "src/kyth_shared/kyth_shared/sched_arbiter.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "smoke_check",
-      "owner": "fixture::src/kyth_shared/kyth_shared/smoke_check.py",
-      "path": "src/kyth_shared/kyth_shared/smoke_check.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -239,15 +203,6 @@
       "name": "system_probe",
       "owner": "fixture::src/kyth_shared/kyth_shared/system_probe.py",
       "path": "src/kyth_shared/kyth_shared/system_probe.py",
-      "runtime_authority": "python-shared-package",
-      "runtime_scope": "standalone",
-      "status": "queued"
-    },
-    {
-      "migration_priority": 2,
-      "name": "telemetry",
-      "owner": "fixture::src/kyth_shared/kyth_shared/telemetry.py",
-      "path": "src/kyth_shared/kyth_shared/telemetry.py",
       "runtime_authority": "python-shared-package",
       "runtime_scope": "standalone",
       "status": "queued"
@@ -2078,6 +2033,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "health",
+      "owner": "fixture::src/kyth_shared/kyth_shared/health.py",
+      "path": "src/kyth_shared/kyth_shared/health.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "input_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/input_preset.py",
       "path": "src/kyth_shared/kyth_shared/input_preset.py",
@@ -2144,6 +2108,15 @@
       "name": "perf_transaction",
       "owner": "fixture::src/kyth_shared/kyth_shared/perf_transaction.py",
       "path": "src/kyth_shared/kyth_shared/perf_transaction.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "performance",
+      "owner": "fixture::src/kyth_shared/kyth_shared/performance.py",
+      "path": "src/kyth_shared/kyth_shared/performance.py",
       "runtime_authority": "source-only",
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported"
@@ -2378,6 +2351,15 @@
       "name": "signing_preset",
       "owner": "fixture::src/kyth_shared/kyth_shared/signing_preset.py",
       "path": "src/kyth_shared/kyth_shared/signing_preset.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
+      "name": "smoke_check",
+      "owner": "fixture::src/kyth_shared/kyth_shared/smoke_check.py",
+      "path": "src/kyth_shared/kyth_shared/smoke_check.py",
       "runtime_authority": "source-only",
       "runtime_scope": "test-fixture",
       "status": "explicitly-not-ported"
@@ -2636,6 +2618,15 @@
     },
     {
       "migration_priority": 3,
+      "name": "telemetry",
+      "owner": "fixture::src/kyth_shared/kyth_shared/telemetry.py",
+      "path": "src/kyth_shared/kyth_shared/telemetry.py",
+      "runtime_authority": "source-only",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported"
+    },
+    {
+      "migration_priority": 3,
       "name": "thirdparty",
       "owner": "fixture::src/kyth_shared/kyth_shared/thirdparty.py",
       "path": "src/kyth_shared/kyth_shared/thirdparty.py",
@@ -2727,26 +2718,26 @@
   ],
   "summary": {
     "active_by_authority": {
-      "python-shared-package": 28,
+      "python-shared-package": 23,
       "rust-dispatcher": 52,
       "rust-service": 29,
       "shell-orchestration": 104
     },
     "active_by_scope": {
       "installer": 1,
-      "standalone": 28,
+      "standalone": 23,
       "system-service": 38,
       "user-session": 146
     },
-    "active_entries": 213,
-    "active_python_entries": 28,
+    "active_entries": 208,
+    "active_python_entries": 23,
     "entries": 860,
     "p0_open_entries": 0,
     "status_by_active_entry": {
       "done-native": 185,
-      "queued": 28
+      "queued": 23
     },
-    "superseded_entries": 101
+    "superseded_entries": 102
   },
   "superseded": [
     {
@@ -3298,6 +3289,16 @@
       "runtime_scope": "standalone",
       "status": "queued",
       "superseded_by": "native::kyth-tunable-rs"
+    },
+    {
+      "migration_priority": 3,
+      "name": "qualification",
+      "owner": "native::kyth-qualify",
+      "path": "src/kyth_shared/kyth_shared/qualification.py",
+      "runtime_authority": "python-shared-package",
+      "runtime_scope": "test-fixture",
+      "status": "explicitly-not-ported",
+      "superseded_by": "native::kyth-qualify"
     },
     {
       "migration_priority": 3,

@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(git -C "${SCRIPT_DIR}/../.." rev-parse --show-toplevel)"
 
 usage() {
 	cat <<'EOF'
@@ -236,6 +237,14 @@ QUALIFICATION_ARGS=(
 if [[ -n "${UPDATE_REF}" ]]; then
 	QUALIFICATION_ARGS+=(--update-required)
 fi
-PYTHONPATH="${SCRIPT_DIR}/../kyth_shared${PYTHONPATH:+:${PYTHONPATH}}" \
-	python3 -m kyth_shared.qualification "${QUALIFICATION_ARGS[@]}"
+if [[ -x /usr/bin/kyth-qualify ]]; then
+	qualification_cmd=(/usr/bin/kyth-qualify)
+elif [[ -x "${REPO_ROOT}/src/kyth-shared-rs/target/release/kyth-qualify" ]]; then
+	qualification_cmd=("${REPO_ROOT}/src/kyth-shared-rs/target/release/kyth-qualify")
+elif [[ -x "${REPO_ROOT}/src/kyth-shared-rs/target/debug/kyth-qualify" ]]; then
+	qualification_cmd=("${REPO_ROOT}/src/kyth-shared-rs/target/debug/kyth-qualify")
+else
+	qualification_cmd=(cargo run --quiet --manifest-path "${REPO_ROOT}/src/kyth-shared-rs/Cargo.toml" --bin kyth-qualify --)
+fi
+"${qualification_cmd[@]}" "${QUALIFICATION_ARGS[@]}"
 echo "KythOS VM acceptance passed"

@@ -143,9 +143,9 @@ class InventoryTest(unittest.TestCase):
         entries = load_inventory()["entries"]
         by_name = {item["name"]: item for item in entries if item["surface"] == "python-runtime"}
         # sched_arbiter is imported by build_files/kyth-game-launch; perf_gate
-        # is used by build_files/scripts/check-perf-gate.py; the shell-harness
-        # channel (e.g. qualification.py via vm-acceptance.sh) stays live.
-        for name in ("sched_arbiter", "perf_gate", "qualification", "memory_tune", "sysctl_compose"):
+        # is used by build_files/scripts/check-perf-gate.py; the remaining
+        # shell-harness modules stay live until their native callers land.
+        for name in ("sched_arbiter", "perf_gate", "memory_tune", "sysctl_compose"):
             item = by_name[name]
             self.assertTrue(item["runtime_active"], name)
             self.assertNotIn("superseded_by", item, name)
@@ -157,13 +157,13 @@ class InventoryTest(unittest.TestCase):
         entries = load_inventory()["entries"]
         by_path = {item["path"]: item for item in entries}
 
-        # The surviving Python console scripts are roots; their transitive
-        # imports remain active until a native entry point replaces them.
-        for module in ("qualification",):
-            path = f"src/kyth_shared/kyth_shared/{module}.py"
-            self.assertIn(f"kyth_shared.{module}", reachable)
-            self.assertTrue(by_path[path]["runtime_active"], path)
-            self.assertEqual(by_path[path]["status"], "queued")
+        # Qualification is now owned by the native CLI; its Python source is
+        # retained only as a parity/rollback fixture.
+        qualification = by_path["src/kyth_shared/kyth_shared/qualification.py"]
+        self.assertNotIn("kyth_shared.qualification", reachable)
+        self.assertFalse(qualification["runtime_active"])
+        self.assertEqual(qualification["superseded_by"], "native::kyth-qualify")
+        self.assertEqual(qualification["status"], "explicitly-not-ported")
 
         # ai_dev has a packaged native replacement, so its Python module is a
         # rollback/parity fixture and is intentionally absent from the live
@@ -204,7 +204,7 @@ class InventoryTest(unittest.TestCase):
 
         # These modules are invoked from build/acceptance harnesses rather than
         # from an installed console script.
-        for name in ("memory_tune", "sysctl_compose", "perf_gate", "qualification"):
+        for name in ("memory_tune", "sysctl_compose", "perf_gate"):
             self.assertIn(f"kyth_shared.{name}", reachable, name)
             self.assertTrue(by_name[name]["runtime_active"], name)
 
@@ -225,6 +225,7 @@ class InventoryTest(unittest.TestCase):
         self.assertNotIn("kyth_shared.ai_dev", roots)
         self.assertNotIn("kyth_shared.boot_health", roots)
         self.assertNotIn("kyth_shared.hardware_policy", roots)
+        self.assertNotIn("kyth_shared.qualification", roots)
         self.assertNotIn("kyth_shared.guardian", roots)
         item = next(
             item for item in load_inventory()["entries"]
