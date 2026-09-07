@@ -1,8 +1,9 @@
 # shellcheck shell=bash
 # ── Network preset (DoT + firewalld) ───────────────────────────────────────
-install -m 0755 /ctx/kyth-apply-network /usr/bin/kyth-apply-network
+# kyth-apply-network is the native Rust binary copied from the
+# hub-web-builder stage; no Python launcher remains in the source tree.
 # Apply once at build time so resolved.conf.d exists (offline, no network fetch)
 if command -v kyth-apply-network >/dev/null 2>&1; then
-    python3 -m kyth_shared.network_preset 2>/dev/null || true
+    kyth-apply-network 2>/dev/null || true
 fi
 # firewalld zone already via sysconfig; this drop-in is hash-gated
