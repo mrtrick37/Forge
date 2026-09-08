@@ -209,6 +209,45 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
                 },
             )
 
+    def test_windows_boot_setup_installs_helper_and_sudoers_as_one_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            environment, log = self._environment(Path(directory))
+            result = self._run("setup-boot-windows-steam", [], environment)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            installs = [
+                record
+                for record in self._records(log)
+                if record["command"] == "sudo"
+                and record["args"]
+                and record["args"][0] == "install"
+            ]
+            self.assertEqual(len(installs), 2)
+            self.assertTrue(
+                any("/usr/local/bin/boot-windows" in record["args"] for record in installs)
+            )
+            self.assertTrue(
+                any("/etc/sudoers.d/kyth-boot-windows" in record["args"] for record in installs)
+            )
+
+    def test_rebase_finalizes_only_after_bootc_switch_succeeds(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            environment, log = self._environment(Path(directory))
+            result = self._run("rebase", ["kyth:testing"], environment)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            sudo = [record for record in self._records(log) if record["command"] == "sudo"]
+            self.assertEqual(
+                [Path(record["args"][0]).name for record in sudo],
+                ["bootc", "kyth-finalize-staged"],
+            )
+
+    def test_switch_channel_dry_run_uses_default_stable_channel(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            environment, log = self._environment(Path(directory))
+            result = self._run("switch-channel", ["--dry-run"], environment)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(":latest", result.stdout)
+            self.assertEqual(self._records(log), [])
+
     def test_external_failure_is_returned_to_the_recipe_caller(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             environment, log = self._environment(Path(directory), fake_exit=23)

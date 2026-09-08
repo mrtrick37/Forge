@@ -526,11 +526,22 @@ fn setup_boot_windows_steam(args: &[String]) -> io::Result<ExitCode> {
             io::Error::new(io::ErrorKind::NotFound, "no Windows EFI boot entry found")
         })?;
     let temp = env::temp_dir().join(format!("kyth-boot-windows-{}", std::process::id()));
+    let sudoers_temp = env::temp_dir().join(format!("kyth-boot-windows-sudoers-{}", std::process::id()));
     write_atomic(
         &temp,
-        format!("#!/bin/sh\nexec sudo efibootmgr -n {entry} && sudo systemctl reboot\n").as_bytes(),
+        format!(
+            "#!/bin/sh\nexec sudo /usr/sbin/efibootmgr -n {entry} && sudo /usr/bin/systemctl reboot\n"
+        )
+        .as_bytes(),
     )?;
-    let result = run(
+    write_atomic(
+        &sudoers_temp,
+        format!(
+            "%wheel ALL=(root) NOPASSWD: /usr/sbin/efibootmgr -n {entry}, /usr/bin/systemctl reboot\n"
+        )
+        .as_bytes(),
+    )?;
+    let helper_install = run(
         "sudo",
         &[
             "install".into(),
@@ -538,22 +549,65 @@ fn setup_boot_windows_steam(args: &[String]) -> io::Result<ExitCode> {
             temp.display().to_string(),
             "/usr/local/bin/boot-windows".into(),
         ],
-    )?;
+    );
     let _ = fs::remove_file(&temp);
-    if result == ExitCode::SUCCESS {
-        println!("Installed /usr/local/bin/boot-windows for EFI entry {entry}.");
+    let helper_result = helper_install?;
+    if helper_result != ExitCode::SUCCESS {
+        let _ = fs::remove_file(&sudoers_temp);
+        return Ok(helper_result);
     }
-    Ok(result)
+    let sudoers_install = run(
+        "sudo",
+        &[
+            "install".into(),
+            "-Dm0440".into(),
+            sudoers_temp.display().to_string(),
+            "/etc/sudoers.d/kyth-boot-windows".into(),
+        ],
+    );
+    let _ = fs::remove_file(&sudoers_temp);
+    let sudoers_result = match sudoers_install {
+        Ok(result) => result,
+        Err(error) => {
+            let _ = run(
+                "sudo",
+                &[
+                    "rm".into(),
+                    "-f".into(),
+                    "/usr/local/bin/boot-windows".into(),
+                ],
+            );
+            return Err(error);
+        }
+    };
+    if sudoers_result != ExitCode::SUCCESS {
+        let _ = run(
+            "sudo",
+            &[
+                "rm".into(),
+                "-f".into(),
+                "/usr/local/bin/boot-windows".into(),
+            ],
+        );
+        return Ok(sudoers_result);
+    }
+    println!(
+        "Installed /usr/local/bin/boot-windows and /etc/sudoers.d/kyth-boot-windows for EFI entry {entry}."
+    );
+    Ok(ExitCode::SUCCESS)
 }
 
 fn firmware_update(args: &[String]) -> io::Result<ExitCode> {
     require_args(args, 0, Some(0));
-    let refresh = run("fwupdmgr", &["refresh".into(), "--force".into()])?;
-    if refresh != ExitCode::SUCCESS {
-        return Ok(refresh);
+    match kyth_shared::system::firmware::firmware_update_recipe() {
+        Ok(output) => {
+            if !output.is_empty() {
+                println!("{output}");
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        Err(error) => Err(io::Error::other(error)),
     }
-    let _ = run("fwupdmgr", &["get-updates".into()]);
-    run("fwupdmgr", &["update".into()])
 }
 
 fn launch_lutris(args: &[String], uri: &str) -> io::Result<ExitCode> {
@@ -569,7 +623,11 @@ fn launch_lutris(args: &[String], uri: &str) -> io::Result<ExitCode> {
 
 fn update_channel(args: &[String]) -> io::Result<ExitCode> {
     require_args(args, 0, None);
-    let channel = args.first().map(String::as_str).unwrap_or("stable");
+    let channel = args
+        .iter()
+        .find(|arg| arg.as_str() != "--dry-run")
+        .map(String::as_str)
+        .unwrap_or("stable");
     let dry_run = args.iter().any(|arg| arg == "--dry-run");
     let base = match channel {
         "stable" | "latest" => "latest",
@@ -621,15 +679,21 @@ fn rebase_image(args: &[String]) -> io::Result<ExitCode> {
         ));
     };
     println!("Rebasing to: {reference}");
-    run("sudo", &["bootc".into(), "switch".into(), reference])
+    let switched = run("sudo", &["bootc".into(), "switch".into(), reference])?;
+    if switched != ExitCode::SUCCESS {
+        return Ok(switched);
+    }
+    run(
+        "sudo",
+        &["/usr/bin/kyth-finalize-staged".into()],
+    )
 }
 
 fn switch_kernel(args: &[String]) -> io::Result<ExitCode> {
     require_args(args, 0, Some(1));
     let flavor = args.first().map(String::as_str).unwrap_or("fedora");
-    let suffix = match flavor {
-        "fedora" | "stock" => "",
-        "cachy" | "cachyos" => "-cachy",
+    match flavor {
+        "fedora" | "stock" | "cachy" | "cachyos" => {}
         _ => {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -637,11 +701,16 @@ fn switch_kernel(args: &[String]) -> io::Result<ExitCode> {
             ));
         }
     };
+    let current_branch = kyth_shared::system::bootc_query::image_reference()
+        .and_then(|reference| {
+            kyth_shared::system::bootc_policy::branch_from_ref(Some(&reference))
+        });
+    let target = kyth_shared::system::bootc_policy::image_tag_for_kernel(flavor, current_branch.as_deref());
     run(
         "sudo",
         &[
             "/usr/bin/kyth-bootc-guard".into(),
-            format!("switch-latest{suffix}"),
+            format!("switch-{target}"),
         ],
     )
 }

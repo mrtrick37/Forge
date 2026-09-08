@@ -48,6 +48,35 @@ pub fn run_firmware_update(timeout: u64) -> (bool, String) {
     }
 }
 
+/// Run the interactive `ujust firmware-update` flow through the same bounded
+/// fwupd command definitions used by the update watcher.  The watcher owns
+/// the cross-process lock; this user-triggered route owns no long-lived state
+/// and therefore reports each failure directly to its caller.
+pub fn firmware_update_recipe() -> Result<String, String> {
+    let (refreshed, refresh_output) = run_firmware_refresh(60);
+    if !refreshed {
+        return Err(if refresh_output.is_empty() {
+            "fwupdmgr refresh failed".to_string()
+        } else {
+            refresh_output
+        });
+    }
+    let count = check_firmware_updates(20);
+    if count <= 0 {
+        return Ok("No firmware updates available.".to_string());
+    }
+    let (updated, output) = run_firmware_update(600);
+    if updated {
+        Ok(output)
+    } else {
+        Err(if output.is_empty() {
+            "fwupdmgr update failed".to_string()
+        } else {
+            output
+        })
+    }
+}
+
 /// Refresh metadata, count pending devices, and stage updates while sharing
 /// the same non-blocking lock used by Guardian and the Hub firmware probe.
 /// A lock miss is intentionally a no-op: another owner will finish the batch.
