@@ -675,3 +675,25 @@ and installed behavior.
 - Pure build-time image assembly and declarative metadata are not required to
   become Rust binaries when they contain no runtime policy or execution logic.
   They remain audited inventory entries and must not hide runtime behavior.
+
+## Native recipe ledger
+
+The file-level runtime inventory treats `build_files/just/kyth/native.just` as
+one compatibility surface. The recipe-level companion ledger makes the
+remaining work reviewable without duplicating the manifest by hand:
+
+* [runtime-recipe-migration-inventory.json](../build_files/config/runtime-recipe-migration-inventory.json)
+  records all 202 recipes, manifest line numbers, legacy recipe provenance,
+  route kind, Rust owner, risk tier, and migration priority.
+* [check-runtime-recipe-inventory.py](../build_files/scripts/check-runtime-recipe-inventory.py)
+  derives and validates the ledger from `native.just`, the Rust runtime
+  dispatcher, Cargo binary targets, and the Rust tunable registry. Run it
+  without arguments to detect drift, or with `--generate` after an intentional
+  source change.
+
+The initial ledger identifies 124 recipes with a native route and 78 open
+owner assessments. “Open” means that static source comparison found no
+identifiable Rust owner; it is not by itself a claim that the recipe is
+broken. The 78 entries must receive a Rust owner or an explicit retirement
+decision before their compatibility recipes are removed. This ledger records
+the migration boundary only; it does not implement those ports.
