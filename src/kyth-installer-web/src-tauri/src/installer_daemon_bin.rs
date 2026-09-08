@@ -1,3 +1,4 @@
+mod installer_acceptance;
 mod installer_accounts;
 mod installer_alongside;
 mod installer_assurance;
