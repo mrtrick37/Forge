@@ -12,6 +12,21 @@ behavioral gate below.
 
 ## Exact-image gate
 
+The reproducible entry point is:
+
+```text
+just rust-migration-acceptance \
+  iso=/absolute/path/to/kyth-live-testing.iso \
+  image_ref=ghcr.io/kyth-os/kyth@sha256:<promoted-digest> \
+  artifacts=/absolute/path/to/acceptance-evidence
+```
+
+`build_files/scripts/run-rust-migration-acceptance.sh` records the source
+commit, exact image reference, source-derived ledgers, image metadata, serial
+log, QEMU log, qualification report, and a per-gate status file. It leaves
+the evidence directory in place for review; cleanup is a separate explicit
+step.
+
 Run on a disposable VM or disk using the exact image digest promoted for the
 test channel. Do not use the developer checkout as a substitute.
 
@@ -46,6 +61,11 @@ checkpoint. The window closes only when the owner signs off that no supported
 path still relies on a Python compatibility authority.
 
 ## Cleanup gate
+
+Current source evidence already satisfies the classification portion: the
+runtime report records zero active Python authorities and all 92 tunable
+modules are rollback/parity-only fixtures. Physical deletion of those fixtures
+and stale launch prose remains deferred until the observation window closes.
 
 After the observation window:
 

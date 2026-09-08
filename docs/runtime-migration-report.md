@@ -5,6 +5,15 @@ The source of truth for runtime ownership is the generated
 produced from the generated
 [`runtime-migration-inventory.json`](../build_files/config/runtime-migration-inventory.json).
 
+## Current authoritative summary (2026-09-08)
+
+The checked-in report currently contains 861 discovered entries: 185 active
+entries, 0 active Python entries, 137 superseded source/rollback fixtures, and
+0 priority-0 open entries. Active ownership is 52 Rust dispatchers, 29 Rust
+services, and 104 shell-orchestration entry points whose policy executors are
+native Rust. The historical migration snapshots below are retained as dated
+history and must not be read as the current state.
+
 The report distinguishes source implementation from installed runtime
 authority. In particular, a Python file can be one of three different things:
 

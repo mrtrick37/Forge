@@ -81,6 +81,9 @@ class InventoryTest(unittest.TestCase):
         # installer authority is active.
         self.assertEqual(report["summary"]["p0_open_entries"], 0)
         self.assertEqual(report["p0_open"], [])
+        self.assertEqual(report["summary"]["active_entries"], 185)
+        self.assertEqual(report["summary"]["active_python_entries"], 0)
+        self.assertEqual(report["summary"]["superseded_entries"], 137)
         self.assertFalse(
             [item for item in report["active_python"] if item["runtime_authority"] == "python-installer"]
         )

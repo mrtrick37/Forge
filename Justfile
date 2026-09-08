@@ -228,6 +228,11 @@ prune-live-dev:
 clean-vm-acceptance:
     build_files/scripts/cleanup-vm-acceptance.sh
 
+# Run the exact-image Rust migration install/update/rollback evidence flow.
+# The image ref must be pinned to the promoted testing image under review.
+rust-migration-acceptance iso image_ref artifacts="/tmp/kyth-rust-migration-acceptance":
+    build_files/scripts/run-rust-migration-acceptance.sh --iso "{{ iso }}" --image-ref "{{ image_ref }}" --artifacts "{{ artifacts }}"
+
 # Full local cleanup: build temps + stale outputs + Docker cache.
 [group('Utility')]
 clean-all: clean clean-output clean-docker
