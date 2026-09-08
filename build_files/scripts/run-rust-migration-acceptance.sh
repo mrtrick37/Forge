@@ -92,11 +92,12 @@ else
 fi
 ARTIFACTS="$(realpath "${ARTIFACTS}")"
 mkdir -p "${ARTIFACTS}/vm"
+SOURCE_COMMIT="$(git -C "${REPO_ROOT}" rev-parse HEAD)"
 
 {
     printf 'schema_version=1\n'
     printf 'started_at_utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    printf 'source_commit=%s\n' "$(git -C "${REPO_ROOT}" rev-parse HEAD)"
+    printf 'source_commit=%s\n' "${SOURCE_COMMIT}"
     printf 'image_ref=%s\n' "${IMAGE_REF}"
     printf 'iso=%s\n' "$(realpath "${ISO}")"
     printf 'artifacts=%s\n' "${ARTIFACTS}"
@@ -114,6 +115,26 @@ elif command -v podman >/dev/null 2>&1; then
 else
     echo "No skopeo or podman available for image metadata; VM run may still proceed." \
         >"${ARTIFACTS}/image-metadata-unavailable.txt"
+fi
+
+if [[ -s "${ARTIFACTS}/image-metadata.json" ]]; then
+    python3 - "${ARTIFACTS}/image-metadata.json" "${SOURCE_COMMIT}" <<'PY'
+import json
+import sys
+
+path, expected = sys.argv[1:]
+with open(path, encoding="utf-8") as handle:
+    metadata = json.load(handle)
+if isinstance(metadata, list):
+    metadata = metadata[0] if metadata else {}
+labels = metadata.get("Labels") or metadata.get("Config", {}).get("Labels", {})
+actual = labels.get("org.opencontainers.image.revision", "")
+if actual != expected:
+    raise SystemExit(
+        f"image revision mismatch: expected {expected}, got {actual or '<missing>'}"
+    )
+print(f"verified image revision {actual}")
+PY
 fi
 
 VM_ARGS=(
