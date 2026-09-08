@@ -57,7 +57,10 @@ pub fn dns_ip(preset: &NetworkPreset) -> &'static str {
 }
 
 pub fn render_resolved_conf(preset: &NetworkPreset) -> String {
-    format!("[Resolve]\nDNS={}\nDNSOverTLS={}\n", dns_ip(preset), if preset.doh { "yes" } else { "no" })
+    // Corporate DHCP DNS servers commonly do not expose DNS-over-TLS.  Use
+    // resolved's opportunistic mode so encrypted DNS remains preferred when
+    // available without breaking per-link enterprise resolvers.
+    format!("[Resolve]\nDNS={}\nDNSOverTLS={}\n", dns_ip(preset), if preset.doh { "opportunistic" } else { "no" })
 }
 
 /// Writes the drop-in under `root` with backup/rollback, exactly as the
@@ -106,7 +109,7 @@ mod tests {
     #[test]
     fn renders_resolved_conf_like_python_launcher() {
         let preset = NetworkPreset::default();
-        assert_eq!(render_resolved_conf(&preset), "[Resolve]\nDNS=9.9.9.9\nDNSOverTLS=yes\n");
+        assert_eq!(render_resolved_conf(&preset), "[Resolve]\nDNS=9.9.9.9\nDNSOverTLS=opportunistic\n");
         let off = NetworkPreset { dns: "off".into(), doh: false, firewall_zone: "public".into() };
         assert_eq!(render_resolved_conf(&off), "[Resolve]\nDNS=\nDNSOverTLS=no\n");
     }
@@ -117,6 +120,6 @@ mod tests {
         let preset = NetworkPreset::default();
         let written = apply_preset(&preset, dir.path()).unwrap();
         assert_eq!(written.len(), 1);
-        assert_eq!(std::fs::read_to_string(&written[0]).unwrap(), "[Resolve]\nDNS=9.9.9.9\nDNSOverTLS=yes\n");
+        assert_eq!(std::fs::read_to_string(&written[0]).unwrap(), "[Resolve]\nDNS=9.9.9.9\nDNSOverTLS=opportunistic\n");
     }
 }

@@ -50,7 +50,7 @@ pub fn load_network(path: impl AsRef<Path>) -> NetworkConfig {
 }
 pub fn save_network(path: impl AsRef<Path>, config: &NetworkConfig) -> std::io::Result<()> { crate::atomic_io::atomic_write_text(path, &format!("# Kyth network preset — DoT + firewalld, offline\ndns = {}\ndoh = {}\nfirewall_zone = {}\n", quote(&config.dns), config.doh, quote(&config.firewall_zone)), Some(0o600)) }
 pub fn dns_server(config: &NetworkConfig) -> &'static str { match config.dns.as_str() { "cloudflare" => "1.1.1.1", "google" => "8.8.8.8", "off" => "", _ => "9.9.9.9" } }
-pub fn resolved_dropin(config: &NetworkConfig) -> String { format!("[Resolve]\nDNS={}\nDNSOverTLS={}\n", dns_server(config), if config.doh { "yes" } else { "no" }) }
+pub fn resolved_dropin(config: &NetworkConfig) -> String { format!("[Resolve]\nDNS={}\nDNSOverTLS={}\n", dns_server(config), if config.doh { "opportunistic" } else { "no" }) }
 
 #[cfg(test)]
 mod tests {
@@ -77,5 +77,6 @@ mod tests {
         let config = load_network(&path);
         assert_eq!(dns_server(&config), "1.1.1.1");
         assert!(resolved_dropin(&config).contains("DNSOverTLS=no"));
+        assert!(resolved_dropin(&NetworkConfig::default()).contains("DNSOverTLS=opportunistic"));
     }
 }

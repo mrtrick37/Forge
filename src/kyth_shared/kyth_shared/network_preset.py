@@ -53,7 +53,10 @@ def apply_network_preset(cfg: dict[str, Any] | None = None, root: Path = Path("/
     if cfg is None:
         cfg=load_network_preset()
     written=[]
-    doh = "yes" if cfg.get("doh") else "no"
+    # Corporate DHCP DNS servers commonly do not expose DNS-over-TLS.  Use
+    # resolved's opportunistic mode so encrypted DNS remains preferred when
+    # available without breaking per-link enterprise resolvers.
+    doh = "opportunistic" if cfg.get("doh") else "no"
     dns_ip = {"quad9":"9.9.9.9","cloudflare":"1.1.1.1","google":"8.8.8.8","off":""}.get(cfg.get("dns","quad9"), "9.9.9.9")
     dest = root / "etc/systemd/resolved.conf.d/50-kyth.conf" if str(root) != "/" else Path("/etc/systemd/resolved.conf.d/50-kyth.conf")
     # handle root prefix correctly
