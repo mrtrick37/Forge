@@ -708,6 +708,11 @@ validation, the observation window, and compatibility cleanup remain gated.
 
 ## Recommendations 2–9 execution status
 
+The current gate snapshot supersedes older batch notes below: static owner
+assignment and risk ordering are complete; source parity contracts are green;
+the exact-image gate and observation window are still pending; fixture deletion
+remains deferred until those promoted-image gates close.
+
 Reconciled status: item 3 is complete for source-level owner assignment and
 risk ordering; item 4 has route/argument/ID/guard parity coverage with
 exact-image behavior still pending; item 9 has classified compatibility
