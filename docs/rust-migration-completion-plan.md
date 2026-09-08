@@ -684,7 +684,8 @@ remaining work reviewable without duplicating the manifest by hand:
 
 * [runtime-recipe-migration-inventory.json](../build_files/config/runtime-recipe-migration-inventory.json)
   records all 202 recipes, manifest line numbers, legacy recipe provenance,
-  route kind, Rust owner, risk tier, and migration priority.
+  route kind, Rust owner, risk tier, migration priority, and explicit
+  retirement decisions.
 * [check-runtime-recipe-inventory.py](../build_files/scripts/check-runtime-recipe-inventory.py)
   derives and validates the ledger from `native.just`, the Rust runtime
   dispatcher, Cargo binary targets, and the Rust tunable registry. Run it
@@ -693,16 +694,17 @@ remaining work reviewable without duplicating the manifest by hand:
 
 The initial ledger identified 124 recipes with a native route and 78 open
 owner assessments. The source-derived ledger now reports all 202 recipes
-routed, with 110 explicit dispatcher routes, 92 native fallback routes, and
-zero missing Rust owners. This closes static owner assignment; exact-image
+accounted for, with 107 explicit dispatcher routes, 92 native fallback routes,
+3 explicit retirements, and zero missing Rust owners. This closes static owner assignment; exact-image
 parity, destructive-path validation, the observation window, and compatibility
 cleanup remain separate completion gates. This ledger records route coverage;
 it does not treat route coverage as behavioral parity completion.
 
 ## Current recipe ledger state
 
-The source-derived ledger now reports all 202 recipes routed, with 110 explicit
-dispatcher routes, 92 native fallback routes, and zero missing Rust owners.
+The source-derived ledger now reports all 202 recipes accounted for, with 107
+explicit dispatcher routes, 92 native fallback routes, 3 explicit retirements,
+and zero missing Rust owners.
 This closes static owner assignment; exact-image parity, destructive-path
 validation, the observation window, and compatibility cleanup remain gated.
 
@@ -718,9 +720,10 @@ risk ordering; item 4 has route/argument/ID/guard parity coverage with
 exact-image behavior still pending; item 9 has classified compatibility
 material while deletion remains gated by the observation window.
 
-- [x] **2 — assign/retire unowned recipes:** all 202 recipes now have an
-  explicit Rust dispatcher route or an existing native Rust fallback. Optional
-  vendor-asset operations return a controlled prerequisite error rather than
+- [x] **2 — assign/retire unowned recipes:** all 202 recipes are now accounted
+  for by an explicit Rust dispatcher route, an explicit retirement, or an
+  existing native Rust fallback. The three optional vendor-asset recipes are
+  explicitly retired and return a deterministic native error rather than
   invoking Python.
 - [x] **3 — high-risk prioritization:** the remaining owner batch was
   implemented in risk order: setup/Waydroid, dual-boot, driver staging,

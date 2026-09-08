@@ -97,6 +97,13 @@ PRIVILEGED_MARKERS = (
     "rebase",
 )
 
+# Optional vendor release assets are outside the supported image contract.
+# Keep their native dispatcher names for deterministic refusal, but record the
+# recipes as explicitly retired rather than as incomplete Rust implementations.
+RETIRED_RECIPE_NAMES = frozenset(
+    {"install-lsfg-vk", "deploy-opticscaler", "install-umu"}
+)
+
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -187,6 +194,9 @@ def route_for(
 ) -> tuple[str, str | None, str | None]:
     """Return route kind, Rust owner, and target for one recipe."""
 
+    if name in RETIRED_RECIPE_NAMES:
+        return "explicit-retirement", "native::kyth-runtime", "kyth-runtime::retired"
+
     if name in explicit:
         return "explicit-dispatch", "native::kyth-runtime", "kyth-runtime::recipe"
 
@@ -245,6 +255,7 @@ def generate() -> dict[str, Any]:
         risk_tier, risk_basis = classify_risk(name)
         legacy_sources = provenance.get(name, [])
         covered = route_kind != "missing-owner"
+        retired = route_kind == "explicit-retirement"
         entries.append(
             {
                 "name": name,
@@ -257,15 +268,17 @@ def generate() -> dict[str, Any]:
                 "route_kind": route_kind,
                 "rust_owner": owner,
                 "rust_target": target,
-                "assessment": "covered" if covered else "open",
-                "status": "routed" if covered else "needs-rust-owner",
+                "assessment": "retired" if retired else "covered" if covered else "open",
+                "status": "retired" if retired else "routed" if covered else "needs-rust-owner",
                 "risk_tier": risk_tier,
                 "risk_basis": risk_basis,
                 "migration_priority": 3 if covered else 1,
                 "parity_tests": [],
                 "retirement": (
-                    "retain recipe until the Rust owner has parity coverage and image validation"
-                    if covered
+                "recipe explicitly retired: optional vendor asset workflow is not part of the supported image contract"
+                if retired
+                else "retain recipe until the Rust owner has parity coverage and image validation"
+                if covered
                     else "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
                 ),
             }
@@ -285,7 +298,8 @@ def generate() -> dict[str, Any]:
         "recipe_count": len(entries),
         "summary": {
             "routed": len(entries) - len(missing),
-            "explicit_dispatch": sum(entry["route_kind"] == "explicit-dispatch" for entry in entries),
+        "explicit_dispatch": sum(entry["route_kind"] == "explicit-dispatch" for entry in entries),
+        "explicit_retirement": sum(entry["route_kind"] == "explicit-retirement" for entry in entries),
             "native_fallback": sum(entry["route_kind"] == "native-fallback" for entry in entries),
             "missing_owner": len(missing),
             "open_assessments": len(missing),

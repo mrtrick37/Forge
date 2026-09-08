@@ -11,7 +11,8 @@
   "recipe_count": 202,
   "summary": {
     "routed": 202,
-    "explicit_dispatch": 110,
+    "explicit_dispatch": 107,
+    "explicit_retirement": 3,
     "native_fallback": 92,
     "missing_owner": 0,
     "open_assessments": 0
@@ -1734,16 +1735,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-lsfg-vk",
-      "route_kind": "explicit-dispatch",
+      "route_kind": "explicit-retirement",
       "rust_owner": "native::kyth-runtime",
-      "rust_target": "kyth-runtime::recipe",
-      "assessment": "covered",
-      "status": "routed",
+      "rust_target": "kyth-runtime::retired",
+      "assessment": "retired",
+      "status": "retired",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
+      "retirement": "recipe explicitly retired: optional vendor asset workflow is not part of the supported image contract"
     },
     {
       "name": "deploy-opticscaler",
@@ -1758,16 +1759,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe deploy-opticscaler",
-      "route_kind": "explicit-dispatch",
+      "route_kind": "explicit-retirement",
       "rust_owner": "native::kyth-runtime",
-      "rust_target": "kyth-runtime::recipe",
-      "assessment": "covered",
-      "status": "routed",
+      "rust_target": "kyth-runtime::retired",
+      "assessment": "retired",
+      "status": "retired",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
+      "retirement": "recipe explicitly retired: optional vendor asset workflow is not part of the supported image contract"
     },
     {
       "name": "game-boost",
@@ -1878,16 +1879,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-umu",
-      "route_kind": "explicit-dispatch",
+      "route_kind": "explicit-retirement",
       "rust_owner": "native::kyth-runtime",
-      "rust_target": "kyth-runtime::recipe",
-      "assessment": "covered",
-      "status": "routed",
+      "rust_target": "kyth-runtime::retired",
+      "assessment": "retired",
+      "status": "retired",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
+      "retirement": "recipe explicitly retired: optional vendor asset workflow is not part of the supported image contract"
     },
     {
       "name": "toggle-fsr4",

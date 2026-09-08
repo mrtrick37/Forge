@@ -80,8 +80,24 @@ class RuntimeRecipeInventoryTest(unittest.TestCase):
             self.assertEqual(entry["rust_target"], target, entry["name"])
 
         self.assertEqual(self.document["summary"]["routed"], 202)
-        self.assertEqual(self.document["summary"]["explicit_dispatch"], 110)
+        self.assertEqual(self.document["summary"]["explicit_dispatch"], 107)
+        self.assertEqual(self.document["summary"]["explicit_retirement"], 3)
         self.assertEqual(self.document["summary"]["native_fallback"], 92)
+
+    def test_vendor_asset_recipes_are_explicitly_retired(self):
+        retired = {
+            entry["name"]
+            for entry in self.document["entries"]
+            if entry["status"] == "retired"
+        }
+        self.assertEqual(
+            retired,
+            {"install-lsfg-vk", "deploy-opticscaler", "install-umu"},
+        )
+        for entry in self.document["entries"]:
+            if entry["name"] in retired:
+                self.assertEqual(entry["route_kind"], "explicit-retirement")
+                self.assertEqual(entry["assessment"], "retired")
 
     def test_legacy_provenance_points_to_existing_files_and_lines(self):
         for entry in self.document["entries"]:

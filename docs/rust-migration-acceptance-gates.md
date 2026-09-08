@@ -6,8 +6,9 @@ do not prove behavior on the promoted bootc image.
 
 ## Static owner gate
 
-Complete: the source-derived recipe ledger contains 202 recipes, 202 routed,
-and zero missing Rust owners. This is not a substitute for the exact-image
+Complete: the source-derived recipe ledger contains 202 recipes, 202 accounted
+for, including 107 native dispatches, 92 native fallbacks, and 3 explicitly
+retired optional vendor-asset recipes; it has zero missing Rust owners. This is not a substitute for the exact-image
 behavioral gate below.
 
 ## Exact-image gate

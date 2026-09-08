@@ -1519,7 +1519,7 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
         ),
         "install-lsfg-vk" | "deploy-opticscaler" | "install-umu" => Err(io::Error::new(
             io::ErrorKind::Unsupported,
-            "this optional gaming component requires a vendor release asset; use the System Hub installer",
+            "this optional vendor-asset recipe is retired and is not part of the supported image contract",
         )),
         "gaming-stack-status" => run("/usr/bin/kyth-probe", &["--print-only".into()]),
         "game-performance" | "game-performance-profile" => run("/usr/bin/kyth-game-boost", args),
