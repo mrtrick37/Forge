@@ -33,8 +33,17 @@ RUNTIME = ROOT / "src/kyth-shared-rs/src/runtime_bin.rs"
 CARGO = ROOT / "src/kyth-shared-rs/Cargo.toml"
 TUNABLE_REGISTRY = ROOT / "src/kyth-shared-rs/src/system/tunable_registry.rs"
 OUTPUT = ROOT / "build_files/config/runtime-recipe-migration-inventory.json"
+VERIFICATION = ROOT / "build_files/config/runtime-recipe-verification.json"
 
 SCHEMA_VERSION = 1
+VERIFICATION_STATUSES = {
+    "not-assessed",
+    "routed-only",
+    "behavior-tested",
+    "image-verified",
+    "disposable-media-verified",
+    "retired",
+}
 # Recipe declarations may use ``*args`` or named/default parameters.  Exclude
 # ``set shell :=`` and other assignments, which also begin with an identifier
 # and contain a colon but are not recipes.
@@ -107,6 +116,32 @@ RETIRED_RECIPE_NAMES = frozenset(
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def verification_registry() -> dict[str, Any]:
+    """Load the explicit evidence registry used by the generated ledger.
+
+    Route ownership is source-derived, but verification depth is not. Keeping
+    that distinction explicit prevents a dispatcher string from being
+    mistaken for destructive behavioral evidence.
+    """
+
+    document = json.loads(_read(VERIFICATION))
+    if document.get("schema_version") != 1:
+        raise ValueError("runtime recipe verification registry has an unsupported schema")
+    recipes = document.get("recipes")
+    if not isinstance(recipes, dict):
+        raise ValueError("runtime recipe verification registry must contain recipes")
+    for name, entry in recipes.items():
+        if not isinstance(entry, dict):
+            raise ValueError(f"verification entry for {name} must be an object")
+        status = entry.get("verification_status")
+        if status not in VERIFICATION_STATUSES:
+            raise ValueError(f"verification entry for {name} has invalid status {status!r}")
+        for field in ("route_contract_tests", "behavioral_tests", "acceptance_evidence"):
+            if not isinstance(entry.get(field, []), list):
+                raise ValueError(f"verification entry for {name} has invalid {field}")
+    return document
 
 
 def parse_recipes() -> list[dict[str, Any]]:
@@ -247,6 +282,7 @@ def generate() -> dict[str, Any]:
     binaries = native_binary_names()
     tunables = native_tunable_names(names)
     provenance = legacy_provenance()
+    verification = verification_registry()["recipes"]
 
     entries: list[dict[str, Any]] = []
     for recipe in recipes:
@@ -254,6 +290,16 @@ def generate() -> dict[str, Any]:
         route_kind, owner, target = route_for(name, explicit, binaries, tunables)
         risk_tier, risk_basis = classify_risk(name)
         legacy_sources = provenance.get(name, [])
+        evidence = verification.get(
+            name,
+            {
+                "verification_status": "not-assessed",
+                "route_contract_tests": [],
+                "behavioral_tests": [],
+                "acceptance_evidence": [],
+                "blocking_reason": "no verification record exists",
+            },
+        )
         covered = route_kind != "missing-owner"
         retired = route_kind == "explicit-retirement"
         entries.append(
@@ -272,6 +318,11 @@ def generate() -> dict[str, Any]:
                 "status": "retired" if retired else "routed" if covered else "needs-rust-owner",
                 "risk_tier": risk_tier,
                 "risk_basis": risk_basis,
+                "verification_status": evidence["verification_status"],
+                "route_contract_tests": evidence.get("route_contract_tests", []),
+                "behavioral_tests": evidence.get("behavioral_tests", []),
+                "acceptance_evidence": evidence.get("acceptance_evidence", []),
+                "verification_blocking_reason": evidence.get("blocking_reason", ""),
                 "migration_priority": 3 if covered else 1,
                 "parity_tests": (
                     ["tests/test_runtime_recipe_parity.py"]
@@ -296,6 +347,7 @@ def generate() -> dict[str, Any]:
             "src/kyth-shared-rs/src/runtime_bin.rs",
             "src/kyth-shared-rs/Cargo.toml",
             "src/kyth-shared-rs/src/system/tunable_registry.rs",
+            "build_files/config/runtime-recipe-verification.json",
             "build_files/just/kyth/**/*.just",
         ],
         "purpose": "Per-recipe Rust migration ledger for the supported native ujust manifest.",
@@ -307,6 +359,10 @@ def generate() -> dict[str, Any]:
             "native_fallback": sum(entry["route_kind"] == "native-fallback" for entry in entries),
             "missing_owner": len(missing),
             "open_assessments": len(missing),
+            "verification_status": {
+                status: sum(entry["verification_status"] == status for entry in entries)
+                for status in sorted(VERIFICATION_STATUSES)
+            },
         },
         "entries": entries,
     }
@@ -326,14 +382,52 @@ def validate(document: dict[str, Any], expected: dict[str, Any]) -> list[str]:
         errors.append("recipe names must be unique")
     if document.get("recipe_count") != len(entries):
         errors.append("recipe_count does not match entries")
+    verification = verification_registry()["recipes"]
+    expected_verification_names = set(verification)
+    high_risk_names = {
+        entry["name"]
+        for entry in entries
+        if entry.get("risk_tier") in {"destructive", "privileged-writer"}
+    }
+    if expected_verification_names != high_risk_names:
+        errors.append(
+            "verification registry names must exactly match destructive and privileged recipes"
+        )
     for entry in entries:
-        for field in ("name", "manifest", "manifest_line", "route_kind", "status", "risk_tier"):
+        for field in (
+            "name",
+            "manifest",
+            "manifest_line",
+            "route_kind",
+            "status",
+            "risk_tier",
+            "verification_status",
+            "route_contract_tests",
+            "behavioral_tests",
+            "acceptance_evidence",
+        ):
             if field not in entry:
                 errors.append(f"{entry.get('name', '<unknown>')}: missing {field}")
         if entry.get("route_kind") == "missing-owner" and entry.get("rust_owner") is not None:
             errors.append(f"{entry['name']}: missing-owner entry cannot have rust_owner")
         if entry.get("route_kind") != "missing-owner" and not entry.get("rust_owner"):
             errors.append(f"{entry['name']}: routed entry must have rust_owner")
+        if entry.get("verification_status") not in VERIFICATION_STATUSES:
+            errors.append(f"{entry['name']}: invalid verification_status")
+        if entry.get("risk_tier") in {"destructive", "privileged-writer"}:
+            if not entry.get("behavioral_tests"):
+                errors.append(f"{entry['name']}: high-risk route lacks behavioral tests")
+            if entry.get("verification_status") in {
+                "image-verified",
+                "disposable-media-verified",
+            } and not entry.get("acceptance_evidence"):
+                errors.append(
+                    f"{entry['name']}: image/disposable verification lacks acceptance evidence"
+                )
+        for field in ("route_contract_tests", "behavioral_tests", "acceptance_evidence"):
+            for path in entry.get(field, []):
+                if not (ROOT / path).is_file():
+                    errors.append(f"{entry['name']}: missing {field} path {path}")
     return errors
 
 
@@ -360,7 +454,10 @@ def main(argv: list[str] | None = None) -> int:
         "valid: "
         f"{document['recipe_count']} recipes, "
         f"{document['summary']['routed']} routed, "
-        f"{document['summary']['missing_owner']} missing Rust owners"
+        f"{document['summary']['missing_owner']} missing Rust owners; "
+        "verification: "
+        f"{document['summary']['verification_status']['routed-only']} routed-only, "
+        f"{document['summary']['verification_status']['behavior-tested']} behavior-tested"
     )
     return 0
 

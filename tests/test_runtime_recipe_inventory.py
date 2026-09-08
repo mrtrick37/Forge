@@ -42,6 +42,7 @@ class RuntimeRecipeInventoryTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("valid: 202 recipes", result.stdout)
+        self.assertIn("verification: 20 routed-only, 0 behavior-tested", result.stdout)
 
     def test_every_native_recipe_has_one_unique_ledger_entry(self):
         recipes = self.checker.parse_recipes()
@@ -83,6 +84,29 @@ class RuntimeRecipeInventoryTest(unittest.TestCase):
         self.assertEqual(self.document["summary"]["explicit_dispatch"], 107)
         self.assertEqual(self.document["summary"]["explicit_retirement"], 3)
         self.assertEqual(self.document["summary"]["native_fallback"], 92)
+
+    def test_verification_depth_is_separate_from_route_ownership(self):
+        high_risk = {
+            entry["name"]
+            for entry in self.document["entries"]
+            if entry["risk_tier"] in {"destructive", "privileged-writer"}
+        }
+        self.assertEqual(len(high_risk), 20)
+        self.assertEqual(
+            self.document["summary"]["verification_status"]["routed-only"],
+            20,
+        )
+        self.assertEqual(
+            self.document["summary"]["verification_status"]["behavior-tested"],
+            0,
+        )
+        for entry in self.document["entries"]:
+            if entry["name"] not in high_risk:
+                continue
+            self.assertEqual(entry["status"], "routed")
+            self.assertEqual(entry["verification_status"], "routed-only")
+            self.assertIn("tests/test_runtime_recipe_behavior.py", entry["behavioral_tests"])
+            self.assertFalse(entry["acceptance_evidence"])
 
     def test_vendor_asset_recipes_are_explicitly_retired(self):
         retired = {

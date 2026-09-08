@@ -131,6 +131,18 @@ class RuntimeRecipeParityTest(unittest.TestCase):
             )
             self.assertIn(f'"{entry["name"]}" =>', self.runtime, entry["name"])
 
+    def test_high_risk_routes_are_not_misreported_as_behaviorally_complete(self):
+        for entry in self.ledger["entries"]:
+            if entry["risk_tier"] not in {"destructive", "privileged-writer"}:
+                continue
+            self.assertEqual(entry["verification_status"], "routed-only", entry["name"])
+            self.assertIn(
+                "tests/test_runtime_recipe_behavior.py",
+                entry["behavioral_tests"],
+                entry["name"],
+            )
+            self.assertEqual(entry["acceptance_evidence"], [], entry["name"])
+
 
 if __name__ == "__main__":
     unittest.main()
