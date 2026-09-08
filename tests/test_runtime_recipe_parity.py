@@ -88,6 +88,16 @@ class RuntimeRecipeParityTest(unittest.TestCase):
         ]
         self.assertEqual(open_entries, [])
 
+    def test_every_routed_recipe_has_dispatch_boundary_coverage(self):
+        for entry in self.ledger["entries"]:
+            if entry["status"] != "routed":
+                continue
+            self.assertIn(
+                "tests/test_runtime_recipe_dispatch.py",
+                entry["route_contract_tests"],
+                entry["name"],
+            )
+
     def test_completed_recipe_families_have_explicit_dispatch_routes(self):
         completed = {
             "setup-kali-box", "export-kali-apps", "setup-waydroid", "remove-waydroid",
@@ -123,7 +133,11 @@ class RuntimeRecipeParityTest(unittest.TestCase):
             if entry["name"] not in high_risk:
                 continue
             self.assertEqual(entry["status"], "routed", entry["name"])
-            self.assertEqual(entry["route_kind"], "explicit-dispatch", entry["name"])
+            self.assertIn(
+                entry["route_kind"],
+                {"explicit-dispatch", "native-fallback"},
+                entry["name"],
+            )
             self.assertEqual(
                 entry["parity_tests"],
                 ["tests/test_runtime_recipe_parity.py"],

@@ -694,7 +694,7 @@ remaining work reviewable without duplicating the manifest by hand:
 
 The initial ledger identified 124 recipes with a native route and 78 open
 owner assessments. The source-derived ledger now reports all 202 recipes
-accounted for, with 107 explicit dispatcher routes, 92 native fallback routes,
+accounted for, with 105 explicit dispatcher routes, 94 native fallback routes,
 3 explicit retirements, and zero missing Rust owners. This closes static owner assignment; exact-image
 parity, destructive-path validation, the observation window, and compatibility
 cleanup remain separate completion gates. This ledger records route coverage;
@@ -702,8 +702,8 @@ it does not treat route coverage as behavioral parity completion.
 
 ## Current recipe ledger state
 
-The source-derived ledger now reports all 202 recipes accounted for, with 107
-explicit dispatcher routes, 92 native fallback routes, 3 explicit retirements,
+The source-derived ledger now reports all 202 recipes accounted for, with 105
+explicit dispatcher routes, 94 native fallback routes, 3 explicit retirements,
 and zero missing Rust owners.
 This closes static owner assignment; exact-image parity, destructive-path
 validation, the observation window, and compatibility cleanup remain gated.

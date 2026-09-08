@@ -50,6 +50,10 @@ VERIFICATION_STATUSES = {
 RECIPE_RE = re.compile(
     r"^(?P<name>[A-Za-z_][A-Za-z0-9_-]*)(?:\s+[^:\n]*)*:\s*(?![=])"
 )
+ROUTE_ARM_RE = re.compile(
+    r"(?m)^\s*(?P<patterns>(?:\"[A-Za-z_][A-Za-z0-9_-]*\"\s*\|\s*)*"
+    r"\"[A-Za-z_][A-Za-z0-9_-]*\")\s*=>"
+)
 ROUTE_NAME_RE = re.compile(r'"([A-Za-z_][A-Za-z0-9_-]*)"')
 CARGO_BINARY_RE = re.compile(r'^\s*name\s*=\s*"(kyth-[^"]+)"\s*$', re.MULTILINE)
 TUNABLE_NAME_RE = re.compile(r'\("([a-z0-9][a-z0-9-]*)"')
@@ -182,7 +186,10 @@ def explicit_dispatch_names(recipe_names: set[str]) -> set[str]:
     text = _read(RUNTIME)
     start = text.index("fn recipe(")
     end = text.index("fn delegate(", start)
-    return set(ROUTE_NAME_RE.findall(text[start:end])) & recipe_names
+    names: set[str] = set()
+    for match in ROUTE_ARM_RE.finditer(text[start:end]):
+        names.update(ROUTE_NAME_RE.findall(match.group("patterns")))
+    return names & recipe_names
 
 
 def native_binary_names() -> set[str]:
@@ -319,7 +326,16 @@ def generate() -> dict[str, Any]:
                 "risk_tier": risk_tier,
                 "risk_basis": risk_basis,
                 "verification_status": evidence["verification_status"],
-                "route_contract_tests": evidence.get("route_contract_tests", []),
+                "route_contract_tests": sorted(
+                    {
+                        *evidence.get("route_contract_tests", []),
+                        *(
+                            ["tests/test_runtime_recipe_dispatch.py"]
+                            if covered
+                            else []
+                        ),
+                    }
+                ),
                 "behavioral_tests": evidence.get("behavioral_tests", []),
                 "acceptance_evidence": evidence.get("acceptance_evidence", []),
                 "verification_blocking_reason": evidence.get("blocking_reason", ""),

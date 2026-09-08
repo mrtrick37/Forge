@@ -12,9 +12,9 @@
   "recipe_count": 202,
   "summary": {
     "routed": 202,
-    "explicit_dispatch": 107,
+    "explicit_dispatch": 105,
     "explicit_retirement": 3,
-    "native_fallback": 92,
+    "native_fallback": 94,
     "missing_owner": 0,
     "open_assessments": 0,
     "verification_status": {
@@ -48,7 +48,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -77,7 +79,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -106,7 +110,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -136,6 +142,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -171,6 +178,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -205,7 +213,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -234,7 +244,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -263,7 +275,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -292,7 +306,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -321,7 +337,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -350,7 +368,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -379,7 +399,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -409,6 +431,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -443,7 +466,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -472,7 +497,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -501,7 +528,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -530,7 +559,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -560,6 +591,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -595,6 +627,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -629,7 +662,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -658,7 +693,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -687,7 +724,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -716,7 +755,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -745,7 +786,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -774,7 +817,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -803,7 +848,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -832,7 +879,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -861,7 +910,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -890,7 +941,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -919,7 +972,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -948,7 +1003,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -977,7 +1034,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1006,7 +1065,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1035,7 +1096,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1065,6 +1128,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1099,7 +1163,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1129,6 +1195,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1164,6 +1231,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1198,7 +1266,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1227,7 +1297,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1256,7 +1328,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1285,7 +1359,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1314,7 +1390,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1343,7 +1421,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1372,7 +1452,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1401,7 +1483,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1430,7 +1514,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1459,7 +1545,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1488,7 +1576,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1517,7 +1607,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1538,15 +1630,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe hardware-policy",
-      "route_kind": "explicit-dispatch",
-      "rust_owner": "native::kyth-runtime",
-      "rust_target": "kyth-runtime::recipe",
+      "route_kind": "native-fallback",
+      "rust_owner": "native::kyth-hardware-policy",
+      "rust_target": "kyth-hardware-policy",
       "assessment": "covered",
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1581,7 +1674,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1611,6 +1706,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1645,7 +1741,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1674,7 +1772,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1703,7 +1803,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1732,7 +1834,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1761,7 +1865,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1790,7 +1896,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1819,7 +1927,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1848,7 +1958,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1878,6 +1990,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1912,7 +2025,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -1942,6 +2057,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -1976,7 +2092,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2005,7 +2123,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2034,7 +2154,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2063,7 +2185,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2092,7 +2216,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2121,7 +2247,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2150,7 +2278,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2179,7 +2309,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2208,7 +2340,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2237,7 +2371,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2266,7 +2402,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2295,7 +2433,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2324,7 +2464,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2353,7 +2495,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2382,7 +2526,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2411,7 +2557,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2440,7 +2588,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2469,7 +2619,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2499,6 +2651,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -2534,6 +2687,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -2568,7 +2722,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2589,15 +2745,17 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe performance-mode",
-      "route_kind": "explicit-dispatch",
-      "rust_owner": "native::kyth-runtime",
-      "rust_target": "kyth-runtime::recipe",
+      "route_kind": "native-fallback",
+      "rust_owner": "native::kyth-performance-mode",
+      "rust_target": "kyth-performance-mode",
       "assessment": "covered",
       "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2626,7 +2784,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2655,7 +2815,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2684,7 +2846,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2713,7 +2877,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2742,7 +2908,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2771,7 +2939,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2800,7 +2970,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2829,7 +3001,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2858,7 +3032,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2887,7 +3063,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2916,7 +3094,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2945,7 +3125,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -2974,7 +3156,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3003,7 +3187,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3032,7 +3218,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3061,7 +3249,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3090,7 +3280,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3119,7 +3311,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3148,7 +3342,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3177,7 +3373,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3206,7 +3404,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3235,7 +3435,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3264,7 +3466,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3293,7 +3497,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3322,7 +3528,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3351,7 +3559,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3380,7 +3590,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3409,7 +3621,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3438,7 +3652,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3467,7 +3683,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3496,7 +3714,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3525,7 +3745,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3554,7 +3776,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3583,7 +3807,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3612,7 +3838,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3641,7 +3869,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3670,7 +3900,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3699,7 +3931,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3728,7 +3962,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3757,7 +3993,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3786,7 +4024,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3815,7 +4055,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3844,7 +4086,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3873,7 +4117,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3902,7 +4148,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3931,7 +4179,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3960,7 +4210,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -3989,7 +4241,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4018,7 +4272,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4047,7 +4303,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4076,7 +4334,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4105,7 +4365,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4134,7 +4396,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4163,7 +4427,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4192,7 +4458,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4221,7 +4489,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4250,7 +4520,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4279,7 +4551,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4308,7 +4582,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4337,7 +4613,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4366,7 +4644,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4395,7 +4675,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4424,7 +4706,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4453,7 +4737,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4482,7 +4768,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4511,7 +4799,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4540,7 +4830,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4569,7 +4861,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4598,7 +4892,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4627,7 +4923,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4656,7 +4954,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4685,7 +4985,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4714,7 +5016,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4743,7 +5047,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4772,7 +5078,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4801,7 +5109,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4830,7 +5140,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4859,7 +5171,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4888,7 +5202,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4917,7 +5233,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4946,7 +5264,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -4975,7 +5295,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5004,7 +5326,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5033,7 +5357,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5062,7 +5388,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5091,7 +5419,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5120,7 +5450,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5149,7 +5481,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5178,7 +5512,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5207,7 +5543,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5236,7 +5574,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5265,7 +5605,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5294,7 +5636,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5323,7 +5667,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5352,7 +5698,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5381,7 +5729,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5410,7 +5760,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5439,7 +5791,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5468,7 +5822,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5497,7 +5853,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5526,7 +5884,9 @@
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5555,7 +5915,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5584,7 +5946,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5614,6 +5978,7 @@
       "risk_basis": "system, hardware, boot, or driver mutation",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -5648,7 +6013,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5677,7 +6044,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5706,7 +6075,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5735,7 +6106,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5764,7 +6137,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5793,7 +6168,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
@@ -5823,6 +6200,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -5858,6 +6236,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -5893,6 +6272,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -5928,6 +6308,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -5963,6 +6344,7 @@
       "risk_basis": "explicit destructive/update action",
       "verification_status": "behavior-tested",
       "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py",
         "tests/test_runtime_recipe_parity.py"
       ],
       "behavioral_tests": [
@@ -5997,7 +6379,9 @@
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
       "verification_status": "not-assessed",
-      "route_contract_tests": [],
+      "route_contract_tests": [
+        "tests/test_runtime_recipe_dispatch.py"
+      ],
       "behavioral_tests": [],
       "acceptance_evidence": [],
       "verification_blocking_reason": "no verification record exists",
