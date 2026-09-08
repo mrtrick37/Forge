@@ -111,7 +111,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -135,7 +137,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -327,7 +331,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -447,7 +453,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -471,7 +479,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -855,7 +865,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -903,7 +915,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -927,7 +941,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -1239,7 +1255,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -1287,7 +1305,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -1503,7 +1523,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -1551,7 +1573,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -2007,7 +2031,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -2031,7 +2057,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -4575,7 +4603,9 @@
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -4743,7 +4773,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -4767,7 +4799,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -4791,7 +4825,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -4815,7 +4851,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
@@ -4839,7 +4877,9 @@
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
       "migration_priority": 3,
-      "parity_tests": [],
+      "parity_tests": [
+        "tests/test_runtime_recipe_parity.py"
+      ],
       "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {

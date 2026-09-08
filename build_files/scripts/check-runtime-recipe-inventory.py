@@ -273,7 +273,11 @@ def generate() -> dict[str, Any]:
                 "risk_tier": risk_tier,
                 "risk_basis": risk_basis,
                 "migration_priority": 3 if covered else 1,
-                "parity_tests": [],
+                "parity_tests": (
+                    ["tests/test_runtime_recipe_parity.py"]
+                    if risk_tier in {"destructive", "privileged-writer"}
+                    else []
+                ),
                 "retirement": (
                 "recipe explicitly retired: optional vendor asset workflow is not part of the supported image contract"
                 if retired

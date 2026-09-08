@@ -10,6 +10,7 @@ Usage: run-rust-migration-acceptance.sh --iso PATH --image-ref IMAGE [options]
 Options:
   --iso PATH                 Exact live ISO to boot.
   --image-ref IMAGE          Exact promoted image ref or digest to test.
+  --update-ref IMAGE         Optional distinct image ref for update/rollback.
   --artifacts DIR            Evidence directory (default: temporary directory).
   --timeout-minutes N        Disposable VM timeout (default: 75).
   --allow-tcg                Allow software emulation (normally too slow).
@@ -24,6 +25,7 @@ EOF
 
 ISO=""
 IMAGE_REF=""
+UPDATE_REF=""
 ARTIFACTS=""
 TIMEOUT_MINUTES=75
 ALLOW_TCG=0
@@ -36,6 +38,10 @@ while (($#)); do
             ;;
         --image-ref)
             IMAGE_REF="${2:?missing image reference}"
+            shift 2
+            ;;
+        --update-ref)
+            UPDATE_REF="${2:?missing update reference}"
             shift 2
             ;;
         --artifacts)
@@ -73,6 +79,10 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
     echo "--image-ref contains unsupported characters" >&2
     exit 64
 }
+if [[ -n "${UPDATE_REF}" && ! "${UPDATE_REF}" =~ ^[A-Za-z0-9._/@:+-]+$ ]]; then
+    echo "--update-ref contains unsupported characters" >&2
+    exit 64
+fi
 [[ "${TIMEOUT_MINUTES}" =~ ^[1-9][0-9]*$ ]] || {
     echo "--timeout-minutes must be a positive integer" >&2
     exit 64
@@ -99,6 +109,7 @@ SOURCE_COMMIT="$(git -C "${REPO_ROOT}" rev-parse HEAD)"
     printf 'started_at_utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     printf 'source_commit=%s\n' "${SOURCE_COMMIT}"
     printf 'image_ref=%s\n' "${IMAGE_REF}"
+    printf 'update_ref=%s\n' "${UPDATE_REF:-${IMAGE_REF}}"
     printf 'iso=%s\n' "$(realpath "${ISO}")"
     printf 'artifacts=%s\n' "${ARTIFACTS}"
 } >"${ARTIFACTS}/run-metadata.txt"
@@ -139,7 +150,7 @@ fi
 
 VM_ARGS=(
     --iso "${ISO}"
-    --update-ref "${IMAGE_REF}"
+    --update-ref "${UPDATE_REF:-${IMAGE_REF}}"
     --artifacts "${ARTIFACTS}/vm"
     --timeout-minutes "${TIMEOUT_MINUTES}"
 )

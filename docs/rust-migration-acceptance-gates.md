@@ -49,6 +49,31 @@ The repository's `build_files/scripts/cleanup-vm-acceptance.sh` must be used
 after each disposable run. A failed cleanup is a failed gate, not a reason to
 reuse the VM or disk.
 
+### Reuse an existing exact ISO artifact
+
+The build workflow's opt-in acceptance job rebuilds the ISO when it is enabled.
+For a published artifact that already passed the build and checksum gates, use
+the non-publishing artifact-reuse workflow instead. It binds the checkout to
+`source_sha`, downloads `artifact_name` from `artifact_run_id`, verifies the
+embedded checksum, and invokes the same `run-rust-migration-acceptance.sh`
+wrapper. The wrapper records the ledgers, image metadata, install boot, and
+update/rollback evidence without moving a release tag:
+
+```text
+gh workflow run rust-migration-acceptance.yml --ref testing \
+  -f artifact_run_id=<iso-build-run-id> \
+  -f artifact_name=<exact-iso-artifact-name> \
+  -f source_sha=<source-commit> \
+  -f image_ref=ghcr.io/kyth-os/kyth@sha256:<promoted-digest> \
+  -f update_ref=ghcr.io/kyth-os/kyth@sha256:<previous-or-next-digest>
+```
+
+`update_ref` is optional for a basic install/boot gate. Supplying a distinct
+image reference makes the update/rollback cycle exercise a real image change;
+the wrapper records the selected reference in `run-metadata.txt`. The resulting
+`rust-migration-acceptance-<run-id>` artifact is the evidence bundle to review
+before starting the observation window.
+
 ## Observation window
 
 Status: not started for the current recipe batch. It begins only after a

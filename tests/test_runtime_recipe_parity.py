@@ -112,6 +112,25 @@ class RuntimeRecipeParityTest(unittest.TestCase):
         self.assertIn('validate_token(&args[0], "digest")', self.runtime)
         self.assertIn('"--dry-run"', self.runtime)
 
+    def test_high_risk_recipe_routes_have_explicit_parity_coverage(self):
+        high_risk = {
+            entry["name"]
+            for entry in self.ledger["entries"]
+            if entry["risk_tier"] in {"destructive", "privileged-writer"}
+        }
+        self.assertEqual(len(high_risk), 20)
+        for entry in self.ledger["entries"]:
+            if entry["name"] not in high_risk:
+                continue
+            self.assertEqual(entry["status"], "routed", entry["name"])
+            self.assertEqual(entry["route_kind"], "explicit-dispatch", entry["name"])
+            self.assertEqual(
+                entry["parity_tests"],
+                ["tests/test_runtime_recipe_parity.py"],
+                entry["name"],
+            )
+            self.assertIn(f'"{entry["name"]}" =>', self.runtime, entry["name"])
+
 
 if __name__ == "__main__":
     unittest.main()
