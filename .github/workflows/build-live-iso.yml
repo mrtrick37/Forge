@@ -353,7 +353,7 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
-            qemu-system-x86 qemu-utils ovmf socat
+            qemu-system-x86 qemu-system-modules-spice qemu-utils ovmf socat
 
       - name: Grant runner access to /dev/kvm
         # Hosted Linux runners expose KVM but leave the node owned by root:kvm
