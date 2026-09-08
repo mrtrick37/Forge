@@ -11,86 +11,7 @@ CHECKER = ROOT / "build_files/scripts/check-runtime-recipe-inventory.py"
 LEDGER = ROOT / "build_files/config/runtime-recipe-migration-inventory.json"
 
 
-EXPECTED_MISSING_OWNER_NAMES = {
-    "_install-flatpak",
-    "setup-kali-box",
-    "export-kali-apps",
-    "setup-waydroid",
-    "remove-waydroid",
-    "install-boxbuddy",
-    "_ai-dev",
-    "ai-dev-status",
-    "ai-dev-setup",
-    "ai-dev-enter",
-    "ai-dev-start",
-    "ai-dev-stop",
-    "ai-dev-remove",
-    "startup-apps",
-    "install-ms-fonts",
-    "setup-printer",
-    "firmware-update",
-    "setup-kyth-dev-box",
-    "install-vscode",
-    "install-jetbrains-toolbox",
-    "setup-boot-windows-steam",
-    "dualboot-status",
-    "reclaim-windows",
-    "fix-dualboot-clock",
-    "install-battlenet",
-    "install-epic-launcher",
-    "install-ea-app",
-    "install-ubisoft-connect",
-    "install-steam",
-    "install-lutris",
-    "install-heroic",
-    "install-bottles",
-    "install-prismlauncher",
-    "install-itch",
-    "install-retroarch",
-    "install-ludusavi",
-    "hardware-inventory",
-    "hardware-policy-apply",
-    "export-steam-games",
-    "install-lact",
-    "corectrl",
-    "install-coolercontrol",
-    "install-piper",
-    "install-openrgb",
-    "install-solaar",
-    "install-racing-wheel-drivers",
-    "install-oversteer",
-    "install-asus-tools",
-    "install-vesktop",
-    "install-gpu-screen-recorder",
-    "install-goverlay",
-    "install-mangojuice",
-    "install-obs",
-    "enable-obs-capture",
-    "install-lsfg-vk",
-    "deploy-opticscaler",
-    "update-proton-cachyos",
-    "install-umu",
-    "toggle-fsr4",
-    "toggle-nvapi",
-    "gaming-stack-status",
-    "install-nvidia-driver",
-    "install-displaylink",
-    "game-performance",
-    "game-performance-profile",
-    "zink-run",
-    "low-latency",
-    "enable-bpftune",
-    "disable-bpftune",
-    "apply-preset",
-    "setup-sunshine",
-    "setup-vr",
-    "setup-tailscale",
-    "retry-quarantined-update",
-    "rebase",
-    "switch-channel",
-    "switch-channel-impl",
-    "switch-kernel",
-}
+EXPECTED_MISSING_OWNER_NAMES = set()
 
 
 def load_checker():
@@ -138,7 +59,7 @@ class RuntimeRecipeInventoryTest(unittest.TestCase):
             if entry["route_kind"] == "missing-owner"
         }
         self.assertEqual(missing, EXPECTED_MISSING_OWNER_NAMES)
-        self.assertEqual(self.document["summary"]["missing_owner"], 78)
+        self.assertEqual(self.document["summary"]["missing_owner"], 0)
         for entry in self.document["entries"]:
             if entry["name"] in missing:
                 self.assertEqual(entry["assessment"], "open")
@@ -158,9 +79,9 @@ class RuntimeRecipeInventoryTest(unittest.TestCase):
             self.assertEqual(entry["rust_owner"], owner, entry["name"])
             self.assertEqual(entry["rust_target"], target, entry["name"])
 
-        self.assertEqual(self.document["summary"]["routed"], 124)
-        self.assertEqual(self.document["summary"]["explicit_dispatch"], 31)
-        self.assertEqual(self.document["summary"]["native_fallback"], 93)
+        self.assertEqual(self.document["summary"]["routed"], 202)
+        self.assertEqual(self.document["summary"]["explicit_dispatch"], 110)
+        self.assertEqual(self.document["summary"]["native_fallback"], 92)
 
     def test_legacy_provenance_points_to_existing_files_and_lines(self):
         for entry in self.document["entries"]:

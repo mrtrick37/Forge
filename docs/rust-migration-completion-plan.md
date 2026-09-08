@@ -691,9 +691,48 @@ remaining work reviewable without duplicating the manifest by hand:
   without arguments to detect drift, or with `--generate` after an intentional
   source change.
 
-The initial ledger identifies 124 recipes with a native route and 78 open
-owner assessments. “Open” means that static source comparison found no
-identifiable Rust owner; it is not by itself a claim that the recipe is
-broken. The 78 entries must receive a Rust owner or an explicit retirement
-decision before their compatibility recipes are removed. This ledger records
-the migration boundary only; it does not implement those ports.
+The initial ledger identified 124 recipes with a native route and 78 open
+owner assessments. The source-derived ledger now reports all 202 recipes
+routed, with 110 explicit dispatcher routes, 92 native fallback routes, and
+zero missing Rust owners. This closes static owner assignment; exact-image
+parity, destructive-path validation, the observation window, and compatibility
+cleanup remain separate completion gates. This ledger records route coverage;
+it does not treat route coverage as behavioral parity completion.
+
+## Current recipe ledger state
+
+The source-derived ledger now reports all 202 recipes routed, with 110 explicit
+dispatcher routes, 92 native fallback routes, and zero missing Rust owners.
+This closes static owner assignment; exact-image parity, destructive-path
+validation, the observation window, and compatibility cleanup remain gated.
+
+## Recommendations 2–9 execution status
+
+Reconciled status: item 3 is complete for source-level owner assignment and
+risk ordering; item 4 has route/argument/ID/guard parity coverage with
+exact-image behavior still pending; item 9 has classified compatibility
+material while deletion remains gated by the observation window.
+
+- [x] **2 — assign/retire unowned recipes:** all 202 recipes now have an
+  explicit Rust dispatcher route or an existing native Rust fallback. Optional
+  vendor-asset operations return a controlled prerequisite error rather than
+  invoking Python.
+- [~] **3 — high-risk prioritization:** the ledger records risk tiers and
+  migration priorities; the remaining high-risk setup, driver, destructive,
+  and update workflows remain first in the implementation queue.
+- [~] **4 — recipe parity:** [runtime recipe parity tests](../tests/test_runtime_recipe_parity.py)
+  cover the newly wired owners and preserve their legacy arguments/app IDs;
+  behavioral parity for the remaining 40 requires implementation first.
+- [x] **5 — Python package decision:** the final-image package is explicitly
+  temporary compatibility material, not an active runtime authority.
+- [x] **6 — compatibility classification:** allowed uses and the removal gate
+  are documented in [python-compatibility-policy.md](python-compatibility-policy.md).
+- [ ] **7 — exact-image validation:** pending a promoted testing image and
+  disposable VM/disk evidence.
+- [ ] **8 — observation window:** starts only after the exact-image gate passes.
+- [~] **9 — fixture/prose cleanup:** the 92 tunable fixtures are already
+  classified as superseded in the generated inventory; deletion and stale
+  launch-reference cleanup remain gated by image evidence.
+
+The detailed execution evidence and safe destructive-test procedure are in
+[rust-migration-acceptance-gates.md](rust-migration-acceptance-gates.md).

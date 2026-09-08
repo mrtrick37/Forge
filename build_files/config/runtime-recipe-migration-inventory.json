@@ -10,11 +10,11 @@
   "purpose": "Per-recipe Rust migration ledger for the supported native ujust manifest.",
   "recipe_count": 202,
   "summary": {
-    "routed": 124,
-    "explicit_dispatch": 31,
-    "native_fallback": 93,
-    "missing_owner": 78,
-    "open_assessments": 78
+    "routed": 202,
+    "explicit_dispatch": 110,
+    "native_fallback": 92,
+    "missing_owner": 0,
+    "open_assessments": 0
   },
   "entries": [
     {
@@ -22,38 +22,48 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 10,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"_install-flatpak\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/common.just",
+          "line": 13
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe _install-flatpak",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "setup-kali-box",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 14,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"setup-kali-box\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/containers/kali.just",
+          "line": 6
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-kali-box",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "export-kali-apps",
@@ -68,16 +78,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe export-kali-apps",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "setup-waydroid",
@@ -92,16 +102,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-waydroid",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "remove-waydroid",
@@ -116,16 +126,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe remove-waydroid",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-boxbuddy",
@@ -140,35 +150,40 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-boxbuddy",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "_ai-dev",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 34,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"_ai-dev\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/containers.just",
+          "line": 14
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe _ai-dev",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "ai-dev-status",
@@ -183,16 +198,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ai-dev-status",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "ai-dev-setup",
@@ -207,16 +222,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ai-dev-setup",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "ai-dev-enter",
@@ -231,16 +246,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ai-dev-enter",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "ai-dev-start",
@@ -255,16 +270,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ai-dev-start",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "ai-dev-stop",
@@ -279,16 +294,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ai-dev-stop",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "ai-dev-remove",
@@ -303,24 +318,29 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ai-dev-remove",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "podman-btrfs",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 62,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"podman-btrfs\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/containers.just",
+          "line": 39
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe podman-btrfs",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -338,8 +358,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 66,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"distrobox-cache\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/containers.just",
+          "line": 46
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe distrobox-cache",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -365,16 +390,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe startup-apps",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-ms-fonts",
@@ -389,16 +414,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-ms-fonts",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "setup-printer",
@@ -413,16 +438,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-printer",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "firmware-update",
@@ -437,16 +462,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe firmware-update",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "windows-verify",
@@ -485,16 +510,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-kyth-dev-box",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-vscode",
@@ -509,24 +534,29 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-vscode",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "sccache",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 98,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"sccache\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/dev-tools.just",
+          "line": 35
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe sccache",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -544,8 +574,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 102,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"flatpak-prefetch\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/dev-tools.just",
+          "line": 41
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe flatpak-prefetch",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -563,8 +598,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 106,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"work-cache\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/dev-tools.just",
+          "line": 47
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe work-cache",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -590,16 +630,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-jetbrains-toolbox",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "kerver",
@@ -750,8 +790,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 138,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"perf-gate\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/diagnostics.just",
+          "line": 45
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe perf-gate",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -769,8 +814,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 142,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"telemetry-opt\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/diagnostics.just",
+          "line": 52
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe telemetry-opt",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -796,16 +846,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-boot-windows-steam",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "dualboot-status",
@@ -820,16 +870,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe dualboot-status",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "reclaim-windows",
@@ -844,16 +894,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe reclaim-windows",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "fix-dualboot-clock",
@@ -868,16 +918,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe fix-dualboot-clock",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-battlenet",
@@ -892,16 +942,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-battlenet",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
-      "risk_tier": "privileged-writer",
-      "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
+      "risk_tier": "user-session-writer",
+      "risk_basis": "user-session, package, or application mutation",
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-epic-launcher",
@@ -916,16 +966,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-epic-launcher",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-ea-app",
@@ -940,16 +990,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-ea-app",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-ubisoft-connect",
@@ -964,16 +1014,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-ubisoft-connect",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-steam",
@@ -988,16 +1038,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-steam",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-lutris",
@@ -1012,16 +1062,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-lutris",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-heroic",
@@ -1036,16 +1086,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-heroic",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-bottles",
@@ -1060,16 +1110,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-bottles",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-prismlauncher",
@@ -1084,16 +1134,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-prismlauncher",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-itch",
@@ -1108,16 +1158,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-itch",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-retroarch",
@@ -1132,16 +1182,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-retroarch",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-ludusavi",
@@ -1156,16 +1206,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-ludusavi",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "hardware-policy",
@@ -1180,9 +1230,9 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe hardware-policy",
-      "route_kind": "native-fallback",
-      "rust_owner": "native::kyth-hardware-policy",
-      "rust_target": "kyth-hardware-policy",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
       "assessment": "covered",
       "status": "routed",
       "risk_tier": "privileged-writer",
@@ -1204,16 +1254,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe hardware-inventory",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "hardware-policy-apply",
@@ -1228,16 +1278,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe hardware-policy-apply",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "export-steam-games",
@@ -1252,16 +1302,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe export-steam-games",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "controller-check",
@@ -1300,16 +1350,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-lact",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "corectrl",
@@ -1324,16 +1374,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe corectrl",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-coolercontrol",
@@ -1348,16 +1398,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-coolercontrol",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-piper",
@@ -1372,16 +1422,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-piper",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-openrgb",
@@ -1396,16 +1446,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-openrgb",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-solaar",
@@ -1420,16 +1470,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-solaar",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-racing-wheel-drivers",
@@ -1444,16 +1494,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-racing-wheel-drivers",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-oversteer",
@@ -1468,16 +1518,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-oversteer",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-asus-tools",
@@ -1492,16 +1542,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-asus-tools",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
-      "risk_tier": "user-session-writer",
-      "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
+      "risk_tier": "privileged-writer",
+      "risk_basis": "system, hardware, boot, or driver mutation",
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-vesktop",
@@ -1516,16 +1566,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-vesktop",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "fix-ntfs-drives",
@@ -1564,16 +1614,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-gpu-screen-recorder",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-goverlay",
@@ -1588,16 +1638,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-goverlay",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-mangojuice",
@@ -1612,16 +1662,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-mangojuice",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-obs",
@@ -1636,16 +1686,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-obs",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "enable-obs-capture",
@@ -1660,16 +1710,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe enable-obs-capture",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-lsfg-vk",
@@ -1684,35 +1734,40 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-lsfg-vk",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "deploy-opticscaler",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 298,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"deploy-opticscaler\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/gaming/performance.just",
+          "line": 63
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe deploy-opticscaler",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "game-boost",
@@ -1799,16 +1854,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe update-proton-cachyos",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-umu",
@@ -1823,16 +1878,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-umu",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "toggle-fsr4",
@@ -1847,16 +1902,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe toggle-fsr4",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "toggle-nvapi",
@@ -1871,16 +1926,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe toggle-nvapi",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "gaming-stack-status",
@@ -1895,16 +1950,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe gaming-stack-status",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "read-only",
       "risk_basis": "status, inventory, or diagnostic action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "nvidia-status",
@@ -1943,16 +1998,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-nvidia-driver",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "install-displaylink",
@@ -1967,43 +2022,53 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe install-displaylink",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
-      "risk_tier": "user-session-writer",
-      "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
+      "risk_tier": "privileged-writer",
+      "risk_basis": "system, hardware, boot, or driver mutation",
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "game-performance",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 346,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"game-performance\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 3
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe game-performance",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "performance-mode",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 350,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"performance-mode\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 13
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe performance-mode",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2069,27 +2134,37 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 362,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"game-performance-profile\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 28
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe game-performance-profile",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "gamescope",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 366,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"gamescope\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 40
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe gamescope",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2107,8 +2182,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 370,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"game-hdr\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 54
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe game-hdr",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2126,8 +2206,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 374,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"game-scope\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 65
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe game-scope",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2145,8 +2230,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 378,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"scx\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 73
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe scx",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2164,8 +2254,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 382,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"nvme-tuning\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 85
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe nvme-tuning",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2183,8 +2278,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 386,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"io-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 92
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe io-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2202,8 +2302,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 390,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"kargs-apply\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 99
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe kargs-apply",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2221,8 +2326,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 394,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"net-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 106
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe net-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2240,8 +2350,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 398,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"uksmd\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 113
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe uksmd",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2259,8 +2374,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 402,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"journal-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 120
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe journal-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2278,8 +2398,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 406,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"thp-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 127
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe thp-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2297,8 +2422,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 410,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"mimalloc\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 134
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe mimalloc",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2316,8 +2446,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 414,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"mimalloc-run\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 141
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe mimalloc-run",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2335,8 +2470,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 418,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"irq-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 148
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe irq-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2354,8 +2494,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 422,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"btrfs-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 155
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe btrfs-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2373,8 +2518,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 426,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"trim-tune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 162
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe trim-tune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2392,8 +2542,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 430,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"ananicy\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 169
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe ananicy",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2411,8 +2566,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 434,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"zswap\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 176
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe zswap",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2430,8 +2590,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 438,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"gpu-power\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 183
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe gpu-power",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2449,8 +2614,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 442,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"sched-latency\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 190
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe sched-latency",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2468,8 +2638,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 446,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"readahead\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 197
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe readahead",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2487,8 +2662,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 450,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"readahead-run\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 203
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe readahead-run",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -2506,8 +2686,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 454,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"gaming-master\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 210
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe gaming-master",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2525,8 +2710,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 458,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"wine-sync\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 217
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe wine-sync",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2544,8 +2734,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 462,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"kwin-latency\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 224
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe kwin-latency",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2563,8 +2758,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 466,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"pipewire-gaming\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 231
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe pipewire-gaming",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2582,8 +2782,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 470,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"btrfs-autotune\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 238
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe btrfs-autotune",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2601,8 +2806,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 474,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"boot-timeout\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 245
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe boot-timeout",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2620,8 +2830,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 478,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"oom-gaming\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 252
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe oom-gaming",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2639,8 +2854,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 482,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"shader-tmpfs\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 259
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe shader-tmpfs",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2658,8 +2878,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 486,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"gaming-cfs\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 266
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe gaming-cfs",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2677,8 +2902,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 490,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"gaming-audit\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 273
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe gaming-audit",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2696,8 +2926,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 494,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"steam-deadzone\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 280
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe steam-deadzone",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2715,8 +2950,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 498,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"selinux-gaming\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 287
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe selinux-gaming",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2734,8 +2974,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 502,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"fcitx-latency\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 294
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe fcitx-latency",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2753,8 +2998,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 506,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"hdr-store\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 301
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe hdr-store",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2796,8 +3046,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 514,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"psi-gaming\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 315
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe psi-gaming",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2815,8 +3070,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 518,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"numa\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 322
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe numa",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2834,8 +3094,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 522,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"pcie\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 329
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe pcie",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2853,8 +3118,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 526,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"thp-collapse\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 336
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe thp-collapse",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2872,8 +3142,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 530,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"psi-poll\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 343
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe psi-poll",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2891,8 +3166,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 534,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"compaction\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 350
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe compaction",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2910,8 +3190,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 538,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"fscache\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 357
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe fscache",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2953,8 +3238,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 546,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"bore\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 371
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe bore",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2972,8 +3262,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 550,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"shader-cache-size\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 378
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe shader-cache-size",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -2991,8 +3286,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 554,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"podman-overlay\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 385
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe podman-overlay",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3010,8 +3310,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 558,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"net-backlog\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 392
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe net-backlog",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3029,8 +3334,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 562,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"vm-watermark\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 399
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe vm-watermark",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3048,8 +3358,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 566,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-notsent\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 406
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-notsent",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3067,8 +3382,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 570,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"max-map-count\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 413
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe max-map-count",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3086,8 +3406,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 574,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"dirty-ratio\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 420
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe dirty-ratio",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3105,8 +3430,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 578,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"vfs-cache\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 427
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe vfs-cache",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3124,8 +3454,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 582,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-ecn\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 434
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-ecn",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3143,8 +3478,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 586,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-slow-start\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 441
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-slow-start",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3162,8 +3502,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 590,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"sched-autogroup\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 448
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe sched-autogroup",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3181,8 +3526,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 594,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"sched-nr-migrate\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 455
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe sched-nr-migrate",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3200,8 +3550,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 598,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"page-cluster\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 462
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe page-cluster",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3219,8 +3574,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 602,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-retries2\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 469
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-retries2",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3238,8 +3598,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 606,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-keepalive\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 476
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-keepalive",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3257,8 +3622,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 610,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"sched-child\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 483
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe sched-child",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3276,8 +3646,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 614,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"vm-stat\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 490
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe vm-stat",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3295,8 +3670,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 618,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"numa-balancing\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 497
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe numa-balancing",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3314,8 +3694,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 622,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-fastopen\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 504
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-fastopen",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3333,8 +3718,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 626,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-mtu-probing\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 511
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-mtu-probing",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3352,8 +3742,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 630,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"dirty-expire\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 518
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe dirty-expire",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3371,8 +3766,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 634,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"file-max\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 525
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe file-max",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3390,8 +3790,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 638,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"perf-cpu\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 532
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe perf-cpu",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3409,8 +3814,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 642,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"swappiness\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 539
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe swappiness",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3428,8 +3838,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 646,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-fin-timeout\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 546
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-fin-timeout",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3447,8 +3862,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 650,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"somaxconn\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 553
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe somaxconn",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3466,8 +3886,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 654,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"inotify-watches\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 560
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe inotify-watches",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3485,8 +3910,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 658,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"min-free-kbytes\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 567
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe min-free-kbytes",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3504,8 +3934,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 662,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"rmem-max\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 574
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe rmem-max",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3523,8 +3958,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 666,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"wmem-max\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 581
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe wmem-max",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3542,8 +3982,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 670,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"aio-max\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 588
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe aio-max",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3561,8 +4006,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 674,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"overcommit-memory\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 595
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe overcommit-memory",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3580,8 +4030,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 678,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"netdev-budget\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 602
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe netdev-budget",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3599,8 +4054,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 682,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"rmem-default\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 609
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe rmem-default",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3618,8 +4078,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 686,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"wmem-default\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 616
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe wmem-default",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3637,8 +4102,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 690,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-window-scaling\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 623
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-window-scaling",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3656,8 +4126,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 694,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-sack\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 630
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-sack",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3675,8 +4150,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 698,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-timestamps\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 637
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-timestamps",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3694,8 +4174,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 702,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"busy-read\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 644
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe busy-read",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3713,8 +4198,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 706,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"busy-poll\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 651
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe busy-poll",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3732,8 +4222,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 710,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-no-metrics-save\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 658
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-no-metrics-save",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3751,8 +4246,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 714,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-retries1\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 665
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-retries1",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3770,8 +4270,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 718,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"tcp-orphan-retries\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 672
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe tcp-orphan-retries",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3789,8 +4294,13 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 722,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"epp-ac\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 679
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe epp-ac",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",
@@ -3808,38 +4318,48 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 726,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"zink-run\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 686
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe zink-run",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "low-latency",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 730,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"low-latency\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/performance.just",
+          "line": 698
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe low-latency",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "enable-bpftune",
@@ -3854,16 +4374,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe enable-bpftune",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "disable-bpftune",
@@ -3878,16 +4398,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe disable-bpftune",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "probe-json",
@@ -3918,19 +4438,24 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 746,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"apply-preset\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/role-presets.just",
+          "line": 4
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe apply-preset",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "list-presets",
@@ -4017,16 +4542,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-sunshine",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "setup-vr",
@@ -4041,16 +4566,16 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-vr",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
-      "risk_tier": "user-session-writer",
-      "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
+      "risk_tier": "privileged-writer",
+      "risk_basis": "system, hardware, boot, or driver mutation",
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "setup-tailscale",
@@ -4065,24 +4590,29 @@
       ],
       "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe setup-tailscale",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "user-session-writer",
       "risk_basis": "user-session, package, or application mutation",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "update",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 774,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"update\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 11
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe update",
       "route_kind": "explicit-dispatch",
       "rust_owner": "native::kyth-runtime",
@@ -4196,103 +4726,133 @@
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 794,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"retry-quarantined-update\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 131
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe retry-quarantined-update",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "rebase",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 798,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"rebase\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 148
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe rebase",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "switch-channel",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 802,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"switch-channel\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 180
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe switch-channel",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "switch-channel-impl",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 806,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"switch-channel-impl\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 213
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe switch-channel-impl",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "switch-kernel",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 810,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"switch-kernel\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 242
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe switch-kernel",
-      "route_kind": "missing-owner",
-      "rust_owner": null,
-      "rust_target": null,
-      "assessment": "open",
-      "status": "needs-rust-owner",
+      "route_kind": "explicit-dispatch",
+      "rust_owner": "native::kyth-runtime",
+      "rust_target": "kyth-runtime::recipe",
+      "assessment": "covered",
+      "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "migration_priority": 1,
+      "migration_priority": 3,
       "parity_tests": [],
-      "retirement": "retain recipe until a Rust owner is assigned or removal is explicitly reviewed"
+      "retirement": "retain recipe until the Rust owner has parity coverage and image validation"
     },
     {
       "name": "flatpak-trim",
       "manifest": "build_files/just/kyth/native.just",
       "manifest_line": 814,
       "manifest_command": "exec /usr/bin/kyth-runtime recipe \"flatpak-trim\" <args>",
-      "legacy_sources": [],
-      "source_provenance": "native-manifest-only",
+      "legacy_sources": [
+        {
+          "path": "build_files/just/kyth/system-updates.just",
+          "line": 298
+        }
+      ],
+      "source_provenance": "legacy-recipe",
       "current_route": "kyth-runtime recipe flatpak-trim",
       "route_kind": "native-fallback",
       "rust_owner": "native::kyth-tunable-rs",

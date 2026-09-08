@@ -35,7 +35,12 @@ TUNABLE_REGISTRY = ROOT / "src/kyth-shared-rs/src/system/tunable_registry.rs"
 OUTPUT = ROOT / "build_files/config/runtime-recipe-migration-inventory.json"
 
 SCHEMA_VERSION = 1
-RECIPE_RE = re.compile(r"^(?P<name>[A-Za-z_][A-Za-z0-9_-]*)\s*(?P<args>\*args)?\s*:")
+# Recipe declarations may use ``*args`` or named/default parameters.  Exclude
+# ``set shell :=`` and other assignments, which also begin with an identifier
+# and contain a colon but are not recipes.
+RECIPE_RE = re.compile(
+    r"^(?P<name>[A-Za-z_][A-Za-z0-9_-]*)(?:\s+[^:\n]*)*:\s*(?![=])"
+)
 ROUTE_NAME_RE = re.compile(r'"([A-Za-z_][A-Za-z0-9_-]*)"')
 CARGO_BINARY_RE = re.compile(r'^\s*name\s*=\s*"(kyth-[^"]+)"\s*$', re.MULTILINE)
 TUNABLE_NAME_RE = re.compile(r'\("([a-z0-9][a-z0-9-]*)"')
@@ -81,7 +86,9 @@ PRIVILEGED_MARKERS = (
     "reclaim-windows",
     "hardware-policy",
     "driver",
-    "battlenet",
+    "displaylink",
+    "asus-tools",
+    "setup-vr",
     "setup-waydroid",
     "remove-waydroid",
     "setup-boot-windows-steam",
