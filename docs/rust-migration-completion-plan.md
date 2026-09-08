@@ -722,12 +722,12 @@ material while deletion remains gated by the observation window.
   explicit Rust dispatcher route or an existing native Rust fallback. Optional
   vendor-asset operations return a controlled prerequisite error rather than
   invoking Python.
-- [~] **3 — high-risk prioritization:** the ledger records risk tiers and
-  migration priorities; the remaining high-risk setup, driver, destructive,
-  and update workflows remain first in the implementation queue.
+- [x] **3 — high-risk prioritization:** the remaining owner batch was
+  implemented in risk order: setup/Waydroid, dual-boot, driver staging,
+  gaming launchers/performance, and update/rebase/channel/kernel paths.
 - [~] **4 — recipe parity:** [runtime recipe parity tests](../tests/test_runtime_recipe_parity.py)
   cover the newly wired owners and preserve their legacy arguments/app IDs;
-  behavioral parity for the remaining 40 requires implementation first.
+  exact-image behavioral parity remains pending item 7.
 - [x] **5 — Python package decision:** the final-image package is explicitly
   temporary compatibility material, not an active runtime authority.
 - [x] **6 — compatibility classification:** allowed uses and the removal gate
