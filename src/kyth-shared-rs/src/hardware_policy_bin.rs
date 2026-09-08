@@ -8,7 +8,7 @@ use std::path::Path;
 use std::process::ExitCode;
 use std::time::Duration;
 
-use kyth_shared::atomic_io::{atomic_write_json, atomic_write_text};
+use kyth_shared::atomic_io::{atomic_write_bytes, atomic_write_json, atomic_write_text};
 use kyth_shared::system::akmods_lock::{acquire, DEFAULT_LOCK_PATH, DEFAULT_TIMEOUT};
 use kyth_shared::system::hardware_policy::{self, Evaluation, DEFAULT_POLICY_PATH};
 use kyth_shared::system::process::run_bounded;
@@ -18,12 +18,68 @@ const REPORT_PATH: &str = "/var/lib/kyth/hardware-support.json";
 const MODPROBE_PATH: &str = "/etc/modprobe.d/90-kyth-hardware-policy.conf";
 const SCX_PATH: &str = "/etc/scx/scx_loader.conf";
 
+fn modprobe_path() -> std::path::PathBuf {
+    env::var_os("KYTH_HARDWARE_POLICY_MODPROBE")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| MODPROBE_PATH.into())
+}
+
+fn scx_path() -> std::path::PathBuf {
+    env::var_os("KYTH_HARDWARE_POLICY_SCX")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| SCX_PATH.into())
+}
+
+#[derive(Clone)]
+struct FileSnapshot {
+    path: std::path::PathBuf,
+    contents: Option<Vec<u8>>,
+}
+
+fn snapshot_file(path: &Path) -> io::Result<FileSnapshot> {
+    match fs::read(path) {
+        Ok(contents) => Ok(FileSnapshot {
+            path: path.to_path_buf(),
+            contents: Some(contents),
+        }),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(FileSnapshot {
+            path: path.to_path_buf(),
+            contents: None,
+        }),
+        Err(error) => Err(error),
+    }
+}
+
+fn restore_file(snapshot: &FileSnapshot) -> io::Result<()> {
+    match &snapshot.contents {
+        Some(contents) => atomic_write_bytes(&snapshot.path, contents, Some(0o644)),
+        None => match fs::remove_file(&snapshot.path) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(error),
+        },
+    }
+}
+
 fn run(argv: &[String], timeout: Duration) -> io::Result<std::process::Output> {
     run_bounded(argv, timeout)
 }
 
 fn command_ok(argv: &[String], timeout: Duration) -> bool {
     run(argv, timeout).is_ok_and(|output| output.status.success())
+}
+
+fn run_checked(argv: &[String], description: &str, timeout: Duration) -> Result<(), String> {
+    let output = run(argv, timeout).map_err(|error| format!("{description}: {error}"))?;
+    if output.status.success() {
+        return Ok(());
+    }
+    let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    Err(if detail.is_empty() {
+        format!("{description} failed")
+    } else {
+        format!("{description} failed: {detail}")
+    })
 }
 
 fn host_command_exists(name: &str) -> bool {
@@ -133,9 +189,14 @@ fn profile_policy(evaluation: &Evaluation) -> (Vec<String>, bool) {
 }
 
 fn configure_scheduler(candidates: &[String]) -> io::Result<String> {
-    let disable = || {
-        let _ = fs::remove_file(SCX_PATH);
-        let _ = run(
+    let path = scx_path();
+    let disable = || -> io::Result<()> {
+        match fs::remove_file(&path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
+        }
+        let output = run(
             &[
                 "systemctl".into(),
                 "disable".into(),
@@ -143,10 +204,15 @@ fn configure_scheduler(candidates: &[String]) -> io::Result<String> {
                 "scx_loader.service".into(),
             ],
             Duration::from_secs(30),
-        );
+        )?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(io::Error::other("could not disable scx_loader.service"))
+        }
     };
     if !Path::new("/sys/kernel/sched_ext").is_dir() || !host_command_exists("scx_loader") {
-        disable();
+        disable()?;
         return Ok("kernel-default".into());
     }
     let selected = candidates
@@ -154,30 +220,30 @@ fn configure_scheduler(candidates: &[String]) -> io::Result<String> {
         .find(|candidate| host_command_exists(candidate))
         .cloned();
     let Some(selected) = selected else {
-        disable();
+        disable()?;
         return Ok("kernel-default".into());
     };
-    atomic_write_text(
-        SCX_PATH,
-        &format!("SCX_SCHEDULER={selected}\n"),
-        Some(0o600),
-    )?;
-    let _ = run(
+    atomic_write_text(&path, &format!("SCX_SCHEDULER={selected}\n"), Some(0o600))?;
+    run_checked(
         &[
             "systemctl".into(),
             "enable".into(),
             "scx_loader.service".into(),
         ],
+        "enable scx_loader.service",
         Duration::from_secs(30),
-    );
-    let _ = run(
+    )
+    .map_err(io::Error::other)?;
+    run_checked(
         &[
             "systemctl".into(),
             "restart".into(),
             "scx_loader.service".into(),
         ],
+        "restart scx_loader.service",
         Duration::from_secs(30),
-    );
+    )
+    .map_err(io::Error::other)?;
     Ok(selected)
 }
 
@@ -222,48 +288,52 @@ fn configure_nvidia() -> Result<String, String> {
         drop(lock);
     }
     let args = "rd.driver.blacklist=nouveau,nova_core modprobe.blacklist=nouveau,nova_core nvidia-drm.modeset=1 nvidia-drm.fbdev=1";
-    let _ = run(
+    run_checked(
         &[
             "grubby".into(),
             "--update-kernel=ALL".into(),
             format!("--args={args}"),
         ],
+        "apply NVIDIA kernel arguments",
         Duration::from_secs(30),
-    );
+    )?;
     for unit in [
         "nvidia-suspend.service",
         "nvidia-resume.service",
         "nvidia-hibernate.service",
     ] {
-        let _ = run(
+        run_checked(
             &["systemctl".into(), "enable".into(), unit.into()],
+            &format!("enable {unit}"),
             Duration::from_secs(30),
-        );
+        )?;
     }
     Ok("proprietary-ready".into())
 }
 
-fn clear_nvidia() -> String {
+fn clear_nvidia() -> Result<String, String> {
     let args = "rd.driver.blacklist=nouveau,nova_core modprobe.blacklist=nouveau,nova_core nvidia-drm.modeset=1 nvidia-drm.fbdev=1";
-    let _ = run(
+    run_checked(
         &[
             "grubby".into(),
             "--update-kernel=ALL".into(),
             format!("--remove-args={args}"),
         ],
+        "remove NVIDIA kernel arguments",
         Duration::from_secs(30),
-    );
+    )?;
     for unit in [
         "nvidia-suspend.service",
         "nvidia-resume.service",
         "nvidia-hibernate.service",
     ] {
-        let _ = run(
+        run_checked(
             &["systemctl".into(), "disable".into(), unit.into()],
+            &format!("disable {unit}"),
             Duration::from_secs(30),
-        );
+        )?;
     }
-    "not-required".into()
+    Ok("not-required".into())
 }
 
 fn apply(
@@ -277,6 +347,8 @@ fn apply(
     }
     let evaluation = evaluation(policy_path)?;
     let expected = render_modprobe(&evaluation)?;
+    let modprobe_snapshot = snapshot_file(&modprobe_path()).map_err(|error| error.to_string())?;
+    let scx_snapshot = snapshot_file(&scx_path()).map_err(|error| error.to_string())?;
     let kernel = fs::read_to_string("/proc/sys/kernel/osrelease")
         .unwrap_or_else(|_| "unknown".into())
         .trim()
@@ -297,7 +369,7 @@ fn apply(
                 .iter()
                 .all(|(key, value)| previous.get(key) == Some(value))
         })
-        && fs::read_to_string(MODPROBE_PATH).is_ok_and(|text| text.trim() == expected.trim());
+        && fs::read_to_string(modprobe_path()).is_ok_and(|text| text.trim() == expected.trim());
     if unchanged {
         atomic_write_json(
             report_path,
@@ -307,7 +379,8 @@ fn apply(
         .map_err(|error| error.to_string())?;
         return Ok(previous);
     }
-    atomic_write_text(MODPROBE_PATH, &expected, Some(0o644)).map_err(|error| error.to_string())?;
+    atomic_write_text(&modprobe_path(), &expected, Some(0o644))
+        .map_err(|error| error.to_string())?;
     let (schedulers, nvidia_setup) = profile_policy(&evaluation);
     let mut state = serde_json::json!({
         "schema_version": 1, "status": "applying", "policy_revision": evaluation.policy_revision,
@@ -324,7 +397,7 @@ fn apply(
         let nvidia = if nvidia_setup {
             configure_nvidia()?
         } else {
-            clear_nvidia()
+            clear_nvidia()?
         };
         state["scheduler"] = scheduler.into();
         state["nvidia"] = nvidia.into();
@@ -332,6 +405,18 @@ fn apply(
         Ok::<(), String>(())
     })();
     if let Err(error) = result {
+        let mut rollback_errors = Vec::new();
+        if let Err(rollback) = restore_file(&modprobe_snapshot) {
+            rollback_errors.push(format!("modprobe rollback: {rollback}"));
+        }
+        if let Err(rollback) = restore_file(&scx_snapshot) {
+            rollback_errors.push(format!("scheduler rollback: {rollback}"));
+        }
+        let error = if rollback_errors.is_empty() {
+            error
+        } else {
+            format!("{error}; {}", rollback_errors.join("; "))
+        };
         state["status"] = "failed".into();
         state["error"] = error.clone().into();
         atomic_write_json(state_path, &state, Some(0o600)).map_err(|write| write.to_string())?;
@@ -473,4 +558,30 @@ fn main() -> ExitCode {
         return ExitCode::from(1);
     }
     ExitCode::SUCCESS
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn file_snapshot_restores_previous_bytes() {
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let path = directory.path().join("policy.conf");
+        fs::write(&path, b"before\n").expect("initial file");
+        let snapshot = snapshot_file(&path).expect("snapshot");
+        fs::write(&path, b"partial mutation\n").expect("partial file");
+        restore_file(&snapshot).expect("restore");
+        assert_eq!(fs::read(&path).expect("restored file"), b"before\n");
+    }
+
+    #[test]
+    fn file_snapshot_restores_absence_after_partial_creation() {
+        let directory = tempfile::tempdir().expect("temporary directory");
+        let path = directory.path().join("policy.conf");
+        let snapshot = snapshot_file(&path).expect("snapshot");
+        fs::write(&path, b"partial mutation\n").expect("partial file");
+        restore_file(&snapshot).expect("restore");
+        assert!(!path.exists());
+    }
 }

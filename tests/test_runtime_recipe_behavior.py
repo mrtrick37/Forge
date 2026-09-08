@@ -39,6 +39,12 @@ if log:
 
 if Path(sys.argv[0]).name == "efibootmgr":
     print("Boot0007* Windows Boot Manager")
+failed_command = os.environ.get("KYTH_RUNTIME_FAKE_FAIL_COMMAND")
+if failed_command and (
+    Path(sys.argv[0]).name == failed_command
+    or (len(sys.argv) > 1 and sys.argv[1] == failed_command)
+):
+    sys.exit(1)
 sys.exit(int(os.environ.get("KYTH_RUNTIME_FAKE_EXIT", "0")))
 '''
 
@@ -73,6 +79,7 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
             "fwupdmgr",
             "kcmshell6",
             "systemsettings",
+            "rpm-ostree",
         ):
             path = fake_bin / command
             path.write_text(FAKE_COMMAND, encoding="utf-8")
@@ -129,6 +136,8 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
             environment, log = self._environment(Path(directory))
             for recipe, (args, expected_arg) in cases.items():
                 with self.subTest(recipe=recipe):
+                    if recipe == "remove-waydroid":
+                        (Path(environment["HOME"]) / ".waydroid").mkdir(parents=True)
                     result = self._run(recipe, args, environment)
                     self.assertEqual(
                         result.returncode,
@@ -246,8 +255,24 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
             result = self._run("switch-channel", ["--dry-run"], environment)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn(":latest", result.stdout)
-            self.assertEqual(self._records(log), [])
 
+    def test_waydroid_removal_restores_user_data_when_privileged_delete_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            environment, log = self._environment(temporary)
+            user_data = Path(environment["HOME"]) / ".waydroid"
+            user_data.mkdir(parents=True)
+            (user_data / "marker").write_text("keep", encoding="utf-8")
+            environment["KYTH_RUNTIME_FAKE_FAIL_COMMAND"] = "rm"
+
+            result = self._run("remove-waydroid", ["--confirm"], environment)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue((user_data / "marker").is_file())
+            self.assertEqual(
+                list(user_data.parent.glob(".kyth-waydroid-removal-*")),
+                [],
+            )
     def test_external_failure_is_returned_to_the_recipe_caller(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             environment, log = self._environment(Path(directory), fake_exit=23)

@@ -294,7 +294,45 @@ fn remove_waydroid(args: &[String]) -> io::Result<ExitCode> {
         );
         return Ok(ExitCode::from(2));
     }
-    let _ = run(
+    let user_home = env::var_os("HOME")
+        .map(PathBuf::from)
+        .filter(|path| path != Path::new("/"))
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "HOME is required for safe Waydroid removal",
+            )
+        })?;
+    let system_path = PathBuf::from("/var/lib/waydroid");
+    let user_paths = [
+        user_home.join(".local/share/waydroid"),
+        user_home.join(".waydroid"),
+    ];
+    for path in std::iter::once(&system_path).chain(user_paths.iter()) {
+        if let Ok(metadata) = fs::symlink_metadata(path) {
+            if metadata.file_type().is_symlink() || !metadata.is_dir() {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    format!("refusing to remove unsafe Waydroid path {}", path.display()),
+                ));
+            }
+        }
+    }
+    let staged_user_paths = user_paths
+        .iter()
+        .filter(|path| path.is_dir())
+        .map(|path| {
+            (
+                (*path).clone(),
+                path.with_file_name(format!(".kyth-waydroid-removal-{}", std::process::id())),
+            )
+        })
+        .collect::<Vec<_>>();
+    if staged_user_paths.is_empty() && !system_path.is_dir() {
+        println!("Waydroid data is already absent.");
+        return Ok(ExitCode::SUCCESS);
+    }
+    let service = run(
         "systemctl",
         &[
             "--user".into(),
@@ -302,29 +340,115 @@ fn remove_waydroid(args: &[String]) -> io::Result<ExitCode> {
             "--now".into(),
             "waydroid-container.service".into(),
         ],
-    );
-    let _ = run(
+    )?;
+    if service != ExitCode::SUCCESS {
+        return Ok(service);
+    }
+    let container = run(
         "sudo",
         &["waydroid".into(), "container".into(), "stop".into()],
-    );
-    let _ = run(
+    )?;
+    if container != ExitCode::SUCCESS {
+        return Ok(container);
+    }
+    let session = run(
         "sudo",
         &["waydroid".into(), "session".into(), "stop".into()],
-    );
-    let result = run(
+    )?;
+    if session != ExitCode::SUCCESS {
+        return Ok(session);
+    }
+    let mut staged = Vec::new();
+    for (original, backup) in &staged_user_paths {
+        if backup.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                format!("stale Waydroid removal staging path {}", backup.display()),
+            ));
+        }
+        if let Err(error) = fs::rename(original, backup) {
+            for (restored, staged_path) in staged.iter().rev() {
+                let _ = fs::rename(staged_path, restored);
+            }
+            return Err(error);
+        }
+        staged.push((original.clone(), backup.clone()));
+    }
+    let result = match run(
         "sudo",
         &[
             "rm".into(),
             "-rf".into(),
+            "--".into(),
             "/var/lib/waydroid".into(),
-            home().join(".local/share/waydroid").display().to_string(),
-            home().join(".waydroid").display().to_string(),
         ],
-    )?;
-    if result == ExitCode::SUCCESS {
-        println!("Waydroid data removed. The package remains installed for rollback.");
+    ) {
+        Ok(result) => result,
+        Err(error) => {
+            for (original, staged_path) in staged.iter().rev() {
+                if let Err(restore) = fs::rename(staged_path, original) {
+                    return Err(io::Error::other(format!(
+                        "Waydroid removal failed: {error}; restoring {} failed: {restore}",
+                        original.display()
+                    )));
+                }
+            }
+            return Err(error);
+        }
+    };
+    if result != ExitCode::SUCCESS {
+        for (original, staged_path) in staged.iter().rev() {
+            if let Err(error) = fs::rename(staged_path, original) {
+                return Err(io::Error::other(format!(
+                    "Waydroid removal failed with {result:?}; restoring {} failed: {error}",
+                    original.display()
+                )));
+            }
+        }
+        return Ok(result);
     }
-    Ok(result)
+    for (_, staged_path) in &staged {
+        if let Err(error) = fs::remove_dir_all(staged_path) {
+            return Err(io::Error::new(
+                error.kind(),
+                format!(
+                    "Waydroid removal staged data remains at {}: {error}",
+                    staged_path.display()
+                ),
+            ));
+        }
+    }
+    println!("Waydroid data removed. The package remains installed for rollback.");
+    Ok(ExitCode::SUCCESS)
+}
+
+fn rpm_ostree_install(packages: &[&str], allow_inactive: bool) -> io::Result<ExitCode> {
+    if !command_exists("rpm-ostree") {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            "rpm-ostree is required to stage this package installation",
+        ));
+    }
+    let mut install = vec![
+        "rpm-ostree".to_string(),
+        "install".to_string(),
+        "--idempotent".to_string(),
+    ];
+    if allow_inactive {
+        install.push("--allow-inactive".to_string());
+    }
+    install.extend(packages.iter().map(|package| (*package).to_string()));
+    let result = run("sudo", &install)?;
+    if result != ExitCode::SUCCESS {
+        return Ok(result);
+    }
+
+    let status = run("rpm-ostree", &["status".into(), "--json".into()])?;
+    if status != ExitCode::SUCCESS {
+        return Ok(status);
+    }
+    println!("Package deployment staged. Reboot to activate the new deployment.");
+    Ok(ExitCode::SUCCESS)
 }
 
 fn printer_setup(args: &[String]) -> io::Result<ExitCode> {
@@ -526,7 +650,8 @@ fn setup_boot_windows_steam(args: &[String]) -> io::Result<ExitCode> {
             io::Error::new(io::ErrorKind::NotFound, "no Windows EFI boot entry found")
         })?;
     let temp = env::temp_dir().join(format!("kyth-boot-windows-{}", std::process::id()));
-    let sudoers_temp = env::temp_dir().join(format!("kyth-boot-windows-sudoers-{}", std::process::id()));
+    let sudoers_temp =
+        env::temp_dir().join(format!("kyth-boot-windows-sudoers-{}", std::process::id()));
     write_atomic(
         &temp,
         format!(
@@ -683,10 +808,7 @@ fn rebase_image(args: &[String]) -> io::Result<ExitCode> {
     if switched != ExitCode::SUCCESS {
         return Ok(switched);
     }
-    run(
-        "sudo",
-        &["/usr/bin/kyth-finalize-staged".into()],
-    )
+    run("sudo", &["/usr/bin/kyth-finalize-staged".into()])
 }
 
 fn switch_kernel(args: &[String]) -> io::Result<ExitCode> {
@@ -702,10 +824,9 @@ fn switch_kernel(args: &[String]) -> io::Result<ExitCode> {
         }
     };
     let current_branch = kyth_shared::system::bootc_query::image_reference()
-        .and_then(|reference| {
-            kyth_shared::system::bootc_policy::branch_from_ref(Some(&reference))
-        });
-    let target = kyth_shared::system::bootc_policy::image_tag_for_kernel(flavor, current_branch.as_deref());
+        .and_then(|reference| kyth_shared::system::bootc_policy::branch_from_ref(Some(&reference)));
+    let target =
+        kyth_shared::system::bootc_policy::image_tag_for_kernel(flavor, current_branch.as_deref());
     run(
         "sudo",
         &[
@@ -1544,48 +1665,21 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
             }
             run("corectrl", &[])
         }
-        "install-racing-wheel-drivers" => run(
-            "sudo",
+        "install-racing-wheel-drivers" => rpm_ostree_install(
             &[
-                "rpm-ostree".into(),
-                "install".into(),
-                "--idempotent".into(),
-                "--allow-inactive".into(),
-                "akmod-hid-tmff2".into(),
-                "akmod-new-lg4ff".into(),
-                "akmod-hid-fanatecff".into(),
-                "akmod-t150-driver".into(),
+                "akmod-hid-tmff2",
+                "akmod-new-lg4ff",
+                "akmod-hid-fanatecff",
+                "akmod-t150-driver",
             ],
+            true,
         ),
-        "install-asus-tools" => run(
-            "sudo",
-            &[
-                "rpm-ostree".into(),
-                "install".into(),
-                "--idempotent".into(),
-                "asusctl".into(),
-                "supergfxctl".into(),
-                "rog-control-center".into(),
-            ],
+        "install-asus-tools" => rpm_ostree_install(
+            &["asusctl", "supergfxctl", "rog-control-center"],
+            false,
         ),
-        "install-nvidia-driver" => run(
-            "sudo",
-            &[
-                "rpm-ostree".into(),
-                "install".into(),
-                "--idempotent".into(),
-                "akmod-nvidia".into(),
-            ],
-        ),
-        "install-displaylink" => run(
-            "sudo",
-            &[
-                "rpm-ostree".into(),
-                "install".into(),
-                "--idempotent".into(),
-                "displaylink".into(),
-            ],
-        ),
+        "install-nvidia-driver" => rpm_ostree_install(&["akmod-nvidia"], false),
+        "install-displaylink" => rpm_ostree_install(&["displaylink"], false),
         "install-lsfg-vk" | "deploy-opticscaler" | "install-umu" => Err(io::Error::new(
             io::ErrorKind::Unsupported,
             "this optional vendor-asset recipe is retired and is not part of the supported image contract",
@@ -1617,15 +1711,7 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
                 "bpftune.service".into(),
             ],
         ),
-        "setup-vr" => run(
-            "sudo",
-            &[
-                "rpm-ostree".into(),
-                "install".into(),
-                "--idempotent".into(),
-                "openxr-loader".into(),
-            ],
-        ),
+        "setup-vr" => rpm_ostree_install(&["openxr-loader"], false),
         "retry-quarantined-update" => {
             require_args(args, 1, Some(1));
             validate_token(&args[0], "digest")
