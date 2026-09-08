@@ -100,6 +100,17 @@ pub fn redact_sensitive_text(text: &str) -> String {
 }
 
 fn redact_sensitive_line(line: &str) -> String {
+    let mut redacted = line.to_string();
+    loop {
+        let next = redact_sensitive_line_once(&redacted);
+        if next == redacted {
+            return redacted;
+        }
+        redacted = next;
+    }
+}
+
+fn redact_sensitive_line_once(line: &str) -> String {
     const MARKERS: &[&str] = &[
         "password", "passwd", "passphrase", "secret", "token", "cookie",
         "authcookie", "samlresponse", "bitlocker_key", "authorization", "key",
@@ -154,6 +165,10 @@ fn redact_sensitive_line(line: &str) -> String {
             }
             if value_start == value_end {
                 search_from = end;
+                continue;
+            }
+            if &line[value_start..value_end] == "<redacted>" {
+                search_from = value_end;
                 continue;
             }
             let mut redacted = String::with_capacity(line.len());
@@ -242,6 +257,15 @@ mod tests {
         assert!(!redacted.contains("json-secret"));
         assert!(redacted.contains("operation failed password=<redacted>; retryable=true"));
         assert!(redacted.contains("status: token=<redacted>"));
+    }
+
+    #[test]
+    fn sensitive_output_redacts_multiple_fields_on_one_line() {
+        let redacted = redact_sensitive_text("password=first token=second secret=third");
+        assert_eq!(
+            redacted,
+            "password=<redacted> token=<redacted> secret=<redacted>"
+        );
     }
     #[test]
     fn elapsed() { assert_eq!(format_elapsed(70), "1m 10s"); assert_eq!(format_elapsed(5), "5s"); }

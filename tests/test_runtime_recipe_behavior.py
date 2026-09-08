@@ -39,6 +39,15 @@ if log:
 
 if Path(sys.argv[0]).name == "efibootmgr":
     print("Boot0007* Windows Boot Manager")
+if Path(sys.argv[0]).name == "fwupdmgr":
+    if sys.argv[1:] == ["get-updates"] and os.environ.get("KYTH_RUNTIME_FAKE_FWUPD_UPDATES"):
+        print("Device ID: fake-device")
+    if sys.argv[1:] and sys.argv[1] == "update":
+        output = os.environ.get("KYTH_RUNTIME_FAKE_FWUPD_UPDATE_OUTPUT")
+        if output:
+            print(output)
+        if os.environ.get("KYTH_RUNTIME_FAKE_FWUPD_UPDATE_EXIT"):
+            sys.exit(int(os.environ["KYTH_RUNTIME_FAKE_FWUPD_UPDATE_EXIT"]))
 failed_command = os.environ.get("KYTH_RUNTIME_FAKE_FAIL_COMMAND")
 if failed_command and (
     Path(sys.argv[0]).name == failed_command
@@ -71,7 +80,7 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
 
     def _environment(self, temporary: Path, *, fake_exit: int = 0) -> tuple[dict[str, str], Path]:
         fake_bin = temporary / "fake-bin"
-        fake_bin.mkdir()
+        fake_bin.mkdir(parents=True)
         for command in (
             "sudo",
             "systemctl",
@@ -80,6 +89,8 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
             "kcmshell6",
             "systemsettings",
             "rpm-ostree",
+            "timedatectl",
+            "bootc",
         ):
             path = fake_bin / command
             path.write_text(FAKE_COMMAND, encoding="utf-8")
@@ -155,6 +166,203 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
                         ),
                         f"{recipe} did not issue the expected fixed command",
                     )
+
+    def test_high_risk_routes_preserve_exact_fixed_command_shapes(self) -> None:
+        expected = {
+            "setup-waydroid": [
+                ("sudo", ["rpm-ostree", "install", "--idempotent", "waydroid"]),
+                (
+                    "systemctl",
+                    ["--user", "enable", "--now", "waydroid-container.service"],
+                ),
+                ("sudo", ["waydroid", "init", "-s", "GAPPS"]),
+            ],
+            "setup-printer": [
+                ("sudo", ["systemctl", "enable", "--now", "cups"]),
+                ("kcmshell6", ["kcm_printer_manager"]),
+            ],
+            "firmware-update": [
+                ("fwupdmgr", ["refresh", "--force"]),
+                ("fwupdmgr", ["get-updates"]),
+            ],
+            "fix-dualboot-clock": [
+                (
+                    "sudo",
+                    ["timedatectl", "set-local-rtc", "1", "--adjust-system-clock"],
+                )
+            ],
+            "retry-quarantined-update": [
+                (
+                    "sudo",
+                    ["kyth-boot-health", "clear-quarantine", "--digest", "sha256:abc"],
+                )
+            ],
+            "rebase": [
+                ("sudo", ["bootc", "switch", "ghcr.io/kyth-os/kyth:testing"]),
+                ("sudo", ["/usr/bin/kyth-finalize-staged"]),
+            ],
+            "switch-channel": [
+                ("sudo", ["/usr/bin/kyth-bootc-guard", "switch-testing"])
+            ],
+            "switch-channel-impl": [
+                ("sudo", ["/usr/bin/kyth-bootc-guard", "switch-testing"])
+            ],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for recipe, commands in expected.items():
+                with self.subTest(recipe=recipe):
+                    environment, log = self._environment(temporary / recipe)
+                    if recipe == "remove-waydroid":
+                        (Path(environment["HOME"]) / ".waydroid").mkdir(parents=True)
+                    result = self._run(
+                        recipe,
+                        ["sha256:abc"] if recipe == "retry-quarantined-update" else (
+                            ["testing"] if recipe in {"switch-channel", "switch-channel-impl"} else (
+                                ["kyth:testing"] if recipe == "rebase" else []
+                            )
+                        ),
+                        environment,
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    records = self._records(log)
+                    for command, args in commands:
+                        self.assertIn({"command": command, "args": args}, records)
+
+    def test_package_routes_stage_expected_packages_and_report_reboot(self) -> None:
+        expected = {
+            "install-racing-wheel-drivers": (
+                [
+                    "akmod-hid-tmff2",
+                    "akmod-new-lg4ff",
+                    "akmod-hid-fanatecff",
+                    "akmod-t150-driver",
+                ],
+                True,
+            ),
+            "install-asus-tools": (["asusctl", "supergfxctl", "rog-control-center"], False),
+            "install-nvidia-driver": (["akmod-nvidia"], False),
+            "install-displaylink": (["displaylink"], False),
+            "setup-vr": (["openxr-loader"], False),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for recipe, (packages, allow_inactive) in expected.items():
+                with self.subTest(recipe=recipe):
+                    environment, log = self._environment(root / recipe)
+                    result = self._run(recipe, [], environment)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    records = self._records(log)
+                    installs = [record for record in records if record["command"] == "sudo"]
+                    self.assertEqual(len(installs), 1)
+                    expected_args = ["rpm-ostree", "install", "--idempotent"]
+                    if allow_inactive:
+                        expected_args.append("--allow-inactive")
+                    expected_args.extend(packages)
+                    self.assertEqual(installs[0]["args"], expected_args)
+                    self.assertIn(
+                        {"command": "rpm-ostree", "args": ["status", "--json"]},
+                        records,
+                    )
+                    self.assertIn("reboot", result.stdout.lower())
+
+    def test_high_risk_child_failures_never_report_success(self) -> None:
+        cases = {
+            "ai-dev-remove": [],
+            "firmware-update": [],
+            "fix-dualboot-clock": [],
+            "hardware-policy": [],
+            "hardware-policy-apply": [],
+            "install-asus-tools": [],
+            "install-displaylink": [],
+            "install-nvidia-driver": [],
+            "install-racing-wheel-drivers": [],
+            "rebase": ["kyth:testing"],
+            "reclaim-windows": [],
+            "remove-waydroid": ["--confirm"],
+            "retry-quarantined-update": ["sha256:abc"],
+            "setup-boot-windows-steam": [],
+            "setup-printer": [],
+            "setup-vr": [],
+            "setup-waydroid": [],
+            "switch-channel": ["testing"],
+            "switch-channel-impl": ["testing"],
+            "switch-kernel": ["cachy"],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for recipe, args in cases.items():
+                with self.subTest(recipe=recipe):
+                    environment, log = self._environment(root / recipe, fake_exit=23)
+                    if recipe == "remove-waydroid":
+                        (Path(environment["HOME"]) / ".waydroid").mkdir(parents=True)
+                    result = self._run(recipe, args, environment)
+                    self.assertNotEqual(result.returncode, 0)
+
+    def test_repeated_mutations_are_idempotent_or_recover_cleanly(self) -> None:
+        package = "install-nvidia-driver"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment, log = self._environment(root / package)
+            first = self._run(package, [], environment)
+            second = self._run(package, [], environment)
+            self.assertEqual(first.returncode, 0, first.stderr)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            installs = [record for record in self._records(log) if record["command"] == "sudo"]
+            self.assertEqual(len(installs), 2)
+            self.assertEqual(installs[0]["args"], installs[1]["args"])
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment, log = self._environment(root)
+            user_data = Path(environment["HOME"]) / ".waydroid"
+            user_data.mkdir(parents=True)
+            self.assertEqual(self._run("remove-waydroid", ["--confirm"], environment).returncode, 0)
+            second = self._run("remove-waydroid", ["--confirm"], environment)
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertIn("already absent", second.stdout)
+            self.assertEqual(len(self._records(log)), 4)
+
+    def test_firmware_output_is_redacted_at_the_runtime_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            environment, _ = self._environment(Path(directory))
+            environment["KYTH_RUNTIME_FAKE_FWUPD_UPDATES"] = "1"
+            environment["KYTH_RUNTIME_FAKE_FWUPD_UPDATE_OUTPUT"] = (
+                "password=super-secret token=another-secret"
+            )
+            environment["KYTH_RUNTIME_FAKE_FWUPD_UPDATE_EXIT"] = "23"
+            result = self._run("firmware-update", [], environment)
+            combined = result.stdout + result.stderr
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn("super-secret", combined)
+            self.assertNotIn("another-secret", combined)
+            self.assertIn("<redacted>", combined)
+
+    def test_invalid_high_risk_requests_fail_before_external_commands(self) -> None:
+        cases = [
+            ("remove-waydroid", []),
+            ("setup-waydroid", ["one", "two"]),
+            ("setup-printer", ["unexpected"]),
+            ("firmware-update", ["unexpected"]),
+            ("setup-boot-windows-steam", ["unexpected"]),
+            ("fix-dualboot-clock", ["unexpected"]),
+            ("install-nvidia-driver", ["unexpected"]),
+            ("setup-vr", ["unexpected"]),
+            ("retry-quarantined-update", ["bad\nvalue"]),
+            ("rebase", ["not-an-image"]),
+            ("switch-channel", ["unknown"]),
+            ("switch-channel-impl", ["unknown"]),
+            ("switch-kernel", ["unknown"]),
+            ("reclaim-windows", ["unexpected"]),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for recipe, args in cases:
+                with self.subTest(recipe=recipe):
+                    environment, log = self._environment(root / recipe)
+                    result = self._run(recipe, args, environment)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(self._records(log), [])
 
     def test_confirmation_validation_and_dependency_failures_are_observable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -280,7 +488,7 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertTrue(self._records(log))
 
-    def test_high_risk_registry_is_explicit_and_not_behaviorally_complete(self) -> None:
+    def test_high_risk_registry_is_explicit_and_behaviorally_tested(self) -> None:
         ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
         verification = json.loads(VERIFICATION.read_text(encoding="utf-8"))
         high_risk = {
@@ -290,7 +498,7 @@ class RuntimeRecipeBehaviorTest(unittest.TestCase):
         }
         self.assertEqual(high_risk, set(verification["recipes"]))
         for name, entry in verification["recipes"].items():
-            self.assertEqual(entry["verification_status"], "routed-only", name)
+            self.assertEqual(entry["verification_status"], "behavior-tested", name)
             self.assertIn("tests/test_runtime_recipe_behavior.py", entry["behavioral_tests"])
             self.assertFalse(entry["acceptance_evidence"], name)
 

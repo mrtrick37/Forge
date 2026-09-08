@@ -3,140 +3,140 @@
   "purpose": "Explicit evidence depth for destructive and privileged ujust recipes. Routing is not behavioral verification.",
   "recipes": {
     "ai-dev-remove": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Native container removal needs failure and recovery evidence."
     },
     "firmware-update": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Firmware staging needs device-level and reboot-path evidence."
     },
     "fix-dualboot-clock": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "RTC mutation needs hardware/dual-boot acceptance evidence."
     },
     "hardware-policy": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Policy apply still needs complete rollback and hardware evidence."
     },
     "hardware-policy-apply": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Policy apply still needs complete rollback and hardware evidence."
     },
     "install-asus-tools": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Driver/package staging needs eligibility and recovery evidence."
     },
     "install-displaylink": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Driver/package staging needs eligibility and recovery evidence."
     },
     "install-nvidia-driver": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Driver/package staging needs eligibility and recovery evidence."
     },
     "install-racing-wheel-drivers": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Driver/package staging needs eligibility and recovery evidence."
     },
     "rebase": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Image update needs distinct-image update and rollback evidence."
     },
     "reclaim-windows": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Recipe currently hands off to the Hub; destructive disk behavior needs separate evidence."
     },
     "remove-waydroid": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Destructive removal needs path checks, failure handling, and recovery evidence."
     },
     "retry-quarantined-update": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Quarantine retry needs real staged-update and rollback evidence."
     },
     "setup-boot-windows-steam": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "EFI helper and sudoers parity still needs dual-boot evidence."
     },
     "setup-printer": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "CUPS service mutation needs dependency/refusal evidence."
     },
     "setup-vr": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Package staging needs eligibility and recovery evidence."
     },
     "setup-waydroid": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Container setup needs dependency and partial-failure evidence."
     },
     "switch-channel": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Channel switch needs exact-image update and rollback evidence."
     },
     "switch-channel-impl": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],
       "blocking_reason": "Compatibility channel switch needs exact-image update evidence."
     },
     "switch-kernel": {
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": ["tests/test_runtime_recipe_parity.py"],
       "behavioral_tests": ["tests/test_runtime_recipe_behavior.py"],
       "acceptance_evidence": [],

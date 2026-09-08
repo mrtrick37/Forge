@@ -18,12 +18,12 @@
     "missing_owner": 0,
     "open_assessments": 0,
     "verification_status": {
-      "behavior-tested": 0,
+      "behavior-tested": 20,
       "disposable-media-verified": 0,
       "image-verified": 0,
       "not-assessed": 182,
       "retired": 0,
-      "routed-only": 20
+      "routed-only": 0
     }
   },
   "entries": [
@@ -134,7 +134,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -169,7 +169,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -407,7 +407,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -558,7 +558,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -593,7 +593,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1063,7 +1063,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1127,7 +1127,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1162,7 +1162,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1545,7 +1545,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1609,7 +1609,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1876,7 +1876,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -1940,7 +1940,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -2497,7 +2497,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -2532,7 +2532,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -5612,7 +5612,7 @@
       "status": "routed",
       "risk_tier": "privileged-writer",
       "risk_basis": "system, hardware, boot, or driver mutation",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -5821,7 +5821,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -5856,7 +5856,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -5891,7 +5891,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -5926,7 +5926,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],
@@ -5961,7 +5961,7 @@
       "status": "routed",
       "risk_tier": "destructive",
       "risk_basis": "explicit destructive/update action",
-      "verification_status": "routed-only",
+      "verification_status": "behavior-tested",
       "route_contract_tests": [
         "tests/test_runtime_recipe_parity.py"
       ],

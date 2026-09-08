@@ -451,6 +451,15 @@ fn rpm_ostree_install(packages: &[&str], allow_inactive: bool) -> io::Result<Exi
     Ok(ExitCode::SUCCESS)
 }
 
+fn rpm_ostree_install_recipe(
+    args: &[String],
+    packages: &[&str],
+    allow_inactive: bool,
+) -> io::Result<ExitCode> {
+    require_args(args, 0, Some(0));
+    rpm_ostree_install(packages, allow_inactive)
+}
+
 fn printer_setup(args: &[String]) -> io::Result<ExitCode> {
     require_args(args, 0, Some(0));
     let service = run(
@@ -1636,21 +1645,25 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
         "setup-boot-windows-steam" => setup_boot_windows_steam(args),
         "dualboot-status" => run("efibootmgr", &["-v".into()]),
         "reclaim-windows" => {
+            require_args(args, 0, Some(0));
             println!("Use System Hub → Disks to remove the Windows partition and grow KythOS.");
             run(
                 "/usr/bin/kyth-welcome-launch",
                 &["--page".into(), "This PC".into()],
             )
         }
-        "fix-dualboot-clock" => run(
-            "sudo",
-            &[
-                "timedatectl".into(),
-                "set-local-rtc".into(),
-                "1".into(),
-                "--adjust-system-clock".into(),
-            ],
-        ),
+        "fix-dualboot-clock" => {
+            require_args(args, 0, Some(0));
+            run(
+                "sudo",
+                &[
+                    "timedatectl".into(),
+                    "set-local-rtc".into(),
+                    "1".into(),
+                    "--adjust-system-clock".into(),
+                ],
+            )
+        }
         "lutris-battlenet" => launch_lutris(args, "lutris:install/battlenet"),
         "lutris-epic" => launch_lutris(args, "lutris:install/epic-games-store"),
         "lutris-ea" => launch_lutris(args, "lutris:ea-app-standard"),
@@ -1665,7 +1678,8 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
             }
             run("corectrl", &[])
         }
-        "install-racing-wheel-drivers" => rpm_ostree_install(
+        "install-racing-wheel-drivers" => rpm_ostree_install_recipe(
+            args,
             &[
                 "akmod-hid-tmff2",
                 "akmod-new-lg4ff",
@@ -1674,12 +1688,13 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
             ],
             true,
         ),
-        "install-asus-tools" => rpm_ostree_install(
+        "install-asus-tools" => rpm_ostree_install_recipe(
+            args,
             &["asusctl", "supergfxctl", "rog-control-center"],
             false,
         ),
-        "install-nvidia-driver" => rpm_ostree_install(&["akmod-nvidia"], false),
-        "install-displaylink" => rpm_ostree_install(&["displaylink"], false),
+        "install-nvidia-driver" => rpm_ostree_install_recipe(args, &["akmod-nvidia"], false),
+        "install-displaylink" => rpm_ostree_install_recipe(args, &["displaylink"], false),
         "install-lsfg-vk" | "deploy-opticscaler" | "install-umu" => Err(io::Error::new(
             io::ErrorKind::Unsupported,
             "this optional vendor-asset recipe is retired and is not part of the supported image contract",
@@ -1711,7 +1726,7 @@ fn delegate(name: &str, args: &[String]) -> io::Result<ExitCode> {
                 "bpftune.service".into(),
             ],
         ),
-        "setup-vr" => rpm_ostree_install(&["openxr-loader"], false),
+        "setup-vr" => rpm_ostree_install_recipe(args, &["openxr-loader"], false),
         "retry-quarantined-update" => {
             require_args(args, 1, Some(1));
             validate_token(&args[0], "digest")
@@ -1876,7 +1891,10 @@ fn main() -> ExitCode {
     match delegate(&name, &args) {
         Ok(code) => code,
         Err(error) => {
-            eprintln!("kyth-runtime: {error}");
+            eprintln!(
+                "kyth-runtime: {}",
+                redact_sensitive_text(&error.to_string())
+            );
             ExitCode::from(1)
         }
     }
