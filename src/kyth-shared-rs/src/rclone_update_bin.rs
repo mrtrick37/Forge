@@ -11,8 +11,8 @@ use std::time::Duration;
 
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::release_fetch::{
-    TempWorkdir, download_file, extract_archive, fetch_github_latest_release,
-    github_headers, read_secret_file, validate_version, verify_checksum_file,
+    download_file, extract_archive, fetch_github_latest_release, github_headers, read_secret_file,
+    validate_version, verify_checksum_file, TempWorkdir,
 };
 
 const REPO: &str = "rclone/rclone";
@@ -20,12 +20,14 @@ const VERSION_PATTERN: &str = r"v[0-9]+\.[0-9]+\.[0-9]+";
 const RCLONE_BIN: &str = "/usr/local/bin/rclone";
 
 fn run(argv: &[String], timeout_secs: u64) -> Option<(i32, String)> {
-    run_bounded(argv, Duration::from_secs(timeout_secs)).ok().map(|output| {
-        (
-            output.status.code().unwrap_or(1),
-            String::from_utf8_lossy(&output.stdout).into_owned(),
-        )
-    })
+    run_bounded(argv, Duration::from_secs(timeout_secs))
+        .ok()
+        .map(|output| {
+            (
+                output.status.code().unwrap_or(1),
+                String::from_utf8_lossy(&output.stdout).into_owned(),
+            )
+        })
 }
 
 fn fail(message: String) -> ! {
@@ -67,16 +69,24 @@ fn main() -> std::process::ExitCode {
         let headers = github_headers(secret.as_deref(), env_token.as_deref());
         match fetch_github_latest_release(&run, REPO, &headers) {
             Ok(release) => {
-                rclone_ver = release.get("tag_name").and_then(serde_json::Value::as_str).unwrap_or("").to_string();
+                rclone_ver = release
+                    .get("tag_name")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or("")
+                    .to_string();
             }
-            Err(error) => fail(format!("ERROR: Could not determine latest rclone release tag: {error}")),
+            Err(error) => fail(format!(
+                "ERROR: Could not determine latest rclone release tag: {error}"
+            )),
         }
     }
     if rclone_ver.is_empty() {
         fail("ERROR: Could not determine latest rclone release tag".to_string());
     }
     if validate_version(&rclone_ver, VERSION_PATTERN, "rclone").is_err() {
-        fail(format!("ERROR: Unexpected rclone version format: {rclone_ver}"));
+        fail(format!(
+            "ERROR: Unexpected rclone version format: {rclone_ver}"
+        ));
     }
     let target_ver = rclone_ver.trim_start_matches('v').to_string();
     if let Some(installed) = installed_version() {
@@ -98,7 +108,8 @@ fn main() -> std::process::ExitCode {
     let sums_name = "SHA256SUMS".to_string();
     for (file, dest) in [(&zip_name, &zip_dest), (&sums_name, &sums_dest)] {
         println!("rclone: downloading {file}...");
-        if let Err(error) = download_file(&run, &format!("{base_url}/{file}"), dest, &headers, 120) {
+        if let Err(error) = download_file(&run, &format!("{base_url}/{file}"), dest, &headers, 120)
+        {
             fail(format!("ERROR: Failed to download rclone assets: {error}"));
         }
     }
@@ -120,13 +131,18 @@ fn main() -> std::process::ExitCode {
     }
     match std::fs::copy(&extracted, &target) {
         Ok(_) => set_executable(&target),
-        Err(error) => fail(format!("ERROR: Failed to install rclone binary to {}: {error}", target.display())),
+        Err(error) => fail(format!(
+            "ERROR: Failed to install rclone binary to {}: {error}",
+            target.display()
+        )),
     }
     match run(&[RCLONE_BIN.to_string(), "--version".to_string()], 30) {
         Some((_, stdout)) => {
             println!("rclone installed: {}", stdout.lines().next().unwrap_or(""));
         }
-        None => println!("rclone installed, but version check failed: rclone could not be executed"),
+        None => {
+            println!("rclone installed, but version check failed: rclone could not be executed")
+        }
     }
     std::process::ExitCode::SUCCESS
 }

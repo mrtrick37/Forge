@@ -81,12 +81,13 @@ class InventoryTest(unittest.TestCase):
         # installer authority is active.
         self.assertEqual(report["summary"]["p0_open_entries"], 0)
         self.assertEqual(report["p0_open"], [])
-        self.assertEqual(report["summary"]["active_entries"], 185)
+        self.assertEqual(report["summary"]["active_entries"], 184)
         self.assertEqual(report["summary"]["active_python_entries"], 0)
         self.assertEqual(report["summary"]["superseded_entries"], 137)
         self.assertFalse(
             [item for item in report["active_python"] if item["runtime_authority"] == "python-installer"]
         )
+        self.assertFalse([item for item in document["entries"] if item["status"] == "queued"])
 
     def test_frontend_and_python_boundaries_are_clean(self):
         checker = load_checker()
@@ -111,9 +112,12 @@ class InventoryTest(unittest.TestCase):
         tunables = [
             item for item in entries
             if item["path"].startswith("build_files/kyth-")
+            and item["path"] != "build_files/kyth-tunable"
             and item.get("resolved_target") == "build_files/kyth-tunable"
         ]
-        self.assertEqual(len(tunables), 94)
+        # The 94th registry entry is the dispatcher itself; the source tree
+        # contains 93 alias symlinks plus that direct entry point.
+        self.assertEqual(len(tunables), 93)
         self.assertEqual({item["status"] for item in tunables}, {"done-native"})
         self.assertEqual({item["installed_implementation"] for item in tunables}, {"rust"})
         self.assertLessEqual(
@@ -139,6 +143,7 @@ class InventoryTest(unittest.TestCase):
             self.assertEqual(item["runtime_authority"], "python-shared-package", name)
             self.assertFalse(item["runtime_active"], name)
             self.assertEqual(item["migration_priority"], 3, name)
+            self.assertEqual(item["status"], "explicitly-not-ported", name)
             self.assertEqual(item.get("superseded_by"), checker.TUNABLE_SUPERSEDED_BY, name)
 
     def test_reachable_modules_are_never_superseded(self):

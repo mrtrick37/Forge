@@ -17,15 +17,25 @@ pub struct LauncherEntry {
     pub path: String,
 }
 
-fn home() -> PathBuf { std::env::var("HOME").map(PathBuf::from).unwrap_or_else(|_| PathBuf::from("/root")) }
+fn home() -> PathBuf {
+    std::env::var("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("/root"))
+}
 
 fn count_entries(dir: &std::path::Path, glob_ext: &str) -> Option<usize> {
-    if !dir.exists() { return None; }
-    let Ok(entries) = std::fs::read_dir(dir) else { return None; };
+    if !dir.exists() {
+        return None;
+    }
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return None;
+    };
     let mut n = 0;
     for e in entries.flatten() {
         let name = e.file_name().to_string_lossy().to_string();
-        if glob_ext == "*" || name.ends_with(glob_ext) { n += 1; }
+        if glob_ext == "*" || name.ends_with(glob_ext) {
+            n += 1;
+        }
     }
     Some(n)
 }
@@ -69,18 +79,26 @@ pub fn gaming_library_scan() -> Vec<LauncherEntry> {
 }
 
 fn which_exists(bin: &str) -> bool {
-    let Some(path) = std::env::var_os("PATH") else { return false; };
+    let Some(path) = std::env::var_os("PATH") else {
+        return false;
+    };
     std::env::split_paths(&path).any(|directory| {
         let candidate = directory.join(bin);
-        let Ok(metadata) = std::fs::metadata(candidate) else { return false; };
-        if !metadata.is_file() { return false; }
+        let Ok(metadata) = std::fs::metadata(candidate) else {
+            return false;
+        };
+        if !metadata.is_file() {
+            return false;
+        }
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
             metadata.permissions().mode() & 0o111 != 0
         }
         #[cfg(not(unix))]
-        { true }
+        {
+            true
+        }
     })
 }
 

@@ -27,7 +27,11 @@ pub(crate) struct JustRecipeResponse {
 pub(crate) fn just_list() -> Vec<JustRecipeResponse> {
     kyth_shared::system::just::just_list()
         .into_iter()
-        .map(|recipe| JustRecipeResponse { name: recipe.name, params: recipe.params, comment: recipe.comment })
+        .map(|recipe| JustRecipeResponse {
+            name: recipe.name,
+            params: recipe.params,
+            comment: recipe.comment,
+        })
         .collect()
 }
 
@@ -35,13 +39,22 @@ fn just_output_detail(recipe: &str, output: &std::process::Output) -> String {
     let mut text = String::from_utf8_lossy(&output.stdout).to_string();
     let stderr = String::from_utf8_lossy(&output.stderr);
     if !stderr.trim().is_empty() {
-        if !text.is_empty() { text.push('\n'); }
+        if !text.is_empty() {
+            text.push('\n');
+        }
         text.push_str(&stderr);
     }
     let text = kyth_shared::system::process::redact_sensitive_text(
         kyth_shared::system::process::strip_ansi(text.trim()).as_str(),
     );
-    let detail: String = text.chars().rev().take(800).collect::<String>().chars().rev().collect();
+    let detail: String = text
+        .chars()
+        .rev()
+        .take(800)
+        .collect::<String>()
+        .chars()
+        .rev()
+        .collect();
     if !detail.trim().is_empty() {
         return if output.status.success() {
             format!("{recipe} complete — {}", detail.trim())
@@ -69,49 +82,121 @@ pub(crate) struct HubActionLaunch {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum HubAction {
-    SetupTailscale, UpdateHealth, ResumeCheck, DeviceInfo, StartupApps, FirmwareUpdate,
-    HealthCheck, GamingStackStatus, FixDualbootClock, SetupBootWindowsSteam, ReclaimWindows,
-    InstallLudusavi, InstallMsFonts, SetupKythDevBox, AiDevStatus, AiDevSetup, SetupWaydroid,
-    RemoveWaydroid, InstallVscode, InstallBoxbuddy, InstallJetbrainsToolbox, GamingMode,
-    BalancedMode, HdrPerGame, EnableBpftune, DisableBpftune, InstallSteam, InstallHeroic,
-    InstallLutris, InstallBottles, InstallPrismlauncher, InstallItch, InstallEpicLauncher,
-    InstallBattlenet, InstallEaApp, InstallUbisoftConnect, PreheatShaders, EnableObsCapture,
-    GameBoost, ControllerCheck, ExportSteamGames, InstallObs, InstallGpuScreenRecorder,
-    InstallGoverlay, InstallMangojuice, InstallUmu, InstallLact, InstallPiper, InstallSolaar,
-    NvidiaStatus, ListPresets, SetupPrinter, EnrollSecureboot, SystemAudit, GamingAudit,
+    SetupTailscale,
+    UpdateHealth,
+    ResumeCheck,
+    DeviceInfo,
+    StartupApps,
+    FirmwareUpdate,
+    HealthCheck,
+    GamingStackStatus,
+    FixDualbootClock,
+    SetupBootWindowsSteam,
+    ReclaimWindows,
+    InstallLudusavi,
+    InstallMsFonts,
+    SetupKythDevBox,
+    AiDevStatus,
+    AiDevSetup,
+    SetupWaydroid,
+    RemoveWaydroid,
+    InstallVscode,
+    InstallBoxbuddy,
+    InstallJetbrainsToolbox,
+    GamingMode,
+    BalancedMode,
+    HdrPerGame,
+    EnableBpftune,
+    DisableBpftune,
+    InstallSteam,
+    InstallHeroic,
+    InstallLutris,
+    InstallBottles,
+    InstallPrismlauncher,
+    InstallItch,
+    InstallEpicLauncher,
+    InstallBattlenet,
+    InstallEaApp,
+    InstallUbisoftConnect,
+    PreheatShaders,
+    EnableObsCapture,
+    GameBoost,
+    ControllerCheck,
+    ExportSteamGames,
+    InstallObs,
+    InstallGpuScreenRecorder,
+    InstallGoverlay,
+    InstallMangojuice,
+    InstallUmu,
+    InstallLact,
+    InstallPiper,
+    InstallSolaar,
+    NvidiaStatus,
+    ListPresets,
+    SetupPrinter,
+    EnrollSecureboot,
+    SystemAudit,
+    GamingAudit,
 }
 
 impl HubAction {
     fn recipe(&self) -> &'static str {
         match self {
-            Self::SetupTailscale => "setup-tailscale", Self::UpdateHealth => "update-health",
-            Self::ResumeCheck => "resume-check", Self::DeviceInfo => "device-info",
-            Self::StartupApps => "startup-apps", Self::FirmwareUpdate => "firmware-update",
-            Self::HealthCheck => "health-check", Self::GamingStackStatus => "gaming-stack-status",
-            Self::FixDualbootClock => "fix-dualboot-clock", Self::SetupBootWindowsSteam => "setup-boot-windows-steam",
-            Self::ReclaimWindows => "reclaim-windows", Self::InstallLudusavi => "install-ludusavi",
-            Self::InstallMsFonts => "install-ms-fonts", Self::SetupKythDevBox => "setup-kyth-dev-box",
-            Self::AiDevStatus => "ai-dev-status", Self::AiDevSetup => "ai-dev-setup",
-            Self::SetupWaydroid => "setup-waydroid", Self::RemoveWaydroid => "remove-waydroid",
-            Self::InstallVscode => "install-vscode", Self::InstallBoxbuddy => "install-boxbuddy",
-            Self::InstallJetbrainsToolbox => "install-jetbrains-toolbox", Self::GamingMode => "gaming-mode",
-            Self::BalancedMode => "balanced-mode", Self::HdrPerGame => "hdr-per-game",
-            Self::EnableBpftune => "enable-bpftune", Self::DisableBpftune => "disable-bpftune",
-            Self::InstallSteam => "install-steam", Self::InstallHeroic => "install-heroic",
-            Self::InstallLutris => "install-lutris", Self::InstallBottles => "install-bottles",
-            Self::InstallPrismlauncher => "install-prismlauncher", Self::InstallItch => "install-itch",
-            Self::InstallEpicLauncher => "install-epic-launcher", Self::InstallBattlenet => "install-battlenet",
-            Self::InstallEaApp => "install-ea-app", Self::InstallUbisoftConnect => "install-ubisoft-connect",
-            Self::PreheatShaders => "preheat-shaders", Self::EnableObsCapture => "enable-obs-capture",
-            Self::GameBoost => "game-boost", Self::ControllerCheck => "controller-check",
-            Self::ExportSteamGames => "export-steam-games", Self::InstallObs => "install-obs",
-            Self::InstallGpuScreenRecorder => "install-gpu-screen-recorder", Self::InstallGoverlay => "install-goverlay",
-            Self::InstallMangojuice => "install-mangojuice", Self::InstallUmu => "install-umu",
-            Self::InstallLact => "install-lact", Self::InstallPiper => "install-piper",
-            Self::InstallSolaar => "install-solaar", Self::NvidiaStatus => "nvidia-status",
-            Self::ListPresets => "list-presets", Self::SetupPrinter => "setup-printer",
+            Self::SetupTailscale => "setup-tailscale",
+            Self::UpdateHealth => "update-health",
+            Self::ResumeCheck => "resume-check",
+            Self::DeviceInfo => "device-info",
+            Self::StartupApps => "startup-apps",
+            Self::FirmwareUpdate => "firmware-update",
+            Self::HealthCheck => "health-check",
+            Self::GamingStackStatus => "gaming-stack-status",
+            Self::FixDualbootClock => "fix-dualboot-clock",
+            Self::SetupBootWindowsSteam => "setup-boot-windows-steam",
+            Self::ReclaimWindows => "reclaim-windows",
+            Self::InstallLudusavi => "install-ludusavi",
+            Self::InstallMsFonts => "install-ms-fonts",
+            Self::SetupKythDevBox => "setup-kyth-dev-box",
+            Self::AiDevStatus => "ai-dev-status",
+            Self::AiDevSetup => "ai-dev-setup",
+            Self::SetupWaydroid => "setup-waydroid",
+            Self::RemoveWaydroid => "remove-waydroid",
+            Self::InstallVscode => "install-vscode",
+            Self::InstallBoxbuddy => "install-boxbuddy",
+            Self::InstallJetbrainsToolbox => "install-jetbrains-toolbox",
+            Self::GamingMode => "gaming-mode",
+            Self::BalancedMode => "balanced-mode",
+            Self::HdrPerGame => "hdr-per-game",
+            Self::EnableBpftune => "enable-bpftune",
+            Self::DisableBpftune => "disable-bpftune",
+            Self::InstallSteam => "install-steam",
+            Self::InstallHeroic => "install-heroic",
+            Self::InstallLutris => "install-lutris",
+            Self::InstallBottles => "install-bottles",
+            Self::InstallPrismlauncher => "install-prismlauncher",
+            Self::InstallItch => "install-itch",
+            Self::InstallEpicLauncher => "install-epic-launcher",
+            Self::InstallBattlenet => "install-battlenet",
+            Self::InstallEaApp => "install-ea-app",
+            Self::InstallUbisoftConnect => "install-ubisoft-connect",
+            Self::PreheatShaders => "preheat-shaders",
+            Self::EnableObsCapture => "enable-obs-capture",
+            Self::GameBoost => "game-boost",
+            Self::ControllerCheck => "controller-check",
+            Self::ExportSteamGames => "export-steam-games",
+            Self::InstallObs => "install-obs",
+            Self::InstallGpuScreenRecorder => "install-gpu-screen-recorder",
+            Self::InstallGoverlay => "install-goverlay",
+            Self::InstallMangojuice => "install-mangojuice",
+            Self::InstallUmu => "install-umu",
+            Self::InstallLact => "install-lact",
+            Self::InstallPiper => "install-piper",
+            Self::InstallSolaar => "install-solaar",
+            Self::NvidiaStatus => "nvidia-status",
+            Self::ListPresets => "list-presets",
+            Self::SetupPrinter => "setup-printer",
             Self::EnrollSecureboot => "enroll-secureboot",
-            Self::SystemAudit => "system-audit", Self::GamingAudit => "gaming-audit",
+            Self::SystemAudit => "system-audit",
+            Self::GamingAudit => "gaming-audit",
         }
     }
 }
@@ -122,8 +207,20 @@ fn start_hub_action_job(action: HubAction) -> Result<HubActionLaunch, String> {
         .ok_or_else(|| "Hub action is not allowlisted".to_string())?;
     kyth_shared::commands::normalize_command(&argv)
         .map_err(|_| "recipe produced an invalid command".to_string())?;
-    let job = format!("hub-action-{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos());
-    hub_action_jobs().lock().map_err(|_| "Hub action job store is unavailable".to_string())?.insert(job.clone(), ("running".into(), format!("Running {recipe}…")));
+    let job = format!(
+        "hub-action-{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    );
+    hub_action_jobs()
+        .lock()
+        .map_err(|_| "Hub action job store is unavailable".to_string())?
+        .insert(
+            job.clone(),
+            ("running".into(), format!("Running {recipe}…")),
+        );
     let job_for_thread = job.clone();
     let recipe_for_thread = recipe.to_string();
     std::thread::spawn(move || {
@@ -139,19 +236,34 @@ fn start_hub_action_job(action: HubAction) -> Result<HubActionLaunch, String> {
         if std::path::Path::new("/usr/bin/ksshaskpass").exists() {
             command.env("SUDO_ASKPASS", "/usr/bin/ksshaskpass");
         }
-        let result = kyth_shared::system::process::run_bounded_command(command, Duration::from_secs(900));
+        let result =
+            kyth_shared::system::process::run_bounded_command(command, Duration::from_secs(900));
         let (state, detail) = match result {
             Ok(output) => {
-                let state = if output.status.success() { "complete" } else { "failed" };
-                (state.to_string(), just_output_detail(&recipe_for_thread, &output))
+                let state = if output.status.success() {
+                    "complete"
+                } else {
+                    "failed"
+                };
+                (
+                    state.to_string(),
+                    just_output_detail(&recipe_for_thread, &output),
+                )
             }
-            Err(error) => ("failed".to_string(), format!("Could not start {recipe_for_thread}: {error}")),
+            Err(error) => (
+                "failed".to_string(),
+                format!("Could not start {recipe_for_thread}: {error}"),
+            ),
         };
         if let Ok(mut store) = hub_action_jobs().lock() {
             store.insert(job_for_thread, (state, detail));
         }
     });
-    Ok(HubActionLaunch { job, state: "running".into(), detail: format!("Running {recipe}…") })
+    Ok(HubActionLaunch {
+        job,
+        state: "running".into(),
+        detail: format!("Running {recipe}…"),
+    })
 }
 
 /// Start an Updates-page operation as a native Rust-managed job. The command
@@ -165,11 +277,28 @@ pub(crate) struct UpdateActionLaunch {
     pub(crate) detail: String,
 }
 
-fn start_update_job(operation: &str, argv: Vec<String>, timeout: Duration) -> Result<UpdateActionLaunch, String> {
+fn start_update_job(
+    operation: &str,
+    argv: Vec<String>,
+    timeout: Duration,
+) -> Result<UpdateActionLaunch, String> {
     kyth_shared::commands::normalize_command(&argv)
         .map_err(|_| "update produced an invalid command".to_string())?;
-    let job = format!("update-{}-{}", operation, std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos());
-    update_jobs().lock().map_err(|_| "update job store is unavailable".to_string())?.insert(job.clone(), ("running".into(), format!("{operation} is running…")));
+    let job = format!(
+        "update-{}-{}",
+        operation,
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos()
+    );
+    update_jobs()
+        .lock()
+        .map_err(|_| "update job store is unavailable".to_string())?
+        .insert(
+            job.clone(),
+            ("running".into(), format!("{operation} is running…")),
+        );
     let job_for_thread = job.clone();
     let operation_for_thread = operation.to_string();
     std::thread::spawn(move || {
@@ -190,27 +319,54 @@ fn start_update_job(operation: &str, argv: Vec<String>, timeout: Duration) -> Re
                 let mut detail = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
                 if !stderr.is_empty() {
-                    if !detail.is_empty() { detail.push('\n'); }
+                    if !detail.is_empty() {
+                        detail.push('\n');
+                    }
                     detail.push_str(&stderr);
                 }
                 let detail: String = kyth_shared::system::process::redact_sensitive_text(
                     kyth_shared::system::process::strip_ansi(&detail).as_str(),
                 )
-                    .chars().rev().take(1200).collect::<String>().chars().rev().collect();
-                let state = if output.status.success() { "complete" } else { "failed" };
+                .chars()
+                .rev()
+                .take(1200)
+                .collect::<String>()
+                .chars()
+                .rev()
+                .collect();
+                let state = if output.status.success() {
+                    "complete"
+                } else {
+                    "failed"
+                };
                 let detail = if detail.is_empty() {
-                    if output.status.success() { format!("{operation_for_thread} complete.") }
-                    else { format!("{operation_for_thread} failed (exit code {}).", output.status.code().unwrap_or(-1)) }
-                } else { detail };
+                    if output.status.success() {
+                        format!("{operation_for_thread} complete.")
+                    } else {
+                        format!(
+                            "{operation_for_thread} failed (exit code {}).",
+                            output.status.code().unwrap_or(-1)
+                        )
+                    }
+                } else {
+                    detail
+                };
                 (state.to_string(), detail)
             }
-            Err(error) => ("failed".to_string(), format!("{operation_for_thread} could not complete: {error}")),
+            Err(error) => (
+                "failed".to_string(),
+                format!("{operation_for_thread} could not complete: {error}"),
+            ),
         };
         if let Ok(mut store) = update_jobs().lock() {
             store.insert(job_for_thread, (state, detail));
         }
     });
-    Ok(UpdateActionLaunch { job, state: "running".into(), detail: format!("{operation} is running…") })
+    Ok(UpdateActionLaunch {
+        job,
+        state: "running".into(),
+        detail: format!("{operation} is running…"),
+    })
 }
 
 #[tauri::command]
@@ -220,8 +376,16 @@ pub(crate) fn run_hub_action(action: HubAction) -> Result<HubActionLaunch, Strin
 
 #[tauri::command]
 pub(crate) fn hub_action_status(job: String) -> crate::InstallStatus {
-    let (state, detail) = hub_action_jobs().lock().ok().and_then(|store| store.get(&job).cloned()).unwrap_or(("unknown".into(), "Hub action job not found.".into()));
-    crate::InstallStatus { id: job, state, detail }
+    let (state, detail) = hub_action_jobs()
+        .lock()
+        .ok()
+        .and_then(|store| store.get(&job).cloned())
+        .unwrap_or(("unknown".into(), "Hub action job not found.".into()));
+    crate::InstallStatus {
+        id: job,
+        state,
+        detail,
+    }
 }
 
 #[tauri::command]
@@ -229,20 +393,44 @@ pub(crate) fn bootc_upgrade() -> Result<UpdateActionLaunch, String> {
     if !std::path::Path::new("/usr/bin/kyth-safe-upgrade").exists() {
         return Err("The native KythOS update helper is not installed on this system.".to_string());
     }
-    start_update_job("Download and stage", vec!["sudo", "-A", "/usr/bin/kyth-safe-upgrade"].into_iter().map(String::from).collect(), Duration::from_secs(3600))
+    start_update_job(
+        "Download and stage",
+        vec!["sudo", "-A", "/usr/bin/kyth-safe-upgrade"]
+            .into_iter()
+            .map(String::from)
+            .collect(),
+        Duration::from_secs(3600),
+    )
 }
 
 #[tauri::command]
 pub(crate) fn bootc_rollback() -> Result<UpdateActionLaunch, String> {
-    start_update_job("Rollback", vec!["sudo", "-A", "/usr/bin/bootc", "rollback"].into_iter().map(String::from).collect(), Duration::from_secs(300))
+    start_update_job(
+        "Rollback",
+        vec!["sudo", "-A", "/usr/bin/bootc", "rollback"]
+            .into_iter()
+            .map(String::from)
+            .collect(),
+        Duration::from_secs(300),
+    )
 }
 
 #[tauri::command]
 pub(crate) fn bootc_switch_branch(branch: String) -> Result<UpdateActionLaunch, String> {
     let channel = kyth_shared::system::bootc_policy::switch_channel_arg(&branch)
         .ok_or_else(|| "unknown channel".to_string())?;
-    let operation = format!("switch-{}", if channel == "stable" { "latest" } else { channel });
-    let mut argv = vec!["sudo", "-A", "/usr/bin/kyth-bootc-guard"].into_iter().map(String::from).collect::<Vec<_>>();
+    let operation = format!(
+        "switch-{}",
+        if channel == "stable" {
+            "latest"
+        } else {
+            channel
+        }
+    );
+    let mut argv = vec!["sudo", "-A", "/usr/bin/kyth-bootc-guard"]
+        .into_iter()
+        .map(String::from)
+        .collect::<Vec<_>>();
     argv.push(operation);
     start_update_job("Switch channel", argv, Duration::from_secs(300))
 }
@@ -252,7 +440,14 @@ pub(crate) fn apply_staged() -> Result<UpdateActionLaunch, String> {
     if !std::path::Path::new("/usr/libexec/kyth-finalize-staged").exists() {
         return Err("The staged-update finalizer is not installed on this system.".to_string());
     }
-    start_update_job("Apply staged update", vec!["sudo", "-A", "/usr/libexec/kyth-finalize-staged", "reboot"].into_iter().map(String::from).collect(), Duration::from_secs(300))
+    start_update_job(
+        "Apply staged update",
+        vec!["sudo", "-A", "/usr/libexec/kyth-finalize-staged", "reboot"]
+            .into_iter()
+            .map(String::from)
+            .collect(),
+        Duration::from_secs(300),
+    )
 }
 
 #[derive(Serialize)]
@@ -263,7 +458,12 @@ pub(crate) struct UpdateWatcherStatusResponse {
 }
 
 fn systemd_unit_is(unit: &str, state: &str) -> bool {
-    let argv = vec!["systemctl".to_string(), state.to_string(), "--quiet".to_string(), unit.to_string()];
+    let argv = vec![
+        "systemctl".to_string(),
+        state.to_string(),
+        "--quiet".to_string(),
+        unit.to_string(),
+    ];
     kyth_shared::system::process::run_bounded(&argv, Duration::from_secs(5))
         .map(|output| output.status.success())
         .unwrap_or(false)
@@ -283,11 +483,24 @@ pub(crate) fn update_watcher_status() -> UpdateWatcherStatusResponse {
 #[tauri::command]
 pub(crate) fn set_update_watcher_enabled(enabled: bool) -> Result<UpdateActionLaunch, String> {
     let action = if enabled { "enable" } else { "disable" };
-    let operation = if enabled { "Enable automatic updates" } else { "Disable automatic updates" };
+    let operation = if enabled {
+        "Enable automatic updates"
+    } else {
+        "Disable automatic updates"
+    };
     start_update_job(
         operation,
-        vec!["sudo", "-A", "systemctl", action, "--now", "kyth-update-watcher.timer"]
-            .into_iter().map(String::from).collect(),
+        vec![
+            "sudo",
+            "-A",
+            "systemctl",
+            action,
+            "--now",
+            "kyth-update-watcher.timer",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect(),
         Duration::from_secs(300),
     )
 }
@@ -296,8 +509,16 @@ pub(crate) fn set_update_watcher_enabled(enabled: bool) -> Result<UpdateActionLa
 pub(crate) fn check_for_updates_now() -> Result<UpdateActionLaunch, String> {
     start_update_job(
         "Check for updates now",
-        vec!["sudo", "-A", "systemctl", "start", "kyth-update-watcher.service"]
-            .into_iter().map(String::from).collect(),
+        vec![
+            "sudo",
+            "-A",
+            "systemctl",
+            "start",
+            "kyth-update-watcher.service",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect(),
         Duration::from_secs(300),
     )
 }
@@ -306,16 +527,32 @@ pub(crate) fn check_for_updates_now() -> Result<UpdateActionLaunch, String> {
 pub(crate) fn defer_update_watcher() -> Result<UpdateActionLaunch, String> {
     start_update_job(
         "Defer automatic updates",
-        vec!["sudo", "-A", "systemctl", "stop", "kyth-update-watcher.timer"]
-            .into_iter().map(String::from).collect(),
+        vec![
+            "sudo",
+            "-A",
+            "systemctl",
+            "stop",
+            "kyth-update-watcher.timer",
+        ]
+        .into_iter()
+        .map(String::from)
+        .collect(),
         Duration::from_secs(300),
     )
 }
 
 #[tauri::command]
 pub(crate) fn update_job_status(job: String) -> crate::InstallStatus {
-    let (state, detail) = update_jobs().lock().ok().and_then(|store| store.get(&job).cloned()).unwrap_or(("unknown".into(), "Update job not found.".into()));
-    crate::InstallStatus { id: job, state, detail }
+    let (state, detail) = update_jobs()
+        .lock()
+        .ok()
+        .and_then(|store| store.get(&job).cloned())
+        .unwrap_or(("unknown".into(), "Update job not found.".into()));
+    crate::InstallStatus {
+        id: job,
+        state,
+        detail,
+    }
 }
 
 #[tauri::command]
@@ -344,7 +581,12 @@ pub(crate) fn update_availability_view(
     staged_ts: Option<String>,
 ) -> UpdateAvailabilityViewResponse {
     let view = kyth_shared::system::bootc_policy::update_availability_view(
-        staged, &check_state, flatpak_count, &check_ts, &check_ts_details, staged_ts.as_deref(),
+        staged,
+        &check_state,
+        flatpak_count,
+        &check_ts,
+        &check_ts_details,
+        staged_ts.as_deref(),
     );
     UpdateAvailabilityViewResponse {
         card_style: view.card_style,
@@ -359,9 +601,11 @@ pub(crate) fn update_availability_view(
 
 #[tauri::command]
 pub(crate) async fn pending_updates_summary() -> std::collections::HashMap<String, String> {
-    tauri::async_runtime::spawn_blocking(kyth_shared::system::updates_unified::pending_updates_summary)
-        .await
-        .unwrap_or_default()
+    tauri::async_runtime::spawn_blocking(
+        kyth_shared::system::updates_unified::pending_updates_summary,
+    )
+    .await
+    .unwrap_or_default()
 }
 
 #[tauri::command]
@@ -418,20 +662,28 @@ pub(crate) struct AvailabilityStatusResponse {
 }
 
 #[tauri::command]
-pub(crate) async fn collect_availability(branch: Option<String>, use_cached: Option<bool>) -> AvailabilityStatusResponse {
+pub(crate) async fn collect_availability(
+    branch: Option<String>,
+    use_cached: Option<bool>,
+) -> AvailabilityStatusResponse {
     let status = tauri::async_runtime::spawn_blocking(move || {
-        kyth_shared::system::update_availability::collect_availability(branch.as_deref(), use_cached.unwrap_or(true))
+        kyth_shared::system::update_availability::collect_availability(
+            branch.as_deref(),
+            use_cached.unwrap_or(true),
+        )
     })
     .await
-    .unwrap_or_else(|_| kyth_shared::system::update_availability::AvailabilityStatus {
-        state: "error".to_string(),
-        detail: "Could not check update availability.".to_string(),
-        flatpak_count: 0,
-        flatpak_detail: String::new(),
-        staged: false,
-        manifest_raw: String::new(),
-        blocked_reason: "Could not check update availability.".to_string(),
-    });
+    .unwrap_or_else(
+        |_| kyth_shared::system::update_availability::AvailabilityStatus {
+            state: "error".to_string(),
+            detail: "Could not check update availability.".to_string(),
+            flatpak_count: 0,
+            flatpak_detail: String::new(),
+            staged: false,
+            manifest_raw: String::new(),
+            blocked_reason: "Could not check update availability.".to_string(),
+        },
+    );
     AvailabilityStatusResponse {
         state: status.state,
         detail: status.detail,
@@ -479,7 +731,9 @@ fn native_health_fallback() -> Option<(String, String, String)> {
     let os_release = std::fs::read_to_string("/usr/lib/os-release")
         .or_else(|_| std::fs::read_to_string("/etc/os-release"))
         .ok()?;
-    let identity_ok = os_release.lines().any(|line| line.trim() == "ID=kythos" || line.trim() == "ID=\"kythos\"");
+    let identity_ok = os_release
+        .lines()
+        .any(|line| line.trim() == "ID=kythos" || line.trim() == "ID=\"kythos\"");
     let runtime = kyth_shared::system::boot_runtime::boot_runtime_checks_with_deadline(
         std::time::Duration::from_secs(5),
         std::time::Duration::from_millis(100),
@@ -530,10 +784,17 @@ fn update_health_response() -> UpdateHealthResponse {
         if state.status == "unknown" {
             "Boot health has not been recorded yet; native checks could not establish a live result.".to_string()
         } else {
-            format!("Boot health is {} · {} quarantined digest(s).", state.status, state.quarantined.len())
+            format!(
+                "Boot health is {} · {} quarantined digest(s).",
+                state.status,
+                state.quarantined.len()
+            )
         }
     } else {
-        format!("Boot health state needs attention: {}", invariants.join(", "))
+        format!(
+            "Boot health state needs attention: {}",
+            invariants.join(", ")
+        )
     };
     UpdateHealthResponse {
         status: state.status,
@@ -565,7 +826,8 @@ mod tests {
 
     #[test]
     fn hub_action_deserializes_allowlisted_recipe() {
-        let action: HubAction = serde_json::from_str("\"enroll-secureboot\"").expect("known action");
+        let action: HubAction =
+            serde_json::from_str("\"enroll-secureboot\"").expect("known action");
         assert_eq!(action.recipe(), "enroll-secureboot");
     }
 

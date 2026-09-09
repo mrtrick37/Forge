@@ -121,6 +121,9 @@ mod tests {
         assert_eq!(count_fwupd_updates("Device ID: one\n\n Device ID: two"), 2);
         assert_eq!(parse_secure_boot_state("SecureBoot enabled"), "enabled");
         assert_eq!(parse_systemd_state("FAILED"), "failed");
-        assert_eq!(parse_nvidia_smi("GPU, 590.48.01"), Some(("GPU".into(), "590.48.01".into())));
+        assert_eq!(
+            parse_nvidia_smi("GPU, 590.48.01"),
+            Some(("GPU".into(), "590.48.01".into()))
+        );
     }
 }

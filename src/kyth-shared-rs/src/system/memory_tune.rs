@@ -3,10 +3,20 @@
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MemoryTier { Low, Mid, High }
+pub enum MemoryTier {
+    Low,
+    Mid,
+    High,
+}
 
 impl MemoryTier {
-    pub fn as_str(self) -> &'static str { match self { Self::Low => "low", Self::Mid => "mid", Self::High => "high" } }
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Low => "low",
+            Self::Mid => "mid",
+            Self::High => "high",
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -22,35 +32,83 @@ pub struct MemoryTuning {
 
 pub fn tier_for_mem_kb(mem_kb: i64) -> MemoryTier {
     let gb = mem_kb as f64 / (1024.0 * 1024.0);
-    if gb <= 16.0 { MemoryTier::Low } else if gb < 24.0 { MemoryTier::Mid } else { MemoryTier::High }
+    if gb <= 16.0 {
+        MemoryTier::Low
+    } else if gb < 24.0 {
+        MemoryTier::Mid
+    } else {
+        MemoryTier::High
+    }
 }
 
 pub fn values_for(tier: MemoryTier) -> MemoryTuning {
     match tier {
-        MemoryTier::Low => MemoryTuning { tier, swappiness: 60, watermark_scale: 100, dirty_bytes: 67_108_864, dirty_background: 16_777_216, zram_frac: 0.5, zram_cap_mb: 8192 },
-        MemoryTier::Mid => MemoryTuning { tier, swappiness: 120, watermark_scale: 110, dirty_bytes: 134_217_728, dirty_background: 33_554_432, zram_frac: 1.0, zram_cap_mb: 8192 },
-        MemoryTier::High => MemoryTuning { tier, swappiness: 180, watermark_scale: 125, dirty_bytes: 268_435_456, dirty_background: 67_108_864, zram_frac: 1.0, zram_cap_mb: 0 },
+        MemoryTier::Low => MemoryTuning {
+            tier,
+            swappiness: 60,
+            watermark_scale: 100,
+            dirty_bytes: 67_108_864,
+            dirty_background: 16_777_216,
+            zram_frac: 0.5,
+            zram_cap_mb: 8192,
+        },
+        MemoryTier::Mid => MemoryTuning {
+            tier,
+            swappiness: 120,
+            watermark_scale: 110,
+            dirty_bytes: 134_217_728,
+            dirty_background: 33_554_432,
+            zram_frac: 1.0,
+            zram_cap_mb: 8192,
+        },
+        MemoryTier::High => MemoryTuning {
+            tier,
+            swappiness: 180,
+            watermark_scale: 125,
+            dirty_bytes: 268_435_456,
+            dirty_background: 67_108_864,
+            zram_frac: 1.0,
+            zram_cap_mb: 0,
+        },
     }
 }
 
 fn read_memtotal_kb() -> i64 {
-    let Ok(raw) = std::fs::read_to_string("/proc/meminfo") else { return 32 * 1024 * 1024; };
-    raw.lines().find(|line| line.starts_with("MemTotal:")).and_then(|line| line.split_whitespace().nth(1)).and_then(|value| value.parse().ok()).unwrap_or(32 * 1024 * 1024)
+    let Ok(raw) = std::fs::read_to_string("/proc/meminfo") else {
+        return 32 * 1024 * 1024;
+    };
+    raw.lines()
+        .find(|line| line.starts_with("MemTotal:"))
+        .and_then(|line| line.split_whitespace().nth(1))
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(32 * 1024 * 1024)
 }
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    if let Some(path) = path { return path.as_ref().to_path_buf(); }
+    if let Some(path) = path {
+        return path.as_ref().to_path_buf();
+    }
     if std::env::var("KYTH_TEST_MODE").ok().as_deref() == Some("1") {
-        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(config).join("kyth/memory-tune.toml"); }
+        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") {
+            return PathBuf::from(config).join("kyth/memory-tune.toml");
+        }
     }
     PathBuf::from("/etc/kyth/memory-tune.toml")
 }
 
 pub fn load(path: impl AsRef<Path>, mem_kb: Option<i64>) -> MemoryTuning {
     let fallback = || values_for(tier_for_mem_kb(mem_kb.unwrap_or_else(read_memtotal_kb)));
-    let Ok(raw) = std::fs::read_to_string(path) else { return fallback(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return fallback(); };
-    let tier = match value.get("tier").and_then(toml::Value::as_str).unwrap_or("auto") {
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return fallback();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return fallback();
+    };
+    let tier = match value
+        .get("tier")
+        .and_then(toml::Value::as_str)
+        .unwrap_or("auto")
+    {
         "low" => MemoryTier::Low,
         "mid" => MemoryTier::Mid,
         "high" => MemoryTier::High,
@@ -64,7 +122,13 @@ pub fn sysctl_content(config: &MemoryTuning) -> String {
 }
 
 pub fn zram_content(config: &MemoryTuning) -> String {
-    let size = if config.zram_cap_mb > 0 { format!("min(ram * {}, {})", config.zram_frac, config.zram_cap_mb) } else if config.zram_frac == 1.0 { "ram".into() } else { format!("ram * {}", config.zram_frac) };
+    let size = if config.zram_cap_mb > 0 {
+        format!("min(ram * {}, {})", config.zram_frac, config.zram_cap_mb)
+    } else if config.zram_frac == 1.0 {
+        "ram".into()
+    } else {
+        format!("ram * {}", config.zram_frac)
+    };
     format!("[zram0]\nzram-size = {size}\ncompression-algorithm = zstd\nswap-priority = 100\n")
 }
 
@@ -99,7 +163,9 @@ mod tests {
         let config = load(&config_path, Some(32 * 1024 * 1024));
         assert_eq!(config.tier, MemoryTier::Low);
         generate(&config, &output).unwrap();
-        assert!(std::fs::read_to_string(output).unwrap().contains("vm.swappiness = 60"));
+        assert!(std::fs::read_to_string(output)
+            .unwrap()
+            .contains("vm.swappiness = 60"));
         assert!(zram_content(&config).contains("min(ram * 0.5, 8192)"));
     }
 

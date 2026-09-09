@@ -35,17 +35,28 @@ fn fixup() -> bool {
     }
     let mut changed = false;
     let mut entries: Vec<PathBuf> = std::fs::read_dir(&app_dir)
-        .map(|entries| entries.filter_map(|entry| entry.ok().map(|entry| entry.path())).collect())
+        .map(|entries| {
+            entries
+                .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+                .collect()
+        })
         .unwrap_or_default();
     entries.sort();
     for path in &entries {
-        let name = path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
+        let name = path
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_default();
         if !is_desktop_file(&name) || !path.is_file() {
             continue;
         }
-        let Ok(bytes) = std::fs::read(path) else { continue };
+        let Ok(bytes) = std::fs::read(path) else {
+            continue;
+        };
         let content = String::from_utf8_lossy(&bytes);
-        let Some(fixed) = rewrite_kali_desktop(&content) else { continue };
+        let Some(fixed) = rewrite_kali_desktop(&content) else {
+            continue;
+        };
         // Mirror the Python per-file flag: gate pass alone writes nothing —
         // only an actual change (beyond a missing trailing newline) does.
         if fixed == content || format!("{content}\n") == fixed {
@@ -56,13 +67,20 @@ fn fixup() -> bool {
         }
     }
     for path in &entries {
-        let name = path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
+        let name = path
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_default();
         if !name.contains("zenmap") || !is_desktop_file(&name) || !path.is_file() {
             continue;
         }
-        let Ok(bytes) = std::fs::read(path) else { continue };
+        let Ok(bytes) = std::fs::read(path) else {
+            continue;
+        };
         let content = String::from_utf8_lossy(&bytes);
-        let Some(fixed) = rewrite_zenmap_desktop(&content) else { continue };
+        let Some(fixed) = rewrite_zenmap_desktop(&content) else {
+            continue;
+        };
         // The Python Zenmap loop writes and marks changed whenever the gate
         // passes, even when neither Exec line matched.
         if atomic_write_text(path, &fixed, None).is_ok() {
@@ -71,10 +89,14 @@ fn fixup() -> bool {
     }
     if changed {
         if on_path("update-desktop-database") {
-            let _ = std::process::Command::new("update-desktop-database").arg(&app_dir).output();
+            let _ = std::process::Command::new("update-desktop-database")
+                .arg(&app_dir)
+                .output();
         }
         if on_path("kbuildsycoca6") {
-            let _ = std::process::Command::new("kbuildsycoca6").arg("--noincremental").output();
+            let _ = std::process::Command::new("kbuildsycoca6")
+                .arg("--noincremental")
+                .output();
         }
     }
     changed

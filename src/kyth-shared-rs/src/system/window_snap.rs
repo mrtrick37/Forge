@@ -15,7 +15,13 @@ pub struct SnapConfig {
 }
 
 impl Default for SnapConfig {
-    fn default() -> Self { Self { layout: "2x2".into(), win_z: true, electric: true } }
+    fn default() -> Self {
+        Self {
+            layout: "2x2".into(),
+            win_z: true,
+            electric: true,
+        }
+    }
 }
 
 pub const TTL_PATH: &str = "/run/kyth-snap-ttl";
@@ -34,18 +40,35 @@ pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
         return PathBuf::from(xdg).join("kyth/window-snap.toml");
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default();
     home.join(".config/kyth/window-snap.toml")
 }
 
 pub fn load(path: impl AsRef<Path>) -> SnapConfig {
-    let Ok(raw) = std::fs::read_to_string(path) else { return SnapConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return SnapConfig::default(); };
-    let layout = value.get("layout").and_then(toml::Value::as_str).unwrap_or("2x2");
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return SnapConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return SnapConfig::default();
+    };
+    let layout = value
+        .get("layout")
+        .and_then(toml::Value::as_str)
+        .unwrap_or("2x2");
     SnapConfig {
-        layout: matches!(layout, "2x2" | "3col" | "off").then(|| layout.to_string()).unwrap_or_else(|| "2x2".into()),
-        win_z: value.get("win_z").and_then(toml::Value::as_bool).unwrap_or(true),
-        electric: value.get("electric").and_then(toml::Value::as_bool).unwrap_or(true),
+        layout: matches!(layout, "2x2" | "3col" | "off")
+            .then(|| layout.to_string())
+            .unwrap_or_else(|| "2x2".into()),
+        win_z: value
+            .get("win_z")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true),
+        electric: value
+            .get("electric")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true),
     }
 }
 
@@ -60,7 +83,11 @@ pub fn electric_border_argv(binary: &str, electric: bool) -> Vec<String> {
         "ElectricBorder".to_string(),
         "--type".to_string(),
         "bool".to_string(),
-        if electric { "true".to_string() } else { "false".to_string() },
+        if electric {
+            "true".to_string()
+        } else {
+            "false".to_string()
+        },
     ]
 }
 
@@ -91,7 +118,14 @@ mod tests {
         let dir = tempdir().unwrap();
         let path = dir.path().join("window-snap.toml");
         std::fs::write(&path, "layout = \"off\"\nwin_z = false\n").unwrap();
-        assert_eq!(load(&path), SnapConfig { layout: "off".into(), win_z: false, electric: true });
+        assert_eq!(
+            load(&path),
+            SnapConfig {
+                layout: "off".into(),
+                win_z: false,
+                electric: true
+            }
+        );
         let bad = dir.path().join("bad.toml");
         std::fs::write(&bad, "layout = \"4x4\"\n").unwrap();
         assert_eq!(load(&bad).layout, "2x2");
@@ -102,11 +136,31 @@ mod tests {
     fn projects_snap_argv() {
         assert_eq!(
             electric_border_argv("kwriteconfig6", true),
-            vec!["kwriteconfig6", "--file", "kwinrc", "--group", "Windows", "--key", "ElectricBorder", "--type", "bool", "true"]
+            vec![
+                "kwriteconfig6",
+                "--file",
+                "kwinrc",
+                "--group",
+                "Windows",
+                "--key",
+                "ElectricBorder",
+                "--type",
+                "bool",
+                "true"
+            ]
         );
         assert_eq!(
             shortcut_argv("kwriteconfig6", "Window Maximize", "Meta+Up"),
-            vec!["kwriteconfig6", "--file", "kglobalshortcutsrc", "--group", "kwin", "--key", "Window Maximize", "Meta+Up,none,Window Maximize"]
+            vec![
+                "kwriteconfig6",
+                "--file",
+                "kglobalshortcutsrc",
+                "--group",
+                "kwin",
+                "--key",
+                "Window Maximize",
+                "Meta+Up,none,Window Maximize"
+            ]
         );
     }
 }

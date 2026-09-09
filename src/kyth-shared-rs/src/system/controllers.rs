@@ -39,11 +39,21 @@ struct UsbControllerParse {
 fn parse_usb_controllers(usb_text: &str) -> UsbControllerParse {
     let mut parsed = UsbControllerParse::default();
     for line in usb_text.lines() {
-        let Some(id) = line.split_once("ID ").and_then(|(_, rest)| rest.split_whitespace().next()) else { continue; };
-        let Some((vid, pid)) = id.split_once(':') else { continue; };
+        let Some(id) = line
+            .split_once("ID ")
+            .and_then(|(_, rest)| rest.split_whitespace().next())
+        else {
+            continue;
+        };
+        let Some((vid, pid)) = id.split_once(':') else {
+            continue;
+        };
         let vid = vid.to_ascii_lowercase();
         let pid = pid.to_ascii_lowercase();
-        let description = line.split_once(id).map(|(_, rest)| rest.trim()).unwrap_or_default();
+        let description = line
+            .split_once(id)
+            .map(|(_, rest)| rest.trim())
+            .unwrap_or_default();
         let label = match vid.as_str() {
             "045e" => "Xbox",
             "054c" => "PlayStation",
@@ -57,18 +67,33 @@ fn parse_usb_controllers(usb_text: &str) -> UsbControllerParse {
         };
         if vid == "045e" && matches!(pid.as_str(), "02e6" | "02fe") {
             parsed.xone_dongle = true;
-            parsed.controllers.push(("Xbox Wireless USB Dongle".into(), "xbox_dongle".into()));
+            parsed
+                .controllers
+                .push(("Xbox Wireless USB Dongle".into(), "xbox_dongle".into()));
         } else if vid == "054c" && matches!(pid.as_str(), "0ce6" | "0df2") {
             parsed.dualsense_found = true;
-            parsed.controllers.push(("PlayStation 5 DualSense".into(), "dualsense".into()));
+            parsed
+                .controllers
+                .push(("PlayStation 5 DualSense".into(), "dualsense".into()));
         } else if vid == "054c" && matches!(pid.as_str(), "05c4" | "09cc" | "0ba0") {
             parsed.ds4_found = true;
-            parsed.controllers.push(("PlayStation 4 DualShock 4".into(), "ds4".into()));
+            parsed
+                .controllers
+                .push(("PlayStation 4 DualShock 4".into(), "ds4".into()));
         } else if vid == "057e" && pid == "2009" {
             parsed.switch_pro_found = true;
-            parsed.controllers.push(("Nintendo Switch Pro Controller".into(), "switch_pro".into()));
+            parsed
+                .controllers
+                .push(("Nintendo Switch Pro Controller".into(), "switch_pro".into()));
         } else {
-            parsed.controllers.push((if description.is_empty() { format!("{label} controller") } else { description.into() }, "generic".into()));
+            parsed.controllers.push((
+                if description.is_empty() {
+                    format!("{label} controller")
+                } else {
+                    description.into()
+                },
+                "generic".into(),
+            ));
         }
     }
     parsed
@@ -78,29 +103,43 @@ pub fn detect_controllers() -> ControllersDetect {
     let usb_text = command_stdout("lsusb", &[], 6);
     let lsmod_text = command_stdout("lsmod", &[], 4);
     let parsed = parse_usb_controllers(&usb_text);
-    let input_nodes = fs::read_dir("/dev/input/by-id").ok().map(|rd| {
-        let mut v: Vec<String> = rd.filter_map(|e| e.ok()).map(|e| e.file_name().to_string_lossy().to_string()).filter(|n| {
-            let l = n.to_lowercase();
-            l.contains("joystick") || l.contains("gamepad") || l.contains("controller")
-        }).collect();
-        v.sort();
-        v
-    }).unwrap_or_default();
+    let input_nodes = fs::read_dir("/dev/input/by-id")
+        .ok()
+        .map(|rd| {
+            let mut v: Vec<String> = rd
+                .filter_map(|e| e.ok())
+                .map(|e| e.file_name().to_string_lossy().to_string())
+                .filter(|n| {
+                    let l = n.to_lowercase();
+                    l.contains("joystick") || l.contains("gamepad") || l.contains("controller")
+                })
+                .collect();
+            v.sort();
+            v
+        })
+        .unwrap_or_default();
 
-    let secure_boot = fs::read_dir("/sys/firmware/efi/efivars").ok().and_then(|rd| {
-        for e in rd.filter_map(|e| e.ok()) {
-            let name = e.file_name().to_string_lossy().to_string();
-            if name.starts_with("SecureBoot-") {
-                if let Ok(data) = fs::read(e.path()) { return Some(data.len()>=5 && data[4]==1); }
+    let secure_boot = fs::read_dir("/sys/firmware/efi/efivars")
+        .ok()
+        .and_then(|rd| {
+            for e in rd.filter_map(|e| e.ok()) {
+                let name = e.file_name().to_string_lossy().to_string();
+                if name.starts_with("SecureBoot-") {
+                    if let Ok(data) = fs::read(e.path()) {
+                        return Some(data.len() >= 5 && data[4] == 1);
+                    }
+                }
             }
-        }
-        None
-    }).unwrap_or(false);
+            None
+        })
+        .unwrap_or(false);
 
     let modules = lsmod_text.to_lowercase().replace('-', "_");
     let dualsensectl_out = if parsed.dualsense_found && which("dualsensectl") {
         command_stdout("dualsensectl", &["status", "0"], 3)
-    } else { String::new() };
+    } else {
+        String::new()
+    };
     ControllersDetect {
         usb_controllers: parsed.controllers,
         input_nodes,

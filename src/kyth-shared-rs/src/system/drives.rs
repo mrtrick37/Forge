@@ -10,20 +10,40 @@ use std::time::Duration;
 
 // Simplified allow-list without regex crate: manual prefix checks
 pub fn sanitize_dev_path(raw: &str) -> Option<String> {
-    if raw.is_empty() { return None; }
-    let c = Path::new(raw).canonicalize().ok()?.to_string_lossy().to_string();
-    if c.starts_with("/dev/sd") || c.starts_with("/dev/nvme") || c.starts_with("/dev/vd") || c.starts_with("/dev/mmcblk") {
+    if raw.is_empty() {
+        return None;
+    }
+    let c = Path::new(raw)
+        .canonicalize()
+        .ok()?
+        .to_string_lossy()
+        .to_string();
+    if c.starts_with("/dev/sd")
+        || c.starts_with("/dev/nvme")
+        || c.starts_with("/dev/vd")
+        || c.starts_with("/dev/mmcblk")
+    {
         // Basic check: must match /dev/(sd[a-z][0-9]* etc.)
-        if c.starts_with("/dev/") && !c.contains("..") && !c.contains(' ') { return Some(c); }
+        if c.starts_with("/dev/") && !c.contains("..") && !c.contains(' ') {
+            return Some(c);
+        }
     }
     None
 }
 
 pub fn sanitize_mount(raw: &str) -> Option<String> {
     const PREFIX: &str = "/var/mnt/ntfs_";
-    if raw.is_empty() || !raw.starts_with(PREFIX) { return None; }
-    let c = Path::new(raw).canonicalize().ok()?.to_string_lossy().to_string();
-    if c.starts_with(PREFIX) || c == "/var/mnt" { return Some(c); }
+    if raw.is_empty() || !raw.starts_with(PREFIX) {
+        return None;
+    }
+    let c = Path::new(raw)
+        .canonicalize()
+        .ok()?
+        .to_string_lossy()
+        .to_string();
+    if c.starts_with(PREFIX) || c == "/var/mnt" {
+        return Some(c);
+    }
     None
 }
 
@@ -59,13 +79,30 @@ pub fn flatpak_compatdata(home: &Path) -> PathBuf {
 }
 
 pub fn mount_options() -> String {
-    format!("uid={},gid={},dmask=027,fmask=137,windows_names,rw", unsafe { libc::getuid() }, unsafe { libc::getgid() })
+    format!(
+        "uid={},gid={},dmask=027,fmask=137,windows_names,rw",
+        unsafe { libc::getuid() },
+        unsafe { libc::getgid() }
+    )
 }
 
 /// Mirrors the `uuid_safe` derivation (sanitized, truncated to 64 chars).
 pub fn uuid_safe_name(uuid: &str, dev_name: &str) -> String {
-    let raw = if uuid.is_empty() { dev_name.replace('/', "_") } else { uuid.to_string() };
-    raw.chars().map(|c| if c.is_ascii_alphanumeric() || c == '_' || c == '-' { c } else { '_' }).take(64).collect()
+    let raw = if uuid.is_empty() {
+        dev_name.replace('/', "_")
+    } else {
+        uuid.to_string()
+    };
+    raw.chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .take(64)
+        .collect()
 }
 
 fn copy_dir_all(source: &Path, dest: &Path) -> std::io::Result<()> {
@@ -95,31 +132,48 @@ fn move_dir_backup(source: &Path, backup: &Path) -> std::io::Result<()> {
 /// Up-to-3-level `steamapps` search under a mount point, best-effort.
 pub fn find_steam_dirs(mount: &Path) -> Vec<PathBuf> {
     let mut found = Vec::new();
-    let Ok(level1) = std::fs::read_dir(mount) else { return found };
+    let Ok(level1) = std::fs::read_dir(mount) else {
+        return found;
+    };
     for entry1 in level1.filter_map(|entry| entry.ok()) {
         let path1 = entry1.path();
         if !path1.is_dir() {
             continue;
         }
-        if path1.file_name().map(|name| name.to_string_lossy().to_lowercase() == "steamapps").unwrap_or(false) {
+        if path1
+            .file_name()
+            .map(|name| name.to_string_lossy().to_lowercase() == "steamapps")
+            .unwrap_or(false)
+        {
             found.push(path1);
             continue;
         }
-        let Ok(level2) = std::fs::read_dir(&path1) else { continue };
+        let Ok(level2) = std::fs::read_dir(&path1) else {
+            continue;
+        };
         for entry2 in level2.filter_map(|entry| entry.ok()) {
             let path2 = entry2.path();
             if !path2.is_dir() {
                 continue;
             }
-            if path2.file_name().map(|name| name.to_string_lossy().to_lowercase() == "steamapps").unwrap_or(false) {
+            if path2
+                .file_name()
+                .map(|name| name.to_string_lossy().to_lowercase() == "steamapps")
+                .unwrap_or(false)
+            {
                 found.push(path2);
                 continue;
             }
-            let Ok(level3) = std::fs::read_dir(&path2) else { continue };
+            let Ok(level3) = std::fs::read_dir(&path2) else {
+                continue;
+            };
             for entry3 in level3.filter_map(|entry| entry.ok()) {
                 let path3 = entry3.path();
                 if path3.is_dir()
-                    && path3.file_name().map(|name| name.to_string_lossy().to_lowercase() == "steamapps").unwrap_or(false)
+                    && path3
+                        .file_name()
+                        .map(|name| name.to_string_lossy().to_lowercase() == "steamapps")
+                        .unwrap_or(false)
                 {
                     found.push(path3);
                 }
@@ -134,8 +188,13 @@ fn link_compatdata(steam_dir: &Path, native: &Path) {
     let target_link = target.to_string_lossy().into_owned();
     if target.is_symlink() {
         match std::fs::read_link(&target) {
-            Ok(resolved) => println!("  Compatdata is already symlinked to native storage: {}", resolved.display()),
-            Err(_) => println!("  Compatdata is already symlinked to native storage: {target_link}"),
+            Ok(resolved) => println!(
+                "  Compatdata is already symlinked to native storage: {}",
+                resolved.display()
+            ),
+            Err(_) => {
+                println!("  Compatdata is already symlinked to native storage: {target_link}")
+            }
         }
         return;
     }
@@ -144,7 +203,10 @@ fn link_compatdata(steam_dir: &Path, native: &Path) {
         println!("  Moving existing NTFS compatdata folder to backup...");
         let backup_name = format!(
             "compatdata.bak.{}",
-            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0)
         );
         let backup_path = steam_dir.join(backup_name);
         match move_dir_backup(&target, &backup_path) {
@@ -154,12 +216,20 @@ fn link_compatdata(steam_dir: &Path, native: &Path) {
             }
         }
     }
-    let has_contents = std::fs::read_dir(native).map(|mut entries| entries.any(|_| true)).unwrap_or(false);
+    let has_contents = std::fs::read_dir(native)
+        .map(|mut entries| entries.any(|_| true))
+        .unwrap_or(false);
     if has_contents {
-        println!("  NOTE: {native} already holds Proton prefixes from another library.", native = native.display());
+        println!(
+            "  NOTE: {native} already holds Proton prefixes from another library.",
+            native = native.display()
+        );
         println!("  Any App ID present in both will now share one Proton prefix instead of having separate ones.");
     }
-    println!("  Symlinking compatdata -> {native}", native = native.display());
+    println!(
+        "  Symlinking compatdata -> {native}",
+        native = native.display()
+    );
     let tmp_link = steam_dir.join(format!(".compatdata.tmp.{}", std::process::id()));
     let linked = (|| -> std::io::Result<()> {
         if target.exists() || target.is_symlink() {
@@ -180,7 +250,10 @@ fn link_compatdata(steam_dir: &Path, native: &Path) {
                 let _ = std::fs::remove_file(&target);
             }
             if std::fs::rename(&backup_path, &target).is_err() {
-                println!("  WARNING: could not restore compatdata backup from {backup}", backup = backup_path.display());
+                println!(
+                    "  WARNING: could not restore compatdata backup from {backup}",
+                    backup = backup_path.display()
+                );
             }
         }
     }
@@ -208,16 +281,30 @@ pub fn repair_partitions(home: &Path, partitions: &[serde_json::Value]) {
     let opts = mount_options();
     for dev in partitions {
         let name = dev.get("name").and_then(|v| v.as_str()).unwrap_or_default();
-        let label = dev.get("label").and_then(|v| v.as_str()).filter(|s| !s.is_empty()).unwrap_or("NTFS_Drive");
+        let label = dev
+            .get("label")
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.is_empty())
+            .unwrap_or("NTFS_Drive");
         let uuid = dev.get("uuid").and_then(|v| v.as_str()).unwrap_or_default();
-        let mut mount = dev.get("mountpoint").and_then(|v| v.as_str()).unwrap_or_default().to_string();
-        let raw_dev = if name.starts_with('/') { name.to_string() } else { format!("/dev/{name}") };
+        let mut mount = dev
+            .get("mountpoint")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_string();
+        let raw_dev = if name.starts_with('/') {
+            name.to_string()
+        } else {
+            format!("/dev/{name}")
+        };
         let Some(dev_path) = sanitize_dev_path(&raw_dev) else {
             eprintln!("drives: rejecting unexpected device path {raw_dev:?}");
             continue;
         };
-        println!("[kyth-ntfs-repair] Processing partition: {dev_path} (UUID: {uuid}, Label: {label})",
-            uuid = if uuid.is_empty() { "unknown" } else { uuid });
+        println!(
+            "[kyth-ntfs-repair] Processing partition: {dev_path} (UUID: {uuid}, Label: {label})",
+            uuid = if uuid.is_empty() { "unknown" } else { uuid }
+        );
         if mount.is_empty() {
             let raw_mount = format!("{MNT_PREFIX}{}", uuid_safe_name(uuid, name));
             let resolved = sanitize_mount(&raw_mount).unwrap_or(raw_mount.clone());
@@ -228,7 +315,12 @@ pub fn repair_partitions(home: &Path, partitions: &[serde_json::Value]) {
             mount = resolved;
             println!("[kyth-ntfs-repair] Drive not mounted. Mounting to {mount}...");
             let mkdir = super::process::run_bounded(
-                &["sudo".to_string(), "mkdir".to_string(), "-p".to_string(), mount.clone()],
+                &[
+                    "sudo".to_string(),
+                    "mkdir".to_string(),
+                    "-p".to_string(),
+                    mount.clone(),
+                ],
                 Duration::from_secs(30),
             );
             if let Err(error) = mkdir {
@@ -236,15 +328,31 @@ pub fn repair_partitions(home: &Path, partitions: &[serde_json::Value]) {
                 continue;
             }
             let ntfs3g = super::process::run_bounded(
-                &["sudo".to_string(), "mount".to_string(), "-t".to_string(), "ntfs-3g".to_string(),
-                    "-o".to_string(), opts.clone(), dev_path.clone(), mount.clone()],
+                &[
+                    "sudo".to_string(),
+                    "mount".to_string(),
+                    "-t".to_string(),
+                    "ntfs-3g".to_string(),
+                    "-o".to_string(),
+                    opts.clone(),
+                    dev_path.clone(),
+                    mount.clone(),
+                ],
                 Duration::from_secs(60),
             );
-            let mounted = ntfs3g.map(|output| output.status.success()).unwrap_or(false);
+            let mounted = ntfs3g
+                .map(|output| output.status.success())
+                .unwrap_or(false);
             if !mounted {
                 let _ = super::process::run_bounded(
-                    &["sudo".to_string(), "mount".to_string(), "-o".to_string(), opts.clone(),
-                        dev_path.clone(), mount.clone()],
+                    &[
+                        "sudo".to_string(),
+                        "mount".to_string(),
+                        "-o".to_string(),
+                        opts.clone(),
+                        dev_path.clone(),
+                        mount.clone(),
+                    ],
                     Duration::from_secs(60),
                 );
             }
@@ -252,7 +360,10 @@ pub fn repair_partitions(home: &Path, partitions: &[serde_json::Value]) {
         let mount_path = Path::new(&mount);
         if mount_path.is_dir() {
             for steam_dir in find_steam_dirs(mount_path) {
-                println!("[kyth-ntfs-repair] Found Steam library at: {}", steam_dir.display());
+                println!(
+                    "[kyth-ntfs-repair] Found Steam library at: {}",
+                    steam_dir.display()
+                );
                 link_compatdata(&steam_dir, &native);
             }
         }

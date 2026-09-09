@@ -37,7 +37,12 @@ Rust-ownership requirement explicit for non-Hub shell callers as well.
 ## Why this plan exists, and why it is not "port every package file"
 
 `build_files/config/runtime-migration-report.json` now lists 0 active Python
-package entries. Before the reachability pass, all 157 non-superseded
+package entries. The final image also does not install the legacy
+`kyth_shared` Python distribution: it is available only to build-time
+renderers and repository tests. The direct `/usr/bin/kyth-tunable` entry point
+is a symlink to the mutation-capable `kyth-tunable-rs` binary, and the old
+shell/Python dispatcher is retained only as an explicitly uninstalled source
+fixture for rollback archaeology. Before the reachability pass, all 157 non-superseded
 `src/kyth_shared/kyth_shared/*.py` files were stamped active by a single
 blanket rule in `check-runtime-migration-inventory.py`:
 
@@ -66,13 +71,14 @@ and retained source fixtures:
   `importlib.import_module`. A name-for-name diff against
   `src/kyth-shared-rs/src/system/tunable_registry.rs` shows all 94 registry
   names are already present in the Rust registry, and `tunable_bin.rs` (the
-  binary `build_files/kyth-tunable` now resolves to) contains no Python
-  subprocess calls. The Hub finalization plan independently confirms this:
+  native `kyth-tunable-rs` binary contains no Python subprocess calls. The Hub
+  finalization plan independently confirms this:
   "all 49 sysctl and all 45 module-specific entries complete 2026-09-03;
   compatibility retained only as a rollback fixture." The checker's own test
   suite (`tests/test_runtime_migration_inventory.py::test_all_tunable_aliases_are_native_dispatcher_entries`)
-  already confirms the 94 *alias scripts* under `build_files/kyth-*` (e.g.
-  `build_files/kyth-swappiness`) are `done-native`. What it does not check is
+  already confirms the 93 *alias scripts* under `build_files/kyth-*` (e.g.
+  `build_files/kyth-swappiness`) are `done-native`; the 94th registry name is
+  the direct dispatcher entry point. What it does not check is
   the 93 underlying worker *modules* in `kyth_shared/` those aliases used to
   call — those are the ones still counted active in `python-shared-package`.
 - `gaming_master.py` and `perf_audit.py` use the same `__import__(f"kyth_shared.{mod}", ...)`
@@ -731,8 +737,9 @@ material while deletion remains gated by the observation window.
 - [~] **4 — recipe parity:** [runtime recipe parity tests](../tests/test_runtime_recipe_parity.py)
   cover the newly wired owners and preserve their legacy arguments/app IDs;
   exact-image behavioral parity remains pending item 7.
-- [x] **5 — Python package decision:** the final-image package is explicitly
-  temporary compatibility material, not an active runtime authority.
+- [x] **5 — Python package decision:** the legacy shared package is not
+  installed in the final image; it remains available only to build-time
+  renderers and repository tests, not as a runtime authority.
 - [x] **6 — compatibility classification:** allowed uses and the removal gate
   are documented in [python-compatibility-policy.md](python-compatibility-policy.md).
 - [ ] **7 — exact-image validation:** pending a promoted testing image and

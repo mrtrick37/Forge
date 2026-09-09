@@ -51,7 +51,10 @@ pub fn collect_availability(branch: Option<&str>, use_cached: bool) -> Availabil
     // Do this cheap local check before either the registry or Flatpak probe.
     // Otherwise an offline machine burns a remote timeout before we know to
     // skip network-backed work.
-    let network_offline = matches!(run_nmcli_state().as_deref(), Some("disconnected") | Some("asleep") | Some("unknown"));
+    let network_offline = matches!(
+        run_nmcli_state().as_deref(),
+        Some("disconnected") | Some("asleep") | Some("unknown")
+    );
     // staged takes precedence — no registry call needed
     let staged = crate::system::bootc::has_staged_update();
     if staged {
@@ -60,14 +63,25 @@ pub fn collect_availability(branch: Option<&str>, use_cached: bool) -> Availabil
         } else {
             flatpak_updates_count_until(use_cached, deadline)
         };
-        return AvailabilityStatus { state: "staged".to_string(), detail: "A staged image is ready to boot.".to_string(), flatpak_count, flatpak_detail, staged: true, manifest_raw: String::new(), blocked_reason: String::new() };
+        return AvailabilityStatus {
+            state: "staged".to_string(),
+            detail: "A staged image is ready to boot.".to_string(),
+            flatpak_count,
+            flatpak_detail,
+            staged: true,
+            manifest_raw: String::new(),
+            blocked_reason: String::new(),
+        };
     }
 
     if network_offline {
         return error_status("Network is unavailable; retry when connected.");
     }
 
-    let b = branch.map(str::to_string).or_else(crate::system::bootc::current_branch).unwrap_or_else(|| "latest".to_string());
+    let b = branch
+        .map(str::to_string)
+        .or_else(crate::system::bootc::current_branch)
+        .unwrap_or_else(|| "latest".to_string());
     let status_data = crate::system::probe::read_section("bootc-status-data")
         .or_else(|| crate::system::bootc_query::fetch_status_data());
     let Some(status_data) = status_data else {
@@ -76,14 +90,27 @@ pub fn collect_availability(branch: Option<&str>, use_cached: bool) -> Availabil
 
     let remaining = deadline.saturating_duration_since(Instant::now());
     let registry_timeout = remaining.min(crate::system::registry::REGISTRY_INSPECT_TIMEOUT);
-    let registry = crate::system::registry::check_registry_update_with_timeout(&status_data, &b, crate::system::bootc_policy::REGISTRY, registry_timeout);
+    let registry = crate::system::registry::check_registry_update_with_timeout(
+        &status_data,
+        &b,
+        crate::system::bootc_policy::REGISTRY,
+        registry_timeout,
+    );
     if registry.state == "error" {
         let mut status = error_status(registry.detail);
         status.manifest_raw = String::from_utf8_lossy(&registry.manifest_raw).to_string();
         return status;
     }
     let (flatpak_count, flatpak_detail) = flatpak_updates_count_until(use_cached, deadline);
-    AvailabilityStatus { state: registry.state, detail: registry.detail, flatpak_count, flatpak_detail, staged: false, manifest_raw: String::from_utf8_lossy(&registry.manifest_raw).to_string(), blocked_reason: String::new() }
+    AvailabilityStatus {
+        state: registry.state,
+        detail: registry.detail,
+        flatpak_count,
+        flatpak_detail,
+        staged: false,
+        manifest_raw: String::from_utf8_lossy(&registry.manifest_raw).to_string(),
+        blocked_reason: String::new(),
+    }
 }
 
 /// Return the pending Flatpak count. An explicit Updates-page check bypasses
@@ -125,19 +152,37 @@ fn flatpak_updates_count_until(use_cached: bool, deadline: Instant) -> (i32, Str
             }
             Ok(output) => {
                 let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
-                if !detail.is_empty() { errors.push(detail); }
+                if !detail.is_empty() {
+                    errors.push(detail);
+                }
             }
             Err(error) => errors.push(error.to_string()),
         }
     }
-    if successful_scope { (total.max(0), String::new()) }
-    else { (0, errors.into_iter().next().unwrap_or_else(|| "Flatpak update check unavailable.".to_string())) }
+    if successful_scope {
+        (total.max(0), String::new())
+    } else {
+        (
+            0,
+            errors
+                .into_iter()
+                .next()
+                .unwrap_or_else(|| "Flatpak update check unavailable.".to_string()),
+        )
+    }
 }
 
 fn run_nmcli_state() -> Option<String> {
-    let argv = ["nmcli", "-t", "-f", "STATE", "general"].into_iter().map(String::from).collect::<Vec<_>>();
+    let argv = ["nmcli", "-t", "-f", "STATE", "general"]
+        .into_iter()
+        .map(String::from)
+        .collect::<Vec<_>>();
     let output = super::process::run_bounded(&argv, Duration::from_secs(2)).ok()?;
-    output.status.success().then(|| String::from_utf8_lossy(&output.stdout).trim().to_lowercase())
+    output.status.success().then(|| {
+        String::from_utf8_lossy(&output.stdout)
+            .trim()
+            .to_lowercase()
+    })
 }
 
 #[cfg(test)]
@@ -146,7 +191,7 @@ mod tests {
     #[test]
     fn collect_returns() {
         let s = collect_availability(None, true);
-        assert!(["staged","uptodate","available","error"].contains(&s.state.as_str()));
+        assert!(["staged", "uptodate", "available", "error"].contains(&s.state.as_str()));
     }
 
     #[test]

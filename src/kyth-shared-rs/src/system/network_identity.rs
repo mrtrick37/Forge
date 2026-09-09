@@ -7,11 +7,19 @@ fn run_with_timeout(cmd: &str, args: &[&str], timeout: Duration) -> Option<Strin
     let mut argv = vec![cmd.to_string()];
     argv.extend(args.iter().map(|arg| (*arg).to_string()));
     let output = super::process::run_bounded(&argv, timeout).ok()?;
-    Some(if output.status.success() { String::from_utf8_lossy(&output.stdout).to_string() } else { String::new() })
+    Some(if output.status.success() {
+        String::from_utf8_lossy(&output.stdout).to_string()
+    } else {
+        String::new()
+    })
 }
 
 fn vpn_status() -> (bool, String) {
-    if let Some(stdout) = run_with_timeout("nmcli", &["connection", "show", "--active"], Duration::from_secs(5)) {
+    if let Some(stdout) = run_with_timeout(
+        "nmcli",
+        &["connection", "show", "--active"],
+        Duration::from_secs(5),
+    ) {
         for line in stdout.lines() {
             let low = line.to_lowercase();
             if low.contains("vpn") || low.contains("wireguard") || low.contains("globalprotect") {
@@ -36,9 +44,15 @@ fn cloud_providers() -> Vec<String> {
     if let Ok(text) = std::fs::read_to_string(&cfg) {
         if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
             let mut out = Vec::new();
-            if v.get("onedrive").and_then(|x| x.as_object()).is_some() { out.push("onedrive".to_string()); }
-            if v.get("gdrive").and_then(|x| x.as_object()).is_some() { out.push("gdrive".to_string()); }
-            if v.get("dropbox").and_then(|x| x.as_object()).is_some() { out.push("dropbox".to_string()); }
+            if v.get("onedrive").and_then(|x| x.as_object()).is_some() {
+                out.push("onedrive".to_string());
+            }
+            if v.get("gdrive").and_then(|x| x.as_object()).is_some() {
+                out.push("gdrive".to_string());
+            }
+            if v.get("dropbox").and_then(|x| x.as_object()).is_some() {
+                out.push("dropbox".to_string());
+            }
             return out;
         }
     }
@@ -59,11 +73,27 @@ pub fn get_network_identity() -> NetworkIdentity {
     let smb = smb_mounts();
     let providers = cloud_providers();
     let mut parts = Vec::new();
-    if vpn_connected { parts.push(format!("VPN {} connected", vpn_name)); }
-    if smb > 0 { parts.push(format!("{} SMB mount(s)", smb)); }
-    if !providers.is_empty() { parts.push(format!("cloud: {}", providers.join(", "))); }
-    let detail = if parts.is_empty() { "No active work network".to_string() } else { parts.join("; ") };
-    NetworkIdentity { vpn_connected, vpn_name, smb_mounts: smb, cloud_providers: providers, detail }
+    if vpn_connected {
+        parts.push(format!("VPN {} connected", vpn_name));
+    }
+    if smb > 0 {
+        parts.push(format!("{} SMB mount(s)", smb));
+    }
+    if !providers.is_empty() {
+        parts.push(format!("cloud: {}", providers.join(", ")));
+    }
+    let detail = if parts.is_empty() {
+        "No active work network".to_string()
+    } else {
+        parts.join("; ")
+    };
+    NetworkIdentity {
+        vpn_connected,
+        vpn_name,
+        smb_mounts: smb,
+        cloud_providers: providers,
+        detail,
+    }
 }
 
 #[cfg(test)]

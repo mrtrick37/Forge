@@ -7,7 +7,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum DiagnosticLevel { Pass, Warn, Fail }
+pub enum DiagnosticLevel {
+    Pass,
+    Warn,
+    Fail,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DiagnosticResult {
@@ -26,43 +30,87 @@ pub struct DiagnosticReport {
 
 impl DiagnosticReport {
     pub fn new(title: impl Into<String>) -> Self {
-        Self { title: title.into(), warnings: 0, failures: 0, results: Vec::new() }
+        Self {
+            title: title.into(),
+            warnings: 0,
+            failures: 0,
+            results: Vec::new(),
+        }
     }
 
-    pub fn record(&mut self, level: DiagnosticLevel, check_name: impl Into<String>, message: impl Into<String>) {
+    pub fn record(
+        &mut self,
+        level: DiagnosticLevel,
+        check_name: impl Into<String>,
+        message: impl Into<String>,
+    ) {
         match level {
             DiagnosticLevel::Pass => {}
             DiagnosticLevel::Warn => self.warnings += 1,
             DiagnosticLevel::Fail => self.failures += 1,
         }
-        self.results.push(DiagnosticResult { level, check_name: check_name.into(), message: message.into() });
+        self.results.push(DiagnosticResult {
+            level,
+            check_name: check_name.into(),
+            message: message.into(),
+        });
     }
 
-    pub fn passed(&mut self, check_name: impl Into<String>, message: impl Into<String>) { self.record(DiagnosticLevel::Pass, check_name, message); }
-    pub fn warned(&mut self, check_name: impl Into<String>, message: impl Into<String>) { self.record(DiagnosticLevel::Warn, check_name, message); }
-    pub fn failed(&mut self, check_name: impl Into<String>, message: impl Into<String>) { self.record(DiagnosticLevel::Fail, check_name, message); }
+    pub fn passed(&mut self, check_name: impl Into<String>, message: impl Into<String>) {
+        self.record(DiagnosticLevel::Pass, check_name, message);
+    }
+    pub fn warned(&mut self, check_name: impl Into<String>, message: impl Into<String>) {
+        self.record(DiagnosticLevel::Warn, check_name, message);
+    }
+    pub fn failed(&mut self, check_name: impl Into<String>, message: impl Into<String>) {
+        self.record(DiagnosticLevel::Fail, check_name, message);
+    }
 
     pub fn exit_code(&self) -> i32 {
-        if self.failures > 0 { 2 } else if self.warnings > 0 { 1 } else { 0 }
+        if self.failures > 0 {
+            2
+        } else if self.warnings > 0 {
+            1
+        } else {
+            0
+        }
     }
 
     pub fn status_message(&self, target_name: &str, warning_message: Option<&str>) -> String {
         if self.failures > 0 {
             format!("Result: {target_name} has failures.")
         } else if self.warnings > 0 {
-            format!("Result: {}", warning_message.unwrap_or(&format!("{target_name} has warnings.")))
+            format!(
+                "Result: {}",
+                warning_message.unwrap_or(&format!("{target_name} has warnings."))
+            )
         } else {
             format!("Result: {target_name} looks good.")
         }
     }
 
     pub fn render(&self) -> String {
-        self.results.iter().map(|result| format!("{:<5} {:<28} {}", level_text(result.level), result.check_name, result.message)).collect::<Vec<_>>().join("\n")
+        self.results
+            .iter()
+            .map(|result| {
+                format!(
+                    "{:<5} {:<28} {}",
+                    level_text(result.level),
+                    result.check_name,
+                    result.message
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
 fn level_text(level: DiagnosticLevel) -> &'static str {
-    match level { DiagnosticLevel::Pass => "PASS", DiagnosticLevel::Warn => "WARN", DiagnosticLevel::Fail => "FAIL" }
+    match level {
+        DiagnosticLevel::Pass => "PASS",
+        DiagnosticLevel::Warn => "WARN",
+        DiagnosticLevel::Fail => "FAIL",
+    }
 }
 
 /// Build a prefilled GitHub issue URL from already-scrubbed report text.
@@ -99,10 +147,16 @@ mod tests {
         report.passed("Audio", "PipeWire active");
         report.warned("Vulkan", "fallback");
         assert_eq!(report.exit_code(), 1);
-        assert_eq!(report.status_message("KythOS", None), "Result: KythOS has warnings.");
+        assert_eq!(
+            report.status_message("KythOS", None),
+            "Result: KythOS has warnings."
+        );
         report.failed("GPU", "missing");
         assert_eq!(report.exit_code(), 2);
-        assert_eq!(report.status_message("KythOS", None), "Result: KythOS has failures.");
+        assert_eq!(
+            report.status_message("KythOS", None),
+            "Result: KythOS has failures."
+        );
     }
 
     #[test]
@@ -115,8 +169,15 @@ mod tests {
 
     #[test]
     fn builds_encoded_issue_url_and_bounds_browser_body() {
-        let url = github_issue_url("https://github.com/kyth-os/kyth/", "A & bug", &"x".repeat(5501), Some("bug report"));
-        assert!(url.starts_with("https://github.com/kyth-os/kyth/issues/new?title=A%20%26%20bug&body="));
+        let url = github_issue_url(
+            "https://github.com/kyth-os/kyth/",
+            "A & bug",
+            &"x".repeat(5501),
+            Some("bug report"),
+        );
+        assert!(
+            url.starts_with("https://github.com/kyth-os/kyth/issues/new?title=A%20%26%20bug&body=")
+        );
         assert!(url.contains("labels=bug%20report"));
         assert!(url.contains("Report%20body%20truncated"));
     }

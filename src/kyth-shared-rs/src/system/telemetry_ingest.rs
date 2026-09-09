@@ -52,8 +52,8 @@ pub fn parse_mangohud_csv(text: &str) -> Option<MangoHudCsv> {
         .filter(|(key, _)| !key.is_empty())
         .collect();
 
-    let data_start = (2..lines.len().min(6))
-        .find(|index| lines[*index].to_ascii_lowercase().contains("fps"))?;
+    let data_start =
+        (2..lines.len().min(6)).find(|index| lines[*index].to_ascii_lowercase().contains("fps"))?;
     let headers = csv_record(lines[data_start]);
     if headers.is_empty() {
         return None;
@@ -93,7 +93,9 @@ fn has_timestamp_suffix(stem: &str) -> Option<usize> {
     let separators = [b'-', b'-', b'_', b':', b':'];
     let separator_positions = [4, 7, 10, 13, 16];
     for (position, separator) in separator_positions.into_iter().zip(separators) {
-        if suffix[position] != separator && !(position >= 13 && separator == b':' && suffix[position] == b'-') {
+        if suffix[position] != separator
+            && !(position >= 13 && separator == b':' && suffix[position] == b'-')
+        {
             return None;
         }
     }
@@ -116,7 +118,9 @@ pub fn derive_game_name(stem: &str) -> (String, String) {
         .map(|word| {
             let mut chars = word.chars();
             match chars.next() {
-                Some(first) => first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+                Some(first) => {
+                    first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase()
+                }
                 None => String::new(),
             }
         })
@@ -149,7 +153,10 @@ mod tests {
     fn parses_metadata_quoted_fields_and_rows() {
         let csv = "gpu,driver\nAMD,\"Mesa, Vulkan\"\ntime,fps,frametime\n0,60,16.6\n1,58,17.2\n";
         let parsed = parse_mangohud_csv(csv).unwrap();
-        assert_eq!(parsed.metadata.get("driver"), Some(&"Mesa, Vulkan".to_string()));
+        assert_eq!(
+            parsed.metadata.get("driver"),
+            Some(&"Mesa, Vulkan".to_string())
+        );
         assert_eq!(parsed.rows[1].get("fps"), Some(&"58".to_string()));
     }
 
@@ -161,9 +168,18 @@ mod tests {
 
     #[test]
     fn derives_game_name_like_python_collector() {
-        assert_eq!(derive_game_name("my-game_2025-01-15_14:22:01"), ("My Game".into(), "my-game".into()));
-        assert_eq!(derive_game_name("my_game_2025-01-15_14-22-01"), ("My Game".into(), "my_game".into()));
-        assert_eq!(derive_game_name("native-game"), ("Native Game".into(), "native-game".into()));
+        assert_eq!(
+            derive_game_name("my-game_2025-01-15_14:22:01"),
+            ("My Game".into(), "my-game".into())
+        );
+        assert_eq!(
+            derive_game_name("my_game_2025-01-15_14-22-01"),
+            ("My Game".into(), "my_game".into())
+        );
+        assert_eq!(
+            derive_game_name("native-game"),
+            ("Native Game".into(), "native-game".into())
+        );
     }
 
     #[test]

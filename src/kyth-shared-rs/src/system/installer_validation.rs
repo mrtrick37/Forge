@@ -8,13 +8,23 @@ const LOCALE: &str = r"^[A-Za-z0-9_.@-]{1,64}$";
 const KEYMAP: &str = r"^[A-Za-z0-9_.+@/-]{1,64}$";
 
 fn matches(pattern: &str, value: &str) -> bool {
-    Regex::new(pattern).expect("installer validation regex is valid").is_match(value)
+    Regex::new(pattern)
+        .expect("installer validation regex is valid")
+        .is_match(value)
 }
 
-pub fn valid_username(value: &str) -> bool { matches(USERNAME, value) }
-pub fn valid_hostname(value: &str) -> bool { matches(HOSTNAME, value) }
-pub fn valid_locale(value: &str) -> bool { matches(LOCALE, value) }
-pub fn valid_keymap(value: &str) -> bool { matches(KEYMAP, value) }
+pub fn valid_username(value: &str) -> bool {
+    matches(USERNAME, value)
+}
+pub fn valid_hostname(value: &str) -> bool {
+    matches(HOSTNAME, value)
+}
+pub fn valid_locale(value: &str) -> bool {
+    matches(LOCALE, value)
+}
+pub fn valid_keymap(value: &str) -> bool {
+    matches(KEYMAP, value)
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValidationErrors {
@@ -25,11 +35,18 @@ pub struct ValidationErrors {
 }
 
 impl ValidationErrors {
-    pub fn is_valid(&self) -> bool { self.hostname && self.username && self.locale && self.keymap }
+    pub fn is_valid(&self) -> bool {
+        self.hostname && self.username && self.locale && self.keymap
+    }
 }
 
 pub fn validate(hostname: &str, username: &str, locale: &str, keymap: &str) -> ValidationErrors {
-    ValidationErrors { hostname: valid_hostname(hostname), username: valid_username(username), locale: valid_locale(locale), keymap: valid_keymap(keymap) }
+    ValidationErrors {
+        hostname: valid_hostname(hostname),
+        username: valid_username(username),
+        locale: valid_locale(locale),
+        keymap: valid_keymap(keymap),
+    }
 }
 
 #[cfg(test)]

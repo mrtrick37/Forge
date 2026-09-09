@@ -5,9 +5,18 @@ use std::time::Duration;
 
 pub fn smb_discover_command(host: Option<&str>) -> Vec<String> {
     if let Some(h) = host {
-        vec!["smbclient".to_string(), "-L".to_string(), h.to_string(), "-N".to_string()]
+        vec![
+            "smbclient".to_string(),
+            "-L".to_string(),
+            h.to_string(),
+            "-N".to_string(),
+        ]
     } else {
-        vec!["avahi-browse".to_string(), "-r".to_string(), "_smb._tcp".to_string()]
+        vec![
+            "avahi-browse".to_string(),
+            "-r".to_string(),
+            "_smb._tcp".to_string(),
+        ]
     }
 }
 
@@ -51,14 +60,23 @@ mod tests {
     use super::*;
     #[test]
     fn discover_no_host() {
-        assert_eq!(smb_discover_command(None), vec!["avahi-browse", "-r", "_smb._tcp"]);
+        assert_eq!(
+            smb_discover_command(None),
+            vec!["avahi-browse", "-r", "_smb._tcp"]
+        );
     }
     #[test]
     fn discover_host() {
-        assert_eq!(smb_discover_command(Some("host")), vec!["smbclient", "-L", "host", "-N"]);
+        assert_eq!(
+            smb_discover_command(Some("host")),
+            vec!["smbclient", "-L", "host", "-N"]
+        );
     }
     #[test]
     fn mount() {
-        assert_eq!(smb_mount_command("smb://host/share"), vec!["gio", "mount", "smb://host/share"]);
+        assert_eq!(
+            smb_mount_command("smb://host/share"),
+            vec!["gio", "mount", "smb://host/share"]
+        );
     }
 }

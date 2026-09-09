@@ -43,8 +43,17 @@ pub fn evaluate(inputs: &DoctorInputs) -> DoctorReport {
     }
     score += 20;
 
-    if let Some(capabilities) = inputs.hardware_capabilities.as_ref().filter(|caps| !caps.is_empty()) {
-        let displayed = capabilities.iter().take(2).cloned().collect::<Vec<_>>().join(", ");
+    if let Some(capabilities) = inputs
+        .hardware_capabilities
+        .as_ref()
+        .filter(|caps| !caps.is_empty())
+    {
+        let displayed = capabilities
+            .iter()
+            .take(2)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join(", ");
         checks.push(format!("v3: {displayed}"));
         score += 20;
     } else {
@@ -67,45 +76,90 @@ pub fn evaluate(inputs: &DoctorInputs) -> DoctorReport {
         checks.push("btrfs: no".to_string());
     }
 
-    checks.push(format!("scx: {}", if inputs.scx_active { "active" } else { "inactive (opt-in)" }));
+    checks.push(format!(
+        "scx: {}",
+        if inputs.scx_active {
+            "active"
+        } else {
+            "inactive (opt-in)"
+        }
+    ));
     score += 20;
     if !inputs.scx_active {
         suggestions.push("Try scx: kyth-scx set lavd".to_string());
     }
 
-    let hard_failures = inputs.desktop_stack.iter().filter(|check| !check.passed && !check.advisory).collect::<Vec<_>>();
-    let soft_failures = inputs.desktop_stack.iter().filter(|check| !check.passed && check.advisory).collect::<Vec<_>>();
+    let hard_failures = inputs
+        .desktop_stack
+        .iter()
+        .filter(|check| !check.passed && !check.advisory)
+        .collect::<Vec<_>>();
+    let soft_failures = inputs
+        .desktop_stack
+        .iter()
+        .filter(|check| !check.passed && check.advisory)
+        .collect::<Vec<_>>();
     if hard_failures.is_empty() {
         checks.push("desktop-stack: packages ok".to_string());
     } else {
         score = (score - 15).max(0);
-        checks.push(format!("desktop-stack: {}", hard_failures.iter().map(|check| check.detail.as_str()).collect::<Vec<_>>().join("; ")));
-        suggestions.push("Ensure xdg-desktop-portal + xdg-desktop-portal-kde are on the image".to_string());
+        checks.push(format!(
+            "desktop-stack: {}",
+            hard_failures
+                .iter()
+                .map(|check| check.detail.as_str())
+                .collect::<Vec<_>>()
+                .join("; ")
+        ));
+        suggestions.push(
+            "Ensure xdg-desktop-portal + xdg-desktop-portal-kde are on the image".to_string(),
+        );
     }
     for failure in soft_failures {
-        checks.push(format!("desktop-stack warn: {}: {}", failure.name, failure.detail));
+        checks.push(format!(
+            "desktop-stack warn: {}: {}",
+            failure.name, failure.detail
+        ));
         if failure.name.to_ascii_lowercase().contains("portal") {
             suggestions.push("Restart portals: systemctl --user restart xdg-desktop-portal xdg-desktop-portal-kde".to_string());
         } else if matches!(failure.name.as_str(), "PipeWire" | "WirePlumber") {
-            suggestions.push("Restart audio: systemctl --user restart pipewire pipewire-pulse wireplumber".to_string());
+            suggestions.push(
+                "Restart audio: systemctl --user restart pipewire pipewire-pulse wireplumber"
+                    .to_string(),
+            );
         }
     }
 
-    DoctorReport { score: score.clamp(0, 100) as u8, checks, suggestions }
+    DoctorReport {
+        score: score.clamp(0, 100) as u8,
+        checks,
+        suggestions,
+    }
 }
 
 fn has_cachy_kernel() -> bool {
     std::fs::read_dir("/usr/lib/modules")
-        .map(|entries| entries.flatten().any(|entry| entry.file_name().to_string_lossy().contains("cachy")))
+        .map(|entries| {
+            entries
+                .flatten()
+                .any(|entry| entry.file_name().to_string_lossy().contains("cachy"))
+        })
         .unwrap_or(false)
 }
 
 fn hardware_capabilities() -> Option<Vec<String>> {
     let cached = crate::system::probe::read_section("hardware-summary")
         .and_then(|value| value.get("capabilities")?.as_array().cloned())
-        .map(|values| values.into_iter().filter_map(|value| value.as_str().map(str::to_string)).collect::<Vec<_>>())
+        .map(|values| {
+            values
+                .into_iter()
+                .filter_map(|value| value.as_str().map(str::to_string))
+                .collect::<Vec<_>>()
+        })
         .filter(|values| !values.is_empty());
-    cached.or_else(|| crate::system::hardware_view::get_hardware_view_summary().map(|view| view.capabilities))
+    cached.or_else(|| {
+        crate::system::hardware_view::get_hardware_view_summary().map(|view| view.capabilities)
+    })
 }
 
 /// Collect the same local, read-only evidence used by the doctor CLI.
@@ -129,21 +183,32 @@ mod tests {
     use super::*;
 
     fn stack_check(name: &str, passed: bool, advisory: bool) -> StackCheck {
-        StackCheck { name: name.into(), passed, detail: "test detail".into(), advisory }
+        StackCheck {
+            name: name.into(),
+            passed,
+            detail: "test detail".into(),
+            advisory,
+        }
     }
 
     #[test]
     fn healthy_inputs_score_one_hundred() {
         let report = evaluate(&DoctorInputs {
             has_cachy_kernel: true,
-            hardware_capabilities: Some(vec!["gpu.amd".into(), "gaming.lowlatency".into(), "extra".into()]),
+            hardware_capabilities: Some(vec![
+                "gpu.amd".into(),
+                "gaming.lowlatency".into(),
+                "extra".into(),
+            ]),
             zram_configured: true,
             btrfs_root: true,
             scx_active: true,
             desktop_stack: vec![stack_check("Portal packages", true, false)],
         });
         assert_eq!(report.score, 100);
-        assert!(report.checks.contains(&"v3: gpu.amd, gaming.lowlatency".to_string()));
+        assert!(report
+            .checks
+            .contains(&"v3: gpu.amd, gaming.lowlatency".to_string()));
         assert!(report.suggestions.is_empty());
     }
 
@@ -155,8 +220,14 @@ mod tests {
             ..Default::default()
         });
         assert_eq!(report.score, 25);
-        assert!(report.checks.iter().any(|check| check.starts_with("desktop-stack: test detail")));
-        assert!(report.suggestions.iter().any(|suggestion| suggestion.contains("xdg-desktop-portal")));
+        assert!(report
+            .checks
+            .iter()
+            .any(|check| check.starts_with("desktop-stack: test detail")));
+        assert!(report
+            .suggestions
+            .iter()
+            .any(|suggestion| suggestion.contains("xdg-desktop-portal")));
     }
 
     #[test]
@@ -166,6 +237,9 @@ mod tests {
             ..Default::default()
         });
         assert_eq!(report.score, 40);
-        assert!(report.suggestions.iter().any(|suggestion| suggestion.contains("Restart audio")));
+        assert!(report
+            .suggestions
+            .iter()
+            .any(|suggestion| suggestion.contains("Restart audio")));
     }
 }

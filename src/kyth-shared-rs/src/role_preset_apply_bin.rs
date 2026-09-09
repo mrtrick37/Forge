@@ -15,15 +15,15 @@ use std::process::ExitCode;
 use std::time::Duration;
 
 use kyth_shared::system::desktop_plasma::{
-    HIDDEN_TRAY_ITEMS, TRAY_ITEMS, LauncherChoice, default_application_roots, evaluate_plasma_argv,
-    filter_available_launchers, kwriteconfig_argv, normalize_role_arg, profile_stamp_path,
-    qdbus_candidates, render_role_script, role_launchers, role_layout_target,
+    default_application_roots, evaluate_plasma_argv, filter_available_launchers, kwriteconfig_argv,
+    normalize_role_arg, profile_stamp_path, qdbus_candidates, render_role_script, role_launchers,
+    role_layout_target, LauncherChoice, HIDDEN_TRAY_ITEMS, TRAY_ITEMS,
 };
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::role_preset::{
-    Role, config_path as preset_config_path, defaults_for, distrobox_create_argv,
-    extension_install_argv, flatpak_install_argv, parse_distrobox_list, parse_extension_list,
-    parse_flatpak_list, plan_installs, save, VSCODE_BINARIES, VSCODE_INSTALL_BINARIES,
+    config_path as preset_config_path, defaults_for, distrobox_create_argv, extension_install_argv,
+    flatpak_install_argv, parse_distrobox_list, parse_extension_list, parse_flatpak_list,
+    plan_installs, save, Role, VSCODE_BINARIES, VSCODE_INSTALL_BINARIES,
 };
 
 const USAGE: &str = "Usage: kyth-apply-role-preset [everyday|gaming|dev|creator]";
@@ -42,40 +42,72 @@ fn first_binary(names: &[&str]) -> Option<String> {
 }
 
 fn probe(argv: &[String], timeout_secs: u64) -> Option<String> {
-    run_bounded(argv, Duration::from_secs(timeout_secs)).ok().and_then(|output| {
-        output.status.success().then(|| String::from_utf8_lossy(&output.stdout).into_owned())
-    })
+    run_bounded(argv, Duration::from_secs(timeout_secs))
+        .ok()
+        .and_then(|output| {
+            output
+                .status
+                .success()
+                .then(|| String::from_utf8_lossy(&output.stdout).into_owned())
+        })
 }
 
 /// Layout half, mirroring `apply_role_preset` (idempotent, always safe).
 fn apply_layout(profile: &str) -> i32 {
-    let Some(launchers) = role_launchers(role_layout_target(profile)) else { return 64 };
-    let home = env::var_os("HOME").map(std::path::PathBuf::from).unwrap_or_default();
+    let Some(launchers) = role_launchers(role_layout_target(profile)) else {
+        return 64;
+    };
+    let home = env::var_os("HOME")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_default();
     let stamp = profile_stamp_path(&home);
     if let Some(parent) = stamp.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     let _ = std::fs::write(&stamp, format!("{profile}\n"));
-    let choices: Vec<LauncherChoice> =
-        launchers.iter().map(|name| LauncherChoice::Single((*name).to_string())).collect();
-    let available: Vec<String> = filter_available_launchers(&choices, &default_application_roots(&home));
+    let choices: Vec<LauncherChoice> = launchers
+        .iter()
+        .map(|name| LauncherChoice::Single((*name).to_string()))
+        .collect();
+    let available: Vec<String> =
+        filter_available_launchers(&choices, &default_application_roots(&home));
     let csv = available.join(",");
     if let Some(kwrite) = first_binary(&["kwriteconfig6", "kwriteconfig5", "kwriteconfig"]) {
         let _ = run_bounded(
-            &kwriteconfig_argv(&kwrite, "kickoffrc", &["Favorites"], "FavoriteURLs", &csv, None),
+            &kwriteconfig_argv(
+                &kwrite,
+                "kickoffrc",
+                &["Favorites"],
+                "FavoriteURLs",
+                &csv,
+                None,
+            ),
             Duration::from_secs(5),
         );
         let _ = run_bounded(
-            &kwriteconfig_argv(&kwrite, "plasma-discoverrc", &["UpdatesNotifier"], "UseNotifications", "false", Some("bool")),
+            &kwriteconfig_argv(
+                &kwrite,
+                "plasma-discoverrc",
+                &["UpdatesNotifier"],
+                "UseNotifications",
+                "false",
+                Some("bool"),
+            ),
             Duration::from_secs(5),
         );
     }
     if let Some(qdbus) = first_binary(&qdbus_candidates()) {
         let script = render_role_script(&csv, &TRAY_ITEMS.join(","), &HIDDEN_TRAY_ITEMS.join(","));
-        let _ = run_bounded(&evaluate_plasma_argv(&qdbus, &script), Duration::from_secs(15));
+        let _ = run_bounded(
+            &evaluate_plasma_argv(&qdbus, &script),
+            Duration::from_secs(15),
+        );
     }
     if let Some(sycoca) = first_binary(&["kbuildsycoca6", "kbuildsycoca"]) {
-        let _ = run_bounded(&[sycoca, "--noincremental".to_string()], Duration::from_secs(10));
+        let _ = run_bounded(
+            &[sycoca, "--noincremental".to_string()],
+            Duration::from_secs(10),
+        );
     }
     0
 }
@@ -86,12 +118,27 @@ fn apply_preset(profile: Role) {
     if let Err(error) = save(preset_config_path(None::<&Path>), &preset) {
         eprintln!("preset apply warning: {error}");
     }
-    let have_flatpaks = probe(&["flatpak".to_string(), "list".to_string(), "--app".to_string(), "--columns=application".to_string()], 10)
-        .map(|text| parse_flatpak_list(&text))
-        .unwrap_or_default();
-    let have_boxes = probe(&["distrobox".to_string(), "list".to_string(), "--no-color".to_string()], 10)
-        .map(|text| parse_distrobox_list(&text))
-        .unwrap_or_default();
+    let have_flatpaks = probe(
+        &[
+            "flatpak".to_string(),
+            "list".to_string(),
+            "--app".to_string(),
+            "--columns=application".to_string(),
+        ],
+        10,
+    )
+    .map(|text| parse_flatpak_list(&text))
+    .unwrap_or_default();
+    let have_boxes = probe(
+        &[
+            "distrobox".to_string(),
+            "list".to_string(),
+            "--no-color".to_string(),
+        ],
+        10,
+    )
+    .map(|text| parse_distrobox_list(&text))
+    .unwrap_or_default();
     let mut have_extensions: HashSet<String> = HashSet::new();
     for binary in VSCODE_BINARIES {
         if let Some(text) = probe(&[binary.to_string(), "--list-extensions".to_string()], 10) {
@@ -99,7 +146,8 @@ fn apply_preset(profile: Role) {
             break;
         }
     }
-    let (installed, _skipped) = plan_installs(&preset, &have_flatpaks, &have_boxes, &have_extensions);
+    let (installed, _skipped) =
+        plan_installs(&preset, &have_flatpaks, &have_boxes, &have_extensions);
     for app in &preset.flatpaks {
         if installed.contains(app) {
             let _ = run_bounded(&flatpak_install_argv(app), Duration::from_secs(300));
@@ -114,7 +162,12 @@ fn apply_preset(profile: Role) {
         if installed.contains(extension) {
             for binary in VSCODE_INSTALL_BINARIES {
                 // First binary that spawns wins, regardless of exit status.
-                if run_bounded(&extension_install_argv(binary, extension), Duration::from_secs(60)).is_ok() {
+                if run_bounded(
+                    &extension_install_argv(binary, extension),
+                    Duration::from_secs(60),
+                )
+                .is_ok()
+                {
                     break;
                 }
             }

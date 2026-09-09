@@ -12,21 +12,23 @@ use std::time::Duration;
 
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::release_fetch::{
-    TempWorkdir, download_file, extract_archive, fetch_github_latest_release,
-    find_release_asset, github_headers, prune_installations, read_secret_file,
-    release_assets, validate_version, verify_checksum_file,
+    download_file, extract_archive, fetch_github_latest_release, find_release_asset,
+    github_headers, prune_installations, read_secret_file, release_assets, validate_version,
+    verify_checksum_file, TempWorkdir,
 };
 
 const REPO: &str = "CachyOS/proton-cachyos";
 const VERSION_PATTERN: &str = r"cachyos-[0-9]+\.[0-9]+-[0-9]{8}-slr";
 
 fn run(argv: &[String], timeout_secs: u64) -> Option<(i32, String)> {
-    run_bounded(argv, Duration::from_secs(timeout_secs)).ok().map(|output| {
-        (
-            output.status.code().unwrap_or(1),
-            String::from_utf8_lossy(&output.stdout).into_owned(),
-        )
-    })
+    run_bounded(argv, Duration::from_secs(timeout_secs))
+        .ok()
+        .map(|output| {
+            (
+                output.status.code().unwrap_or(1),
+                String::from_utf8_lossy(&output.stdout).into_owned(),
+            )
+        })
 }
 
 fn fail(message: String) -> ! {
@@ -36,7 +38,10 @@ fn fail(message: String) -> ! {
 
 fn main() -> std::process::ExitCode {
     if let Ok(cmdline) = std::fs::read_to_string("/proc/cmdline") {
-        if cmdline.split_whitespace().any(|arg| arg == "kyth.live" || arg == "kyth.live=1") {
+        if cmdline
+            .split_whitespace()
+            .any(|arg| arg == "kyth.live" || arg == "kyth.live=1")
+        {
             println!("Proton-CachyOS update disabled in live ISO environment.");
             return std::process::ExitCode::SUCCESS;
         }
@@ -48,9 +53,14 @@ fn main() -> std::process::ExitCode {
     let headers = github_headers(secret.as_deref(), env_token.as_deref());
     let release = match fetch_github_latest_release(&run, REPO, &headers) {
         Ok(release) => release,
-        Err(error) => fail(format!("Failed to fetch Proton-CachyOS release info: {error}")),
+        Err(error) => fail(format!(
+            "Failed to fetch Proton-CachyOS release info: {error}"
+        )),
     };
-    let ver = release.get("tag_name").and_then(serde_json::Value::as_str).unwrap_or("");
+    let ver = release
+        .get("tag_name")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("");
     if ver.is_empty() {
         fail("Failed to parse Proton-CachyOS version tag from release JSON".to_string());
     }
@@ -98,7 +108,10 @@ fn main() -> std::process::ExitCode {
     if let Err(error) = extract_archive(&run, &tarball_dest, &install_dir) {
         fail(format!("Extraction failed: {error}"));
     }
-    println!("Proton-CachyOS {ver} installed to {}/", install_dir.display());
+    println!(
+        "Proton-CachyOS {ver} installed to {}/",
+        install_dir.display()
+    );
     match prune_installations(&install_dir, "proton-cachyos-*", 2) {
         Ok(removed) => {
             for old in &removed {

@@ -10,8 +10,6 @@ source "../lib/packages-helpers.sh"
 # use a batched fast path with individual fallback so a transient RPM/scriptlet
 # issue in a font or hardware utility does not block the image.
 dnf5 install -y --skip-unavailable \
-	python3-pyqt6 \
-	python3-pyqt6-webengine \
 	python3-pip \
 	python3-setuptools \
 	python3-defusedxml \

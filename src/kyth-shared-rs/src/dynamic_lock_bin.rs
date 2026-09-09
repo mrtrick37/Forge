@@ -12,7 +12,7 @@ use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 
 use kyth_shared::system::dynamic_lock::{
-    Availability, Monitor, POLL_SECONDS, RUNNING, config_path, load_config,
+    config_path, load_config, Availability, Monitor, POLL_SECONDS, RUNNING,
 };
 use kyth_shared::system::process::run_bounded;
 
@@ -27,12 +27,14 @@ fn on_path(name: &str) -> bool {
 }
 
 fn run_quiet(argv: &[String], timeout_secs: u64) -> Option<(i32, String)> {
-    run_bounded(argv, Duration::from_secs(timeout_secs)).ok().map(|output| {
-        (
-            output.status.code().unwrap_or(1),
-            String::from_utf8_lossy(&output.stdout).into_owned(),
-        )
-    })
+    run_bounded(argv, Duration::from_secs(timeout_secs))
+        .ok()
+        .map(|output| {
+            (
+                output.status.code().unwrap_or(1),
+                String::from_utf8_lossy(&output.stdout).into_owned(),
+            )
+        })
 }
 
 fn available_ids() -> Option<std::collections::HashSet<String>> {
@@ -45,7 +47,12 @@ fn available_ids() -> Option<std::collections::HashSet<String>> {
         .collect::<Vec<_>>();
     match run_quiet(&argv, 12) {
         Some((0, stdout)) => Some(
-            stdout.lines().map(str::trim).filter(|line| !line.is_empty()).map(str::to_string).collect(),
+            stdout
+                .lines()
+                .map(str::trim)
+                .filter(|line| !line.is_empty())
+                .map(str::to_string)
+                .collect(),
         ),
         _ => None,
     }
@@ -53,9 +60,24 @@ fn available_ids() -> Option<std::collections::HashSet<String>> {
 
 fn lock_session() -> bool {
     const COMMANDS: &[&[&str]] = &[
-        &["qdbus6", "org.freedesktop.ScreenSaver", "/ScreenSaver", "Lock"],
-        &["qdbus-qt6", "org.freedesktop.ScreenSaver", "/ScreenSaver", "Lock"],
-        &["qdbus", "org.freedesktop.ScreenSaver", "/ScreenSaver", "Lock"],
+        &[
+            "qdbus6",
+            "org.freedesktop.ScreenSaver",
+            "/ScreenSaver",
+            "Lock",
+        ],
+        &[
+            "qdbus-qt6",
+            "org.freedesktop.ScreenSaver",
+            "/ScreenSaver",
+            "Lock",
+        ],
+        &[
+            "qdbus",
+            "org.freedesktop.ScreenSaver",
+            "/ScreenSaver",
+            "Lock",
+        ],
         &["loginctl", "lock-session"],
     ];
     for command in COMMANDS {

@@ -3,31 +3,62 @@
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NetLatencyConfig { pub enabled: bool, pub tcp_fastopen: i64, pub bbr: bool }
+pub struct NetLatencyConfig {
+    pub enabled: bool,
+    pub tcp_fastopen: i64,
+    pub bbr: bool,
+}
 
 impl Default for NetLatencyConfig {
-    fn default() -> Self { Self { enabled: false, tcp_fastopen: 3, bbr: true } }
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            tcp_fastopen: 3,
+            bbr: true,
+        }
+    }
 }
 
 fn normalize(config: NetLatencyConfig) -> NetLatencyConfig {
-    NetLatencyConfig { enabled: config.enabled, tcp_fastopen: config.tcp_fastopen.clamp(0, 3), bbr: config.bbr }
+    NetLatencyConfig {
+        enabled: config.enabled,
+        tcp_fastopen: config.tcp_fastopen.clamp(0, 3),
+        bbr: config.bbr,
+    }
 }
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    if let Some(path) = path { return path.as_ref().to_path_buf(); }
+    if let Some(path) = path {
+        return path.as_ref().to_path_buf();
+    }
     if std::env::var("KYTH_TEST_MODE").ok().as_deref() == Some("1") {
-        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(config).join("kyth/net-latency.toml"); }
+        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") {
+            return PathBuf::from(config).join("kyth/net-latency.toml");
+        }
     }
     PathBuf::from("/etc/kyth/net-latency.toml")
 }
 
 pub fn load(path: impl AsRef<Path>) -> NetLatencyConfig {
-    let Ok(raw) = std::fs::read_to_string(path) else { return NetLatencyConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return NetLatencyConfig::default(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return NetLatencyConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return NetLatencyConfig::default();
+    };
     normalize(NetLatencyConfig {
-        enabled: value.get("enabled").and_then(toml::Value::as_bool).unwrap_or(false),
-        tcp_fastopen: value.get("tcp_fastopen").and_then(toml::Value::as_integer).unwrap_or(3),
-        bbr: value.get("bbr").and_then(toml::Value::as_bool).unwrap_or(true),
+        enabled: value
+            .get("enabled")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(false),
+        tcp_fastopen: value
+            .get("tcp_fastopen")
+            .and_then(toml::Value::as_integer)
+            .unwrap_or(3),
+        bbr: value
+            .get("bbr")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true),
     })
 }
 
@@ -43,7 +74,10 @@ pub fn save(path: impl AsRef<Path>, config: &NetLatencyConfig) -> std::io::Resul
     )
 }
 
-pub fn generate(config: &NetLatencyConfig, destination: impl AsRef<Path>) -> std::io::Result<Option<PathBuf>> {
+pub fn generate(
+    config: &NetLatencyConfig,
+    destination: impl AsRef<Path>,
+) -> std::io::Result<Option<PathBuf>> {
     let destination = destination.as_ref();
     let config = normalize(config.clone());
     if !config.enabled {
@@ -54,7 +88,8 @@ pub fn generate(config: &NetLatencyConfig, destination: impl AsRef<Path>) -> std
         }
         return Ok(None);
     }
-    let mut content = String::from("# Kyth net latency — generated, remove by disabling net-latency.toml\n");
+    let mut content =
+        String::from("# Kyth net latency — generated, remove by disabling net-latency.toml\n");
     if config.bbr {
         content.push_str("net.ipv4.tcp_congestion_control = bbr\nnet.core.default_qdisc = fq\n");
     }
@@ -66,7 +101,9 @@ pub fn generate(config: &NetLatencyConfig, destination: impl AsRef<Path>) -> std
     Ok(Some(destination.to_path_buf()))
 }
 
-pub fn status(destination: impl AsRef<Path>) -> bool { destination.as_ref().is_file() }
+pub fn status(destination: impl AsRef<Path>) -> bool {
+    destination.as_ref().is_file()
+}
 
 #[cfg(test)]
 mod tests {
@@ -78,7 +115,11 @@ mod tests {
         let directory = tempdir().unwrap();
         let config_path = directory.path().join("net-latency.toml");
         let drop_in = directory.path().join("net-latency.conf");
-        std::fs::write(&config_path, "enabled = true\ntcp_fastopen = 99\nbbr = false\n").unwrap();
+        std::fs::write(
+            &config_path,
+            "enabled = true\ntcp_fastopen = 99\nbbr = false\n",
+        )
+        .unwrap();
         let config = load(&config_path);
         assert_eq!(config.tcp_fastopen, 3);
         generate(&config, &drop_in).unwrap();

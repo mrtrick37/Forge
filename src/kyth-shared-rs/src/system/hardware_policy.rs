@@ -162,23 +162,38 @@ pub struct Evaluation {
 }
 
 fn read_text(path: &Path) -> String {
-    fs::read_to_string(path).unwrap_or_default().trim().to_string()
+    fs::read_to_string(path)
+        .unwrap_or_default()
+        .trim()
+        .to_string()
 }
 
 fn sysfs_hex(path: &Path) -> String {
-    read_text(path).to_lowercase().trim_start_matches("0x").to_string()
+    read_text(path)
+        .to_lowercase()
+        .trim_start_matches("0x")
+        .to_string()
 }
 
 fn driver_name(path: &Path) -> String {
     fs::canonicalize(path)
         .ok()
-        .and_then(|resolved| resolved.file_name().map(|name| name.to_string_lossy().to_string()))
+        .and_then(|resolved| {
+            resolved
+                .file_name()
+                .map(|name| name.to_string_lossy().to_string())
+        })
         .unwrap_or_default()
 }
 
 fn sorted_directories(root: &Path) -> Vec<PathBuf> {
-    let Ok(entries) = fs::read_dir(root) else { return Vec::new(); };
-    let mut paths: Vec<PathBuf> = entries.filter_map(Result::ok).map(|entry| entry.path()).collect();
+    let Ok(entries) = fs::read_dir(root) else {
+        return Vec::new();
+    };
+    let mut paths: Vec<PathBuf> = entries
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .collect();
     paths.sort();
     paths
 }
@@ -203,7 +218,9 @@ pub fn collect_inventory_from(
     for node in sorted_directories(pci_root) {
         let vendor = sysfs_hex(&node.join("vendor"));
         let device = sysfs_hex(&node.join("device"));
-        if vendor.is_empty() || device.is_empty() { continue; }
+        if vendor.is_empty() || device.is_empty() {
+            continue;
+        }
         pci.push(Device {
             bus: "pci".to_string(),
             vendor,
@@ -218,15 +235,26 @@ pub fn collect_inventory_from(
     for node in sorted_directories(usb_root) {
         let vendor = sysfs_hex(&node.join("idVendor"));
         let device = sysfs_hex(&node.join("idProduct"));
-        if vendor.is_empty() || device.is_empty() { continue; }
+        if vendor.is_empty() || device.is_empty() {
+            continue;
+        }
         let mut driver = driver_name(&node.join("driver"));
         if driver.is_empty() {
-            let prefix = node.file_name().map(|name| format!("{}:", name.to_string_lossy())).unwrap_or_default();
+            let prefix = node
+                .file_name()
+                .map(|name| format!("{}:", name.to_string_lossy()))
+                .unwrap_or_default();
             if let Some(parent) = node.parent() {
                 for child in sorted_directories(parent) {
-                    if child.file_name().map(|name| name.to_string_lossy().starts_with(&prefix)).unwrap_or(false) {
+                    if child
+                        .file_name()
+                        .map(|name| name.to_string_lossy().starts_with(&prefix))
+                        .unwrap_or(false)
+                    {
                         driver = driver_name(&child.join("driver"));
-                        if !driver.is_empty() { break; }
+                        if !driver.is_empty() {
+                            break;
+                        }
                     }
                 }
             }
@@ -244,7 +272,12 @@ pub fn collect_inventory_from(
     let cpu_vendor = fs::read_to_string(cpuinfo_path)
         .unwrap_or_default()
         .lines()
-        .find_map(|line| line.strip_prefix("vendor_id").and_then(|value| value.strip_prefix(':')).map(str::trim).map(str::to_string))
+        .find_map(|line| {
+            line.strip_prefix("vendor_id")
+                .and_then(|value| value.strip_prefix(':'))
+                .map(str::trim)
+                .map(str::to_string)
+        })
         .unwrap_or_default();
     Inventory {
         cpu_vendor,
@@ -258,10 +291,15 @@ pub fn collect_inventory_from(
 
 pub fn load_policy(path: &Path) -> Result<(Policy, String), String> {
     let raw = fs::read(path).map_err(|err| format!("could not read hardware policy: {err}"))?;
-    let text = String::from_utf8(raw.clone()).map_err(|err| format!("hardware policy is not UTF-8: {err}"))?;
-    let policy: Policy = toml::from_str(&text).map_err(|err| format!("could not parse hardware policy: {err}"))?;
+    let text = String::from_utf8(raw.clone())
+        .map_err(|err| format!("hardware policy is not UTF-8: {err}"))?;
+    let policy: Policy =
+        toml::from_str(&text).map_err(|err| format!("could not parse hardware policy: {err}"))?;
     if policy.schema_version != 1 {
-        return Err(format!("unsupported hardware policy schema {}", policy.schema_version));
+        return Err(format!(
+            "unsupported hardware policy schema {}",
+            policy.schema_version
+        ));
     }
     Ok((policy, format!("{:x}", Sha256::digest(raw))))
 }
@@ -272,7 +310,9 @@ fn glob_match(value: &str, pattern: &str) -> bool {
     let mut dp = vec![vec![false; pattern.len() + 1]; value.len() + 1];
     dp[0][0] = true;
     for j in 1..=pattern.len() {
-        if pattern[j - 1] == '*' { dp[0][j] = dp[0][j - 1]; }
+        if pattern[j - 1] == '*' {
+            dp[0][j] = dp[0][j - 1];
+        }
     }
     for i in 1..=value.len() {
         for j in 1..=pattern.len() {
@@ -292,17 +332,31 @@ fn patterns_match(value: &str, patterns: &[String]) -> bool {
 
 fn device_matches(device: &Device, selector: &DeviceSelector) -> bool {
     let vendor = selector.vendor.to_lowercase();
-    let devices: Vec<String> = selector.devices.iter().map(|value| value.to_lowercase()).collect();
-    let classes: Vec<String> = selector.classes.iter().map(|value| value.to_lowercase()).collect();
+    let devices: Vec<String> = selector
+        .devices
+        .iter()
+        .map(|value| value.to_lowercase())
+        .collect();
+    let classes: Vec<String> = selector
+        .classes
+        .iter()
+        .map(|value| value.to_lowercase())
+        .collect();
     (vendor.is_empty() || device.vendor == vendor)
         && (devices.is_empty() || devices.iter().any(|value| value == &device.device))
-        && (classes.is_empty() || classes.iter().any(|value| device.class_code.starts_with(value)))
-        && (selector.drivers.is_empty() || selector.drivers.iter().any(|value| value == &device.driver))
+        && (classes.is_empty()
+            || classes
+                .iter()
+                .any(|value| device.class_code.starts_with(value)))
+        && (selector.drivers.is_empty()
+            || selector.drivers.iter().any(|value| value == &device.driver))
 }
 
 /// Match all selectors in a policy entry against one inventory.
 pub fn matches(inventory: &Inventory, selector: &Match) -> bool {
-    if selector.always { return true; }
+    if selector.always {
+        return true;
+    }
     if !patterns_match(&inventory.cpu_vendor, &selector.cpu_vendors)
         || !patterns_match(&inventory.dmi_vendor, &selector.dmi_vendors)
         || !patterns_match(&inventory.dmi_product, &selector.dmi_products)
@@ -311,10 +365,22 @@ pub fn matches(inventory: &Inventory, selector: &Match) -> bool {
         return false;
     }
     for entry in &selector.pci {
-        if !inventory.pci.iter().any(|device| device_matches(device, entry)) { return false; }
+        if !inventory
+            .pci
+            .iter()
+            .any(|device| device_matches(device, entry))
+        {
+            return false;
+        }
     }
     for entry in &selector.usb {
-        if !inventory.usb.iter().any(|device| device_matches(device, entry)) { return false; }
+        if !inventory
+            .usb
+            .iter()
+            .any(|device| device_matches(device, entry))
+        {
+            return false;
+        }
     }
     !selector.pci.is_empty()
         || !selector.usb.is_empty()
@@ -355,28 +421,51 @@ pub fn expired_quirks(policy: &Policy) -> Vec<String> {
 }
 
 pub fn evaluate(policy: &Policy, policy_digest: &str, inventory: Inventory) -> Evaluation {
-    let mut profiles: Vec<&Profile> = policy.profiles.iter().filter(|profile| matches(&inventory, &profile.selector)).collect();
+    let mut profiles: Vec<&Profile> = policy
+        .profiles
+        .iter()
+        .filter(|profile| matches(&inventory, &profile.selector))
+        .collect();
     profiles.sort_by_key(|profile| (profile.priority, profile.id.clone()));
     let mut quirks = Vec::new();
     let mut warnings = Vec::new();
     let today = current_date_utc();
     for quirk in &policy.quirks {
-        if !matches(&inventory, &quirk.selector) { continue; }
+        if !matches(&inventory, &quirk.selector) {
+            continue;
+        }
         let mut value = serde_json::to_value(quirk).unwrap_or(Value::Null);
         let expired = !quirk.expires_on.is_empty() && quirk.expires_on < today;
         if expired {
-            warnings.push(format!("quirk {} expired on {} and needs review", quirk.id, quirk.expires_on));
+            warnings.push(format!(
+                "quirk {} expired on {} and needs review",
+                quirk.id, quirk.expires_on
+            ));
         }
-        if let Some(object) = value.as_object_mut() { object.insert("expired".to_string(), Value::Bool(expired)); }
+        if let Some(object) = value.as_object_mut() {
+            object.insert("expired".to_string(), Value::Bool(expired));
+        }
         quirks.push(value);
     }
-    let capabilities: Vec<String> = profiles.iter().flat_map(|profile| profile.capabilities.iter().cloned()).collect::<BTreeSet<_>>().into_iter().collect();
-    let recommended_variant = profiles.last().map(|profile| profile.image_variant.clone()).filter(|variant| !variant.is_empty()).unwrap_or_else(|| "universal".to_string());
+    let capabilities: Vec<String> = profiles
+        .iter()
+        .flat_map(|profile| profile.capabilities.iter().cloned())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    let recommended_variant = profiles
+        .last()
+        .map(|profile| profile.image_variant.clone())
+        .filter(|variant| !variant.is_empty())
+        .unwrap_or_else(|| "universal".to_string());
     Evaluation {
         policy_revision: policy.policy_revision.clone(),
         policy_digest: policy_digest.to_string(),
         inventory,
-        profiles: profiles.into_iter().map(|profile| serde_json::to_value(profile).unwrap_or(Value::Null)).collect(),
+        profiles: profiles
+            .into_iter()
+            .map(|profile| serde_json::to_value(profile).unwrap_or(Value::Null))
+            .collect(),
         quirks,
         capabilities,
         recommended_variant,
@@ -394,14 +483,38 @@ mod tests {
     use super::*;
 
     fn inventory(pci: Vec<Device>) -> Inventory {
-        Inventory { cpu_vendor: "AuthenticAMD".into(), dmi_vendor: "Valve".into(), dmi_product: "Galileo".into(), dmi_board: "Jupiter".into(), pci, usb: Vec::new() }
+        Inventory {
+            cpu_vendor: "AuthenticAMD".into(),
+            dmi_vendor: "Valve".into(),
+            dmi_product: "Galileo".into(),
+            dmi_board: "Jupiter".into(),
+            pci,
+            usb: Vec::new(),
+        }
     }
 
     #[test]
     fn device_and_class_selectors_match_the_same_device() {
-        let inv = inventory(vec![Device { bus: "pci".into(), vendor: "1002".into(), device: "744c".into(), class_code: "030000".into(), driver: "amdgpu".into(), name: String::new() }]);
-        let selector = DeviceSelector { vendor: "1002".into(), classes: vec!["0300".into()], ..Default::default() };
-        assert!(matches(&inv, &Match { pci: vec![selector], ..Default::default() }));
+        let inv = inventory(vec![Device {
+            bus: "pci".into(),
+            vendor: "1002".into(),
+            device: "744c".into(),
+            class_code: "030000".into(),
+            driver: "amdgpu".into(),
+            name: String::new(),
+        }]);
+        let selector = DeviceSelector {
+            vendor: "1002".into(),
+            classes: vec!["0300".into()],
+            ..Default::default()
+        };
+        assert!(matches(
+            &inv,
+            &Match {
+                pci: vec![selector],
+                ..Default::default()
+            }
+        ));
     }
 
     #[test]
@@ -411,19 +524,50 @@ mod tests {
             policy_revision: "test".into(),
             variants: Vec::new(),
             profiles: vec![
-                Profile { id: "baseline".into(), priority: 0, image_variant: "universal".into(), capabilities: vec!["base".into()], selector: Match { always: true, ..Default::default() }, ..Default::default() },
-                Profile { id: "gpu".into(), priority: 100, image_variant: "universal".into(), capabilities: vec!["gpu.amd".into()], selector: Match { pci: vec![DeviceSelector { vendor: "1002".into(), ..Default::default() }], ..Default::default() }, ..Default::default() },
+                Profile {
+                    id: "baseline".into(),
+                    priority: 0,
+                    image_variant: "universal".into(),
+                    capabilities: vec!["base".into()],
+                    selector: Match {
+                        always: true,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+                Profile {
+                    id: "gpu".into(),
+                    priority: 100,
+                    image_variant: "universal".into(),
+                    capabilities: vec!["gpu.amd".into()],
+                    selector: Match {
+                        pci: vec![DeviceSelector {
+                            vendor: "1002".into(),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
             ],
             quirks: Vec::new(),
         };
-        let result = evaluate(&policy, "digest", inventory(vec![Device { vendor: "1002".into(), ..Default::default() }]));
+        let result = evaluate(
+            &policy,
+            "digest",
+            inventory(vec![Device {
+                vendor: "1002".into(),
+                ..Default::default()
+            }]),
+        );
         assert_eq!(result.profiles.len(), 2);
         assert_eq!(result.capabilities, vec!["base", "gpu.amd"]);
     }
 
     #[test]
     fn parses_the_shipped_policy() {
-        let (policy, digest) = load_policy(Path::new("../../build_files/config/hardware-profiles.toml")).unwrap();
+        let (policy, digest) =
+            load_policy(Path::new("../../build_files/config/hardware-profiles.toml")).unwrap();
         assert_eq!(policy.schema_version, 1);
         assert_eq!(digest.len(), 64);
     }

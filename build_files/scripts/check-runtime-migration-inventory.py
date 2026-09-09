@@ -126,7 +126,12 @@ NATIVE_BINARIES = NATIVE_BINARIES | {
 }
 PACKAGED_NATIVE_LAUNCHERS = NATIVE_BINARIES | {"kyth-launch-installer"}
 NOT_PORTED = {"rclone@"}
-NOT_PORTED_PATHS = {"src/kyth-welcome/kyth_welcome/services/privileged.py"}
+NOT_PORTED_PATHS = {
+    "src/kyth-welcome/kyth_welcome/services/privileged.py",
+    # The source file is retained so older-image rollback trees remain
+    # inspectable. The installed name is now a symlink to kyth-tunable-rs.
+    "build_files/kyth-tunable",
+}
 REVIEWED_EXTERNAL_INTERFACES = {
     "rclone@": "external::rclone",
 }
@@ -495,8 +500,8 @@ def runtime_metadata(
 ) -> dict[str, object]:
     """Classify the installed authority separately from the source file.
 
-    A Python source file can be a retired fixture (the old Hub), a Python
-    package still installed for compatibility, or a source counterpart whose
+    A Python source file can be a retired fixture (the old Hub), a build/test
+    compatibility source, or a source counterpart whose
     installed entry point is already native Rust.  The original inventory had
     no way to distinguish those cases, which made the migration queue look
     much larger than the actual runtime surface.
@@ -588,7 +593,10 @@ def entry(
     elif surface == "ujust-recipe" and path.name in NATIVE_RECIPE_FILES:
         status = "done-native"
         reason = "installed recipe manifest delegates every recipe to kyth-runtime"
-    elif item_name in NOT_PORTED or rel(path) in NOT_PORTED_PATHS:
+    elif rel(path) in NOT_PORTED_PATHS:
+        status = "explicitly-not-ported"
+        reason = "legacy source fixture is not installed; the native Rust dispatcher owns this entry point"
+    elif item_name in NOT_PORTED:
         status = "explicitly-not-ported"
         reason = "documented third-party or declarative build/runtime exception"
     elif (
@@ -655,9 +663,13 @@ def entry(
         # Reachability guard — shell-harness modules must never land here.
         assert item_name not in SHELL_HARNESS_MODULES, f"reachable module marked superseded: {item_name}"
         result.update({
+            "status": "explicitly-not-ported",
+            "installed_implementation": "python-fixture",
             "runtime_active": False,
             "migration_priority": 3,
             "superseded_by": TUNABLE_SUPERSEDED_BY,
+            "owner": TUNABLE_SUPERSEDED_BY,
+            "reason": "retained tunable compatibility module is fully superseded by the native Rust dispatcher",
         })
     module_name = python_module_name(path) if surface == "python-runtime" else None
     if (
@@ -666,9 +678,8 @@ def entry(
         and module_name not in reachable_python_modules
         and not result.get("superseded_by")
     ):
-        # The package is installed for compatibility and rollback tooling, but
-        # this module is not reachable from an installed Python entry point or
-        # an active shell/build harness.  Keep the source in the tree without
+        # This module is not reachable from an installed Python entry point or
+        # an active shell/build harness. Keep the source in the tree without
         # presenting it as an open Rust migration target.
         result.update({
             "status": "explicitly-not-ported",

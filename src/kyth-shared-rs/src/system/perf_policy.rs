@@ -25,7 +25,11 @@ pub fn battery_percent(text: &str) -> Option<i64> {
 
 /// Normalize the successful `powerprofilesctl get` output used by the daemon.
 pub fn power_profile(success: bool, stdout: &str) -> String {
-    if success && !stdout.trim().is_empty() { stdout.trim().to_ascii_lowercase() } else { "unknown".into() }
+    if success && !stdout.trim().is_empty() {
+        stdout.trim().to_ascii_lowercase()
+    } else {
+        "unknown".into()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

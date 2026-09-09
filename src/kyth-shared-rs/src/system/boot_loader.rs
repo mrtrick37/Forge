@@ -18,7 +18,10 @@ pub struct LoaderConfig {
 
 impl Default for LoaderConfig {
     fn default() -> Self {
-        Self { fast: false, timeout: 2 }
+        Self {
+            fast: false,
+            timeout: 2,
+        }
     }
 }
 
@@ -35,10 +38,17 @@ pub fn loader_config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
 }
 
 pub fn load_loader(path: impl AsRef<Path>) -> LoaderConfig {
-    let Ok(raw) = fs::read_to_string(path) else { return LoaderConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return LoaderConfig::default(); };
+    let Ok(raw) = fs::read_to_string(path) else {
+        return LoaderConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return LoaderConfig::default();
+    };
     let table = value.as_table();
-    let fast = table.and_then(|table| table.get("fast")).and_then(toml::Value::as_bool).unwrap_or(false);
+    let fast = table
+        .and_then(|table| table.get("fast"))
+        .and_then(toml::Value::as_bool)
+        .unwrap_or(false);
     let default_timeout = if fast { 0 } else { 2 };
     let timeout = table
         .and_then(|table| table.get("timeout"))
@@ -54,27 +64,54 @@ pub fn load_loader_default() -> LoaderConfig {
 
 pub fn save_loader(path: impl AsRef<Path>, config: &LoaderConfig) -> std::io::Result<()> {
     let timeout = config.timeout.clamp(0, 10);
-    crate::atomic_io::atomic_write_text(path, &format!("# Kyth loader — offline\nfast = {}\ntimeout = {}\n", config.fast, timeout), Some(0o600))
+    crate::atomic_io::atomic_write_text(
+        path,
+        &format!(
+            "# Kyth loader — offline\nfast = {}\ntimeout = {}\n",
+            config.fast, timeout
+        ),
+        Some(0o600),
+    )
 }
 
 pub fn loader_status(conf: impl AsRef<Path>) -> &'static str {
-    let Ok(raw) = fs::read_to_string(conf) else { return "balanced"; };
-    if raw.contains("timeout 0") || raw.contains("Kyth") { "fast" } else { "balanced" }
+    let Ok(raw) = fs::read_to_string(conf) else {
+        return "balanced";
+    };
+    if raw.contains("timeout 0") || raw.contains("Kyth") {
+        "fast"
+    } else {
+        "balanced"
+    }
 }
 
 pub fn loader_status_default() -> &'static str {
     loader_status(DEFAULT_LOADER_CONF)
 }
 
-pub fn generate_loader_conf(config: &LoaderConfig, destination: impl AsRef<Path>) -> std::io::Result<Option<PathBuf>> {
+pub fn generate_loader_conf(
+    config: &LoaderConfig,
+    destination: impl AsRef<Path>,
+) -> std::io::Result<Option<PathBuf>> {
     let destination = destination.as_ref();
     if !config.fast {
-        if destination.is_file() && fs::read_to_string(destination).ok().is_some_and(|text| text.contains("Kyth")) {
+        if destination.is_file()
+            && fs::read_to_string(destination)
+                .ok()
+                .is_some_and(|text| text.contains("Kyth"))
+        {
             crate::atomic_io::atomic_write_text(destination, "timeout 2\n", Some(0o644))?;
         }
         return Ok(None);
     }
-    crate::atomic_io::atomic_write_text(destination, &format!("# Kyth loader fast-path — generated, greenboot-aware\ntimeout {}\n", config.timeout), Some(0o644))?;
+    crate::atomic_io::atomic_write_text(
+        destination,
+        &format!(
+            "# Kyth loader fast-path — generated, greenboot-aware\ntimeout {}\n",
+            config.timeout
+        ),
+        Some(0o644),
+    )?;
     Ok(Some(destination.to_path_buf()))
 }
 
@@ -89,8 +126,17 @@ mod tests {
         let directory = tempdir().unwrap();
         let path = directory.path().join("loader.toml");
         fs::write(&path, "fast = true\ntimeout = 99\n").unwrap();
-        assert_eq!(load_loader(&path), LoaderConfig { fast: true, timeout: 10 });
-        assert_eq!(load_loader(directory.path().join("missing.toml")), LoaderConfig::default());
+        assert_eq!(
+            load_loader(&path),
+            LoaderConfig {
+                fast: true,
+                timeout: 10
+            }
+        );
+        assert_eq!(
+            load_loader(directory.path().join("missing.toml")),
+            LoaderConfig::default()
+        );
     }
 
     #[test]

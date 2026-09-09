@@ -17,7 +17,12 @@ pub const LABEL_SRC: &str = "org.kyth.build.base-src-hash";
 const REQUIRED_LABELS: [&str; 4] = [LABEL_UPSTREAM, LABEL_FLAVOR, LABEL_KERNEL, LABEL_SRC];
 
 fn text(value: Option<&Value>) -> String {
-    value.map_or_else(String::new, |value| value.as_str().map(str::to_owned).unwrap_or_else(|| value.to_string()))
+    value.map_or_else(String::new, |value| {
+        value
+            .as_str()
+            .map(str::to_owned)
+            .unwrap_or_else(|| value.to_string())
+    })
 }
 
 fn number(value: Option<&Value>) -> Option<f64> {
@@ -37,21 +42,38 @@ fn coverage_percent(report: &Value, filename: &str) -> Option<f64> {
     } else {
         String::new()
     };
-    let result = [Some(filename), (!alternate.is_empty()).then_some(alternate.as_str())]
-        .into_iter()
-        .flatten()
-        .find_map(|name| files.get(name)?.get("summary").and_then(|summary| number(summary.get("percent_covered"))));
+    let result = [
+        Some(filename),
+        (!alternate.is_empty()).then_some(alternate.as_str()),
+    ]
+    .into_iter()
+    .flatten()
+    .find_map(|name| {
+        files
+            .get(name)?
+            .get("summary")
+            .and_then(|summary| number(summary.get("percent_covered")))
+    });
     result
 }
 
 /// Return sorted RPM NVRAs from a Syft-style SBOM document.
 pub fn rpm_manifest(sbom: &Value) -> Vec<String> {
     let mut packages = Vec::new();
-    for artifact in sbom.get("artifacts").and_then(Value::as_array).into_iter().flatten() {
+    for artifact in sbom
+        .get("artifacts")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
         if artifact.get("type").and_then(Value::as_str) != Some("rpm") {
             continue;
         }
-        let Some(name) = artifact.get("name").and_then(Value::as_str).filter(|name| !name.is_empty()) else {
+        let Some(name) = artifact
+            .get("name")
+            .and_then(Value::as_str)
+            .filter(|name| !name.is_empty())
+        else {
             continue;
         };
         let metadata = artifact.get("metadata").and_then(Value::as_object);
@@ -59,10 +81,16 @@ pub fn rpm_manifest(sbom: &Value) -> Vec<String> {
         let metadata_version = text(metadata.and_then(|metadata| metadata.get("version")));
         let metadata_release = text(metadata.and_then(|metadata| metadata.get("release")));
         if !metadata_version.is_empty() && !metadata_release.is_empty() {
-            packages.push(format!("{name}-{metadata_version}-{metadata_release}.{arch}"));
+            packages.push(format!(
+                "{name}-{metadata_version}-{metadata_release}.{arch}"
+            ));
         } else {
             let version = text(artifact.get("version"));
-            packages.push(if arch.is_empty() { format!("{name}-{version}") } else { format!("{name}-{version}.{arch}") });
+            packages.push(if arch.is_empty() {
+                format!("{name}-{version}")
+            } else {
+                format!("{name}-{version}.{arch}")
+            });
         }
     }
     packages.sort();
@@ -75,36 +103,72 @@ pub fn render_rpm_manifest(sbom: &Value) -> String {
 
 pub fn safe_release_tag(tag: &str) -> bool {
     !tag.is_empty()
-        && tag.chars().next().is_some_and(|character| character.is_ascii_alphanumeric())
-        && tag.chars().all(|character| character.is_ascii_alphanumeric() || matches!(character, '.' | '_' | '+' | '-'))
+        && tag
+            .chars()
+            .next()
+            .is_some_and(|character| character.is_ascii_alphanumeric())
+        && tag.chars().all(|character| {
+            character.is_ascii_alphanumeric() || matches!(character, '.' | '_' | '+' | '-')
+        })
 }
 
 /// Validate the exact digest contract enforced by `validate-digest.sh`.
 pub fn valid_sha256_digest(value: &str) -> bool {
-    let Some(hex) = value.strip_prefix("sha256:") else { return false; };
-    hex.len() == 64 && hex.bytes().all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    let Some(hex) = value.strip_prefix("sha256:") else {
+        return false;
+    };
+    hex.len() == 64
+        && hex
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
 }
 
 pub fn copr_latest_nvr(payload: &Value) -> Option<String> {
-    let package = payload.get("builds")?.get("latest_succeeded")?.get("source_package")?;
+    let package = payload
+        .get("builds")?
+        .get("latest_succeeded")?
+        .get("source_package")?;
     let version = text(package.get("version")).trim().to_string();
     let release = text(package.get("release")).trim().to_string();
     let nvr = format!("{version}-{release}").trim_matches('-').to_string();
     (!nvr.is_empty()).then_some(nvr)
 }
 
-pub fn artifact_metrics(oci_manifest: Option<&Value>, rpm_manifest: Option<&str>) -> BTreeMap<String, u64> {
+pub fn artifact_metrics(
+    oci_manifest: Option<&Value>,
+    rpm_manifest: Option<&str>,
+) -> BTreeMap<String, u64> {
     let mut metrics = BTreeMap::new();
     if let Some(document) = oci_manifest {
-        if let Some(manifests) = document.get("manifests").and_then(Value::as_array).filter(|items| !items.is_empty()) {
-            metrics.insert("image_index_bytes".into(), manifests.iter().map(|item| item.get("size").and_then(Value::as_u64).unwrap_or(0)).sum());
+        if let Some(manifests) = document
+            .get("manifests")
+            .and_then(Value::as_array)
+            .filter(|items| !items.is_empty())
+        {
+            metrics.insert(
+                "image_index_bytes".into(),
+                manifests
+                    .iter()
+                    .map(|item| item.get("size").and_then(Value::as_u64).unwrap_or(0))
+                    .sum(),
+            );
         } else if let Some(layers) = document.get("layers").and_then(Value::as_array) {
-            metrics.insert("image_compressed_bytes".into(), layers.iter().map(|item| item.get("size").and_then(Value::as_u64).unwrap_or(0)).sum());
+            metrics.insert(
+                "image_compressed_bytes".into(),
+                layers
+                    .iter()
+                    .map(|item| item.get("size").and_then(Value::as_u64).unwrap_or(0))
+                    .sum(),
+            );
             metrics.insert("image_layer_count".into(), layers.len() as u64);
         }
     }
     if let Some(manifest) = rpm_manifest {
-        let packages = manifest.lines().map(str::trim).filter(|line| !line.is_empty() && !line.starts_with('#')).collect::<std::collections::BTreeSet<_>>();
+        let packages = manifest
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
+            .collect::<std::collections::BTreeSet<_>>();
         metrics.insert("rpm_package_count".into(), packages.len() as u64);
     }
     metrics
@@ -112,7 +176,10 @@ pub fn artifact_metrics(oci_manifest: Option<&Value>, rpm_manifest: Option<&str>
 
 /// Raise coverage floors to the whole-number portion of measured coverage.
 /// Missing report entries are intentionally left unchanged.
-pub fn raised_coverage_floors(floors: &BTreeMap<String, f64>, report: &Value) -> BTreeMap<String, f64> {
+pub fn raised_coverage_floors(
+    floors: &BTreeMap<String, f64>,
+    report: &Value,
+) -> BTreeMap<String, f64> {
     floors
         .iter()
         .map(|(filename, floor)| {
@@ -138,11 +205,15 @@ pub fn coverage_failures(
     floors
         .iter()
         .filter(|(filename, _)| changed.is_none_or(|changed| changed.contains(*filename)))
-        .filter_map(|(filename, minimum)| match coverage_percent(report, filename) {
-            None => Some(format!("{filename}: absent from coverage report")),
-            Some(actual) if actual < *minimum => Some(format!("{filename}: {actual:.1}% is below {minimum:.1}%")),
-            Some(_) => None,
-        })
+        .filter_map(
+            |(filename, minimum)| match coverage_percent(report, filename) {
+                None => Some(format!("{filename}: absent from coverage report")),
+                Some(actual) if actual < *minimum => {
+                    Some(format!("{filename}: {actual:.1}% is below {minimum:.1}%"))
+                }
+                Some(_) => None,
+            },
+        )
         .collect()
 }
 
@@ -154,10 +225,27 @@ pub struct BaseReuseDecision {
 }
 
 pub fn extract_digest(payload: &Value) -> Option<String> {
-    [("manifest", "digest"), ("Descriptor", "digest"), ("descriptor", "digest")]
-        .into_iter()
-        .find_map(|(outer, inner)| payload.get(outer)?.get(inner)?.as_str().filter(|value| value.starts_with("sha256:")).map(str::to_owned))
-        .or_else(|| payload.get("digest").and_then(Value::as_str).filter(|value| value.starts_with("sha256:")).map(str::to_owned))
+    [
+        ("manifest", "digest"),
+        ("Descriptor", "digest"),
+        ("descriptor", "digest"),
+    ]
+    .into_iter()
+    .find_map(|(outer, inner)| {
+        payload
+            .get(outer)?
+            .get(inner)?
+            .as_str()
+            .filter(|value| value.starts_with("sha256:"))
+            .map(str::to_owned)
+    })
+    .or_else(|| {
+        payload
+            .get("digest")
+            .and_then(Value::as_str)
+            .filter(|value| value.starts_with("sha256:"))
+            .map(str::to_owned)
+    })
 }
 
 pub fn extract_labels(payload: &Value) -> BTreeMap<String, String> {
@@ -170,7 +258,14 @@ pub fn extract_labels(payload: &Value) -> BTreeMap<String, String> {
         .filter_map(|config| config.get("Labels").or_else(|| config.get("labels")))
         .filter_map(Value::as_object)
         .find(|labels| !labels.is_empty())
-        .map(|labels| labels.iter().filter_map(|(key, value)| (!value.is_null()).then(|| (key.clone(), text(Some(value))))).collect())
+        .map(|labels| {
+            labels
+                .iter()
+                .filter_map(|(key, value)| {
+                    (!value.is_null()).then(|| (key.clone(), text(Some(value))))
+                })
+                .collect()
+        })
         .unwrap_or_default()
 }
 
@@ -189,15 +284,34 @@ pub fn decide_base_reuse(
         (LABEL_SRC, source_hash),
     ]);
     if REQUIRED_LABELS.iter().any(|key| !labels.contains_key(*key)) {
-        return BaseReuseDecision { reuse: false, digest: digest.map(str::to_owned), reason: "missing-labels".into() };
+        return BaseReuseDecision {
+            reuse: false,
+            digest: digest.map(str::to_owned),
+            reason: "missing-labels".into(),
+        };
     }
-    if expected.iter().any(|(key, value)| labels.get(*key).map(String::as_str) != Some(*value)) {
-        return BaseReuseDecision { reuse: false, digest: digest.map(str::to_owned), reason: "label-mismatch".into() };
+    if expected
+        .iter()
+        .any(|(key, value)| labels.get(*key).map(String::as_str) != Some(*value))
+    {
+        return BaseReuseDecision {
+            reuse: false,
+            digest: digest.map(str::to_owned),
+            reason: "label-mismatch".into(),
+        };
     }
     if !digest.is_some_and(|digest| digest.starts_with("sha256:")) {
-        return BaseReuseDecision { reuse: false, digest: digest.map(str::to_owned), reason: "missing-digest".into() };
+        return BaseReuseDecision {
+            reuse: false,
+            digest: digest.map(str::to_owned),
+            reason: "missing-digest".into(),
+        };
     }
-    BaseReuseDecision { reuse: true, digest: digest.map(str::to_owned), reason: "match".into() }
+    BaseReuseDecision {
+        reuse: true,
+        digest: digest.map(str::to_owned),
+        reason: "match".into(),
+    }
 }
 
 /// Stable SHA-256 over regular files under a build source root.
@@ -208,7 +322,11 @@ pub fn source_hash(root: impl AsRef<Path>) -> std::io::Result<String> {
     files.sort();
     let mut digest = Sha256::new();
     for path in files {
-        let relative = path.strip_prefix(&root).unwrap_or(&path).to_string_lossy().replace('\\', "/");
+        let relative = path
+            .strip_prefix(&root)
+            .unwrap_or(&path)
+            .to_string_lossy()
+            .replace('\\', "/");
         digest.update(relative.as_bytes());
         digest.update([0]);
         digest.update(std::fs::read(path)?);
@@ -259,10 +377,19 @@ mod tests {
     #[test]
     fn measures_image_and_unique_rpm_artifact_sizes() {
         let oci = serde_json::json!({"layers":[{"size":10},{"size":20}]});
-        assert_eq!(artifact_metrics(Some(&oci), Some("a\na\n# comment\nb\n"))["image_compressed_bytes"], 30);
-        assert_eq!(artifact_metrics(Some(&oci), Some("a\na\n# comment\nb\n"))["rpm_package_count"], 2);
+        assert_eq!(
+            artifact_metrics(Some(&oci), Some("a\na\n# comment\nb\n"))["image_compressed_bytes"],
+            30
+        );
+        assert_eq!(
+            artifact_metrics(Some(&oci), Some("a\na\n# comment\nb\n"))["rpm_package_count"],
+            2
+        );
         let index = serde_json::json!({"manifests":[{"size":4},{"size":6}],"layers":[{"size":99}]});
-        assert_eq!(artifact_metrics(Some(&index), None)["image_index_bytes"], 10);
+        assert_eq!(
+            artifact_metrics(Some(&index), None)["image_index_bytes"],
+            10
+        );
         assert!(!artifact_metrics(Some(&index), None).contains_key("image_layer_count"));
     }
 
@@ -277,9 +404,14 @@ mod tests {
 
     #[test]
     fn coverage_floor_lookup_accepts_packaged_source_aliases() {
-        let floors = BTreeMap::from([("build_files/kyth_shared/kyth_shared/health.py".into(), 80.0)]);
+        let floors =
+            BTreeMap::from([("build_files/kyth_shared/kyth_shared/health.py".into(), 80.0)]);
         let report = serde_json::json!({"files":{"src/kyth_shared/kyth_shared/health.py":{"summary":{"percent_covered":"91.4"}}}});
-        assert_eq!(raised_coverage_floors(&floors, &report)["build_files/kyth_shared/kyth_shared/health.py"], 91.0);
+        assert_eq!(
+            raised_coverage_floors(&floors, &report)
+                ["build_files/kyth_shared/kyth_shared/health.py"],
+            91.0
+        );
     }
 
     #[test]
@@ -291,11 +423,16 @@ mod tests {
         ]);
         let report = serde_json::json!({"files":{"a.py":{"summary":{"percent_covered":79.94}}}});
         let changed = BTreeSet::from(["a.py".to_string(), "missing.py".to_string()]);
-        assert_eq!(coverage_failures(&floors, &report, Some(&changed)), vec![
-            "a.py: 79.9% is below 80.0%",
-            "missing.py: absent from coverage report",
-        ]);
-        assert!(coverage_failures(&floors, &report, None).iter().any(|failure| failure.starts_with("untouched.py:")));
+        assert_eq!(
+            coverage_failures(&floors, &report, Some(&changed)),
+            vec![
+                "a.py: 79.9% is below 80.0%",
+                "missing.py: absent from coverage report",
+            ]
+        );
+        assert!(coverage_failures(&floors, &report, None)
+            .iter()
+            .any(|failure| failure.starts_with("untouched.py:")));
     }
 
     #[test]
@@ -305,7 +442,14 @@ mod tests {
             "org.kyth.build.cachyos-kernel-version":"none", "org.kyth.build.base-src-hash":"abc"
         }}} , "manifest":{"digest":"sha256:123"}});
         let labels = extract_labels(&payload);
-        let decision = decide_base_reuse(&labels, extract_digest(&payload).as_deref(), "fedora", "fedora", "none", "abc");
+        let decision = decide_base_reuse(
+            &labels,
+            extract_digest(&payload).as_deref(),
+            "fedora",
+            "fedora",
+            "none",
+            "abc",
+        );
         assert!(decision.reuse);
         assert_eq!(decision.reason, "match");
         assert_eq!(extract_digest(&payload).as_deref(), Some("sha256:123"));

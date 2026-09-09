@@ -4,8 +4,12 @@
 # the former Python entry point is retained only as source/test coverage.
  # kyth-resume-check is likewise supplied by the native Rust builder output.
 # Native Rust compatibility-named utilities are copied into /usr/bin by the
-# Dockerfile builder stage; no Python diagnostic entry points are installed.
-install -m 0755 /ctx/kyth-creator-check /usr/bin/kyth-creator-check
+# Dockerfile builder stage; never overwrite them with the retired Python
+# source fixture that still exists in the build context.
+if [[ ! -x /usr/bin/kyth-creator-check ]]; then
+	echo "kyth-creator-check: native Rust binary missing from image builder" >&2
+	exit 1
+fi
 # kyth-qualify is already copied from the Rust builder into /usr/bin by the
 # Dockerfile. The former /ctx/kyth-qualify build-context fixture was removed
 # with the Python implementation and must not be reintroduced here.

@@ -40,7 +40,9 @@ pub(crate) struct PrivilegedPayload {
 fn validated_request(operation: &str, payload: &PrivilegedPayload) -> Result<Value, String> {
     match operation {
         "flatpak_uninstall" => {
-            let app_id = payload.app_id.as_deref()
+            let app_id = payload
+                .app_id
+                .as_deref()
                 .ok_or_else(|| "Flatpak application id is required".to_string())?;
             validate_flatpak_id(app_id)?;
             Ok(json!({ "operation": "flatpak_uninstall", "app_id": app_id }))
@@ -49,7 +51,9 @@ fn validated_request(operation: &str, payload: &PrivilegedPayload) -> Result<Val
             Ok(json!({ "operation": operation }))
         }
         "kernel_switch" => {
-            let flavor = payload.flavor.as_deref()
+            let flavor = payload
+                .flavor
+                .as_deref()
                 .ok_or_else(|| "kernel flavor is required".to_string())?;
             if !matches!(flavor, "fedora" | "cachy") {
                 return Err("kernel flavor must be fedora or cachy".to_string());
@@ -57,9 +61,13 @@ fn validated_request(operation: &str, payload: &PrivilegedPayload) -> Result<Val
             Ok(json!({ "operation": "kernel_switch", "flavor": flavor }))
         }
         "bitlocker_unlock" => {
-            let device = payload.device.as_deref()
+            let device = payload
+                .device
+                .as_deref()
                 .ok_or_else(|| "block device is required".to_string())?;
-            let key = payload.key.as_deref()
+            let key = payload
+                .key
+                .as_deref()
                 .ok_or_else(|| "BitLocker key is required".to_string())?;
             if !valid_block_device(device) {
                 return Err("invalid block device".to_string());
@@ -96,7 +104,8 @@ fn share_text<'a>(
         "password" => payload.password.as_deref(),
         "domain" => payload.domain.as_deref(),
         _ => None,
-    }.ok_or_else(|| format!("{field} is required"))?;
+    }
+    .ok_or_else(|| format!("{field} is required"))?;
     if (!allow_empty && value.is_empty())
         || value.len() > maximum
         || value.chars().any(|character| character.is_control())
@@ -148,8 +157,7 @@ fn validate_network_share(payload: &PrivilegedPayload, adding: bool) -> Result<(
     share_text(payload, "username", false, 256)?;
     share_text(payload, "password", true, 4096)?;
     share_text(payload, "domain", true, 256)?;
-    if payload.auto_mount.is_none() || payload.mount_now.is_none()
-    {
+    if payload.auto_mount.is_none() || payload.mount_now.is_none() {
         return Err("share mount options are required".to_string());
     }
     Ok(())
@@ -212,7 +220,10 @@ fn valid_block_device(value: &str) -> bool {
 }
 
 #[tauri::command]
-pub(crate) fn privileged_action(operation: String, payload: PrivilegedPayload) -> Result<PrivilegedActionLaunch, String> {
+pub(crate) fn privileged_action(
+    operation: String,
+    payload: PrivilegedPayload,
+) -> Result<PrivilegedActionLaunch, String> {
     let request = validated_request(&operation, &payload)?;
     let job = format!(
         "privileged-{}",
@@ -239,11 +250,19 @@ pub(crate) fn privileged_action(operation: String, payload: PrivilegedPayload) -
             store.insert(job_for_thread, (state.into(), detail));
         }
     });
-    Ok(PrivilegedActionLaunch { job, state: "running".into(), detail: format!("Running {operation}…") })
+    Ok(PrivilegedActionLaunch {
+        job,
+        state: "running".into(),
+        detail: format!("Running {operation}…"),
+    })
 }
 
 #[derive(Serialize)]
-pub(crate) struct PrivilegedActionLaunch { pub(crate) job: String, pub(crate) state: String, pub(crate) detail: String }
+pub(crate) struct PrivilegedActionLaunch {
+    pub(crate) job: String,
+    pub(crate) state: String,
+    pub(crate) detail: String,
+}
 
 pub(crate) fn send_request(request: Value) -> Result<String, String> {
     let mut stream = UnixStream::connect("/run/kyth/privileged.sock")
@@ -265,30 +284,40 @@ pub(crate) fn send_request(request: Value) -> Result<String, String> {
             .get("detail")
             .and_then(Value::as_str)
             .unwrap_or("Operation complete.");
-        Ok(kyth_shared::privileged::redact_request_detail(&request, detail))
+        Ok(kyth_shared::privileged::redact_request_detail(
+            &request, detail,
+        ))
     } else {
         let detail = value
             .get("detail")
             .and_then(Value::as_str)
             .unwrap_or("privileged operation failed");
-        Err(kyth_shared::privileged::redact_request_detail(&request, detail))
+        Err(kyth_shared::privileged::redact_request_detail(
+            &request, detail,
+        ))
     }
 }
 
 #[allow(dead_code)]
 pub(crate) fn bitlocker_request(device: &str, key: &str) -> Result<Value, String> {
-    validated_request("bitlocker_unlock", &PrivilegedPayload {
-        device: Some(device.into()),
-        key: Some(key.into()),
-        ..Default::default()
-    })
+    validated_request(
+        "bitlocker_unlock",
+        &PrivilegedPayload {
+            device: Some(device.into()),
+            key: Some(key.into()),
+            ..Default::default()
+        },
+    )
 }
 
 pub(crate) fn flatpak_uninstall(app_id: &str) -> Result<String, String> {
-    let request = validated_request("flatpak_uninstall", &PrivilegedPayload {
-        app_id: Some(app_id.into()),
-        ..Default::default()
-    })?;
+    let request = validated_request(
+        "flatpak_uninstall",
+        &PrivilegedPayload {
+            app_id: Some(app_id.into()),
+            ..Default::default()
+        },
+    )?;
     send_request(request)
 }
 
@@ -320,18 +349,25 @@ mod tests {
     fn only_allowlisted_operations_are_constructed() {
         assert!(validated_request("not-allowed", &payload(json!({}))).is_err());
         assert_eq!(
-            validated_request("kernel_switch", &payload(json!({ "flavor": "cachy" }))).unwrap()["flavor"],
+            validated_request("kernel_switch", &payload(json!({ "flavor": "cachy" }))).unwrap()
+                ["flavor"],
             "cachy"
         );
-        assert!(
-            validated_request("flatpak_uninstall", &payload(json!({ "app_id": "org.example.App" }))).is_ok()
-        );
-        assert!(
-            validated_request("flatpak_uninstall", &payload(json!({ "app_id": "org.example-App" }))).is_ok()
-        );
-        assert!(
-            validated_request("flatpak_uninstall", &payload(json!({ "app_id": "_org.example" }))).is_err()
-        );
+        assert!(validated_request(
+            "flatpak_uninstall",
+            &payload(json!({ "app_id": "org.example.App" }))
+        )
+        .is_ok());
+        assert!(validated_request(
+            "flatpak_uninstall",
+            &payload(json!({ "app_id": "org.example-App" }))
+        )
+        .is_ok());
+        assert!(validated_request(
+            "flatpak_uninstall",
+            &payload(json!({ "app_id": "_org.example" }))
+        )
+        .is_err());
     }
 
     #[test]
@@ -357,13 +393,16 @@ mod tests {
         let request = validated_request("network_share_add", &payload(value)).unwrap();
         assert_eq!(request["operation"], "network_share_add");
         assert_eq!(request["payload"]["name"], "media");
-        assert!(validated_request("network_share_add", &payload(json!({"name":"bad/name"}))).is_err());
+        assert!(
+            validated_request("network_share_add", &payload(json!({"name":"bad/name"}))).is_err()
+        );
     }
 
     #[test]
     fn typed_payload_rejects_unknown_fields_before_validation() {
         assert!(serde_json::from_value::<PrivilegedPayload>(
             json!({"operation":"bitlocker_unlock"})
-        ).is_err());
+        )
+        .is_err());
     }
 }

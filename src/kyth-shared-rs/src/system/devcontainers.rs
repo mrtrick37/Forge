@@ -32,7 +32,13 @@ impl DevContainer {
                     .unwrap_or_else(|| value.to_string())
             })
             .unwrap_or_else(|| DEFAULT_IMAGE.to_string());
-        Self { image, init: table.get("init").and_then(toml::Value::as_bool).unwrap_or(false) }
+        Self {
+            image,
+            init: table
+                .get("init")
+                .and_then(toml::Value::as_bool)
+                .unwrap_or(false),
+        }
     }
 }
 
@@ -49,7 +55,9 @@ pub fn devcontainers_path(home: &Path, xdg_config_home: Option<&str>) -> PathBuf
 /// Parse declarative TOML text; anything undecodable or misshapen yields no
 /// boxes, exactly like the Python loader.
 pub fn parse_devcontainers(text: &str) -> BTreeMap<String, DevContainer> {
-    let Ok(value) = text.parse::<toml::Value>() else { return BTreeMap::new() };
+    let Ok(value) = text.parse::<toml::Value>() else {
+        return BTreeMap::new();
+    };
     let Some(containers) = value.get("containers").and_then(toml::Value::as_table) else {
         return BTreeMap::new();
     };
@@ -74,10 +82,18 @@ pub fn load_devcontainers(path: &Path) -> BTreeMap<String, DevContainer> {
 
 /// Best-effort creation argv: `distrobox create --name <name> --image <img> --yes`.
 pub fn create_argv(name: &str, image: &str) -> Vec<String> {
-    ["distrobox", "create", "--name", name, "--image", image, "--yes"]
-        .iter()
-        .map(|part| (*part).to_string())
-        .collect()
+    [
+        "distrobox",
+        "create",
+        "--name",
+        name,
+        "--image",
+        image,
+        "--yes",
+    ]
+    .iter()
+    .map(|part| (*part).to_string())
+    .collect()
 }
 
 /// Status line printed before each best-effort creation.
@@ -103,11 +119,17 @@ init = true
         assert_eq!(boxes.len(), 2);
         assert_eq!(
             boxes["web"],
-            DevContainer { image: DEFAULT_IMAGE.to_string(), init: true }
+            DevContainer {
+                image: DEFAULT_IMAGE.to_string(),
+                init: true
+            }
         );
         assert_eq!(
             boxes["bare"],
-            DevContainer { image: DEFAULT_IMAGE.to_string(), init: false }
+            DevContainer {
+                image: DEFAULT_IMAGE.to_string(),
+                init: false
+            }
         );
     }
 
@@ -141,8 +163,19 @@ init = true
     fn renders_best_effort_argv_and_status_line() {
         assert_eq!(
             create_argv("web", "img:latest"),
-            vec!["distrobox", "create", "--name", "web", "--image", "img:latest", "--yes"]
+            vec![
+                "distrobox",
+                "create",
+                "--name",
+                "web",
+                "--image",
+                "img:latest",
+                "--yes"
+            ]
         );
-        assert_eq!(describe("web", "img:latest"), "kyth-setup-devcontainer: web \u{2192} img:latest");
+        assert_eq!(
+            describe("web", "img:latest"),
+            "kyth-setup-devcontainer: web \u{2192} img:latest"
+        );
     }
 }

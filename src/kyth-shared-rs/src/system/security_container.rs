@@ -43,7 +43,10 @@ impl KaliContainerInfo {
     pub fn socket_capable(&self) -> bool {
         self.image.contains("kali")
             && self.privileged
-            && self.security_options.iter().any(|opt| opt == "label=disable")
+            && self
+                .security_options
+                .iter()
+                .any(|opt| opt == "label=disable")
     }
 }
 
@@ -52,7 +55,10 @@ impl KaliContainerInfo {
 pub fn parse_kali_inspect_output(output: &str) -> KaliContainerInfo {
     let lines: Vec<&str> = output.lines().collect();
     KaliContainerInfo {
-        image: lines.first().map(|l| l.trim().to_string()).unwrap_or_default(),
+        image: lines
+            .first()
+            .map(|l| l.trim().to_string())
+            .unwrap_or_default(),
         privileged: lines.get(1).map(|l| l.trim() == "true").unwrap_or(false),
         security_options: lines
             .get(2)
@@ -72,11 +78,14 @@ fn inspect_argv(name: &str) -> Vec<String> {
 }
 
 pub fn inspect_kali_box(name: &str) -> Option<KaliContainerInfo> {
-    let output = crate::system::process::run_bounded(&inspect_argv(name), Duration::from_secs(10)).ok()?;
+    let output =
+        crate::system::process::run_bounded(&inspect_argv(name), Duration::from_secs(10)).ok()?;
     if !output.status.success() {
         return None;
     }
-    Some(parse_kali_inspect_output(&String::from_utf8_lossy(&output.stdout)))
+    Some(parse_kali_inspect_output(&String::from_utf8_lossy(
+        &output.stdout,
+    )))
 }
 
 pub fn is_socket_capable_kali_box(name: &str) -> bool {
@@ -289,7 +298,11 @@ pub fn detect_terminal() -> Option<&'static str> {
 pub fn kali_enter_argv(terminal: &str, box_name: &str) -> Vec<String> {
     let inner = ["distrobox", "enter", "--root", box_name];
     let mut argv = vec![terminal.to_string()];
-    argv.push(if terminal == "konsole" { "-e".to_string() } else { "--".to_string() });
+    argv.push(if terminal == "konsole" {
+        "-e".to_string()
+    } else {
+        "--".to_string()
+    });
     argv.extend(inner.into_iter().map(String::from));
     argv
 }
@@ -319,7 +332,9 @@ pub const SEC_HOST_TOOLS: [SecHostTool; 2] = [
 ];
 
 pub fn find_sec_host_tool(flatpak_id: &str) -> Option<&'static SecHostTool> {
-    SEC_HOST_TOOLS.iter().find(|tool| tool.flatpak == flatpak_id)
+    SEC_HOST_TOOLS
+        .iter()
+        .find(|tool| tool.flatpak == flatpak_id)
 }
 
 #[cfg(test)]
@@ -328,9 +343,14 @@ mod tests {
 
     #[test]
     fn parses_socket_capable_inspect_output() {
-        let info = parse_kali_inspect_output("docker.io/kalilinux/kali-rolling\ntrue\nlabel=disable seccomp=unconfined \n");
+        let info = parse_kali_inspect_output(
+            "docker.io/kalilinux/kali-rolling\ntrue\nlabel=disable seccomp=unconfined \n",
+        );
         assert!(info.socket_capable());
-        assert_eq!(info.security_options, vec!["label=disable", "seccomp=unconfined"]);
+        assert_eq!(
+            info.security_options,
+            vec!["label=disable", "seccomp=unconfined"]
+        );
     }
 
     #[test]
@@ -341,13 +361,16 @@ mod tests {
 
     #[test]
     fn unprivileged_box_is_not_socket_capable() {
-        let info = parse_kali_inspect_output("docker.io/kalilinux/kali-rolling\nfalse\nlabel=disable\n");
+        let info =
+            parse_kali_inspect_output("docker.io/kalilinux/kali-rolling\nfalse\nlabel=disable\n");
         assert!(!info.socket_capable());
     }
 
     #[test]
     fn missing_security_opt_is_not_socket_capable() {
-        let info = parse_kali_inspect_output("docker.io/kalilinux/kali-rolling\ntrue\nseccomp=unconfined\n");
+        let info = parse_kali_inspect_output(
+            "docker.io/kalilinux/kali-rolling\ntrue\nseccomp=unconfined\n",
+        );
         assert!(!info.socket_capable());
     }
 
@@ -377,7 +400,8 @@ mod tests {
 
     #[test]
     fn create_command_is_a_bash_script_naming_the_chosen_metapackage() {
-        let argv = build_kali_create_command(DEFAULT_KALI_BOX, DEFAULT_KALI_IMAGE, KaliTier::Headless);
+        let argv =
+            build_kali_create_command(DEFAULT_KALI_BOX, DEFAULT_KALI_IMAGE, KaliTier::Headless);
         assert_eq!(argv[0], "bash");
         assert_eq!(argv[1], "-c");
         assert!(argv[2].contains("kali-linux-headless"));
@@ -388,7 +412,8 @@ mod tests {
 
     #[test]
     fn gui_tier_create_command_exports_desktop_files() {
-        let argv = build_kali_create_command(DEFAULT_KALI_BOX, DEFAULT_KALI_IMAGE, KaliTier::Default);
+        let argv =
+            build_kali_create_command(DEFAULT_KALI_BOX, DEFAULT_KALI_IMAGE, KaliTier::Default);
         assert!(argv[2].contains("kali-linux-default"));
         assert!(argv[2].contains("distrobox-export"));
         assert!(argv[2].contains(DESKTOP_FILE_REWRITE_SCRIPT));
@@ -420,7 +445,10 @@ mod tests {
     #[test]
     fn detects_first_available_terminal_in_preference_order() {
         assert_eq!(detect_terminal_with(|_| false), None);
-        assert_eq!(detect_terminal_with(|p| p == "/usr/bin/xterm"), Some("xterm"));
+        assert_eq!(
+            detect_terminal_with(|p| p == "/usr/bin/xterm"),
+            Some("xterm")
+        );
         assert_eq!(
             detect_terminal_with(|p| p == "/usr/bin/konsole" || p == "/usr/bin/xterm"),
             Some("konsole"),

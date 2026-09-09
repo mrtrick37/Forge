@@ -14,7 +14,9 @@ use std::time::Duration;
 
 fn executable_exists(path: &str) -> bool {
     use std::os::unix::fs::PermissionsExt;
-    std::fs::metadata(path).map(|meta| meta.is_file() && meta.permissions().mode() & 0o111 != 0).unwrap_or(false)
+    std::fs::metadata(path)
+        .map(|meta| meta.is_file() && meta.permissions().mode() & 0o111 != 0)
+        .unwrap_or(false)
 }
 
 /// `services/gaming/tools.py::_mangohud_installed` checks `shutil.which`
@@ -47,7 +49,11 @@ pub fn scx_scheduler_command(scheduler: &str) -> Vec<String> {
     if scheduler == "stop" {
         vec!["kyth-scx".to_string(), "stop".to_string()]
     } else {
-        vec!["kyth-scx".to_string(), "set".to_string(), scheduler.to_string()]
+        vec![
+            "kyth-scx".to_string(),
+            "set".to_string(),
+            scheduler.to_string(),
+        ]
     }
 }
 
@@ -123,7 +129,10 @@ impl ProfileGoal {
 /// toggle, and "troubleshoot" ignores both `fps` and `hdr` entirely).
 pub fn build_profile_launch_option(goal: ProfileGoal, fps: Option<&str>, hdr: bool) -> String {
     let hdr_prefix = if hdr { "KYTH_HDR=1 " } else { "" };
-    let fps_arg = fps.filter(|value| !value.is_empty()).map(|value| format!(" --fps {value}")).unwrap_or_default();
+    let fps_arg = fps
+        .filter(|value| !value.is_empty())
+        .map(|value| format!(" --fps {value}"))
+        .unwrap_or_default();
     match goal {
         ProfileGoal::Quality => format!("{hdr_prefix}kyth-gamescope quality{fps_arg} -- %command%"),
         ProfileGoal::Hdr => format!("KYTH_HDR=1 kyth-gamescope hdr{fps_arg} -- %command%"),
@@ -140,24 +149,51 @@ mod tests {
     #[test]
     fn scx_status_reads_active_and_configured_scheduler() {
         let status = parse_scx_status("Service: active\nConfigured scheduler: scx_rusty\n");
-        assert_eq!(status, ScxStatus { active: true, configured: "scx_rusty".to_string() });
+        assert_eq!(
+            status,
+            ScxStatus {
+                active: true,
+                configured: "scx_rusty".to_string()
+            }
+        );
     }
 
     #[test]
     fn scx_status_defaults_when_unparseable() {
-        assert_eq!(parse_scx_status(""), ScxStatus { active: false, configured: "unknown".to_string() });
-        assert_eq!(parse_scx_status("Service: inactive\n"), ScxStatus { active: false, configured: "unknown".to_string() });
+        assert_eq!(
+            parse_scx_status(""),
+            ScxStatus {
+                active: false,
+                configured: "unknown".to_string()
+            }
+        );
+        assert_eq!(
+            parse_scx_status("Service: inactive\n"),
+            ScxStatus {
+                active: false,
+                configured: "unknown".to_string()
+            }
+        );
     }
 
     #[test]
     fn stop_uses_the_stop_subcommand_others_use_set() {
         assert_eq!(scx_scheduler_command("stop"), vec!["kyth-scx", "stop"]);
-        assert_eq!(scx_scheduler_command("rusty"), vec!["kyth-scx", "set", "rusty"]);
+        assert_eq!(
+            scx_scheduler_command("rusty"),
+            vec!["kyth-scx", "set", "rusty"]
+        );
     }
 
     #[test]
     fn goal_round_trips_through_parse_and_as_str() {
-        for goal in [ProfileGoal::Quality, ProfileGoal::Hdr, ProfileGoal::Sharp, ProfileGoal::Latency, ProfileGoal::Troubleshoot] {
+        for goal in [
+            ProfileGoal::Quality,
+            ProfileGoal::Hdr,
+            ProfileGoal::Sharp,
+            ProfileGoal::Latency,
+            ProfileGoal::Troubleshoot,
+        ] {
             assert_eq!(ProfileGoal::parse(goal.as_str()), Some(goal));
         }
         assert_eq!(ProfileGoal::parse("not-a-goal"), None);
@@ -165,21 +201,42 @@ mod tests {
 
     #[test]
     fn quality_uses_hdr_prefix_only_when_toggled() {
-        assert_eq!(build_profile_launch_option(ProfileGoal::Quality, None, false), "kyth-gamescope quality -- %command%");
-        assert_eq!(build_profile_launch_option(ProfileGoal::Quality, None, true), "KYTH_HDR=1 kyth-gamescope quality -- %command%");
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Quality, None, false),
+            "kyth-gamescope quality -- %command%"
+        );
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Quality, None, true),
+            "KYTH_HDR=1 kyth-gamescope quality -- %command%"
+        );
     }
 
     #[test]
     fn hdr_goal_always_forces_the_env_var_regardless_of_the_toggle() {
-        assert_eq!(build_profile_launch_option(ProfileGoal::Hdr, None, false), "KYTH_HDR=1 kyth-gamescope hdr -- %command%");
-        assert_eq!(build_profile_launch_option(ProfileGoal::Hdr, None, true), "KYTH_HDR=1 kyth-gamescope hdr -- %command%");
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Hdr, None, false),
+            "KYTH_HDR=1 kyth-gamescope hdr -- %command%"
+        );
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Hdr, None, true),
+            "KYTH_HDR=1 kyth-gamescope hdr -- %command%"
+        );
     }
 
     #[test]
     fn fps_cap_is_appended_only_when_set() {
-        assert_eq!(build_profile_launch_option(ProfileGoal::Sharp, Some("144"), false), "kyth-gamescope sharp --fsr --fps 144 -- %command%");
-        assert_eq!(build_profile_launch_option(ProfileGoal::Sharp, Some(""), false), "kyth-gamescope sharp --fsr -- %command%");
-        assert_eq!(build_profile_launch_option(ProfileGoal::Sharp, None, false), "kyth-gamescope sharp --fsr -- %command%");
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Sharp, Some("144"), false),
+            "kyth-gamescope sharp --fsr --fps 144 -- %command%"
+        );
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Sharp, Some(""), false),
+            "kyth-gamescope sharp --fsr -- %command%"
+        );
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Sharp, None, false),
+            "kyth-gamescope sharp --fsr -- %command%"
+        );
     }
 
     #[test]
@@ -192,6 +249,9 @@ mod tests {
 
     #[test]
     fn troubleshoot_ignores_fps_and_hdr() {
-        assert_eq!(build_profile_launch_option(ProfileGoal::Troubleshoot, Some("60"), true), "PROTON_LOG=1 PROTON_NO_NTSYNC=1 %command%");
+        assert_eq!(
+            build_profile_launch_option(ProfileGoal::Troubleshoot, Some("60"), true),
+            "PROTON_LOG=1 PROTON_NO_NTSYNC=1 %command%"
+        );
     }
 }

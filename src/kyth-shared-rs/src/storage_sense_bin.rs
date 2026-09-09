@@ -19,7 +19,9 @@ fn on_path(name: &str) -> bool {
 }
 
 fn run_quiet(argv: &[String]) {
-    let Some((program, args)) = argv.split_first() else { return };
+    let Some((program, args)) = argv.split_first() else {
+        return;
+    };
     let _ = std::process::Command::new(program)
         .args(args)
         .stdout(std::process::Stdio::null())
@@ -29,7 +31,10 @@ fn run_quiet(argv: &[String]) {
 
 fn main() -> std::process::ExitCode {
     let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).map(|span| span.as_secs() as i64).unwrap_or(0);
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|span| span.as_secs() as i64)
+        .unwrap_or(0);
     prune_trash(&home, 30, now);
     if on_path("flatpak") {
         run_quiet(&cleanup_flatpaks_command());

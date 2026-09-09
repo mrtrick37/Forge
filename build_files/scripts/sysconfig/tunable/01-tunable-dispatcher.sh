@@ -1,14 +1,16 @@
 #!/bin/bash
 # shellcheck shell=bash
-# 01-tunable-dispatcher — install single dispatcher + 94 compat symlinks (Slice 5)
-# Replaces 94 thin bash wrappers (7143 LOC) with one dispatcher and symlinks.
-# Preserves symlinks via ln -sf (not cp without -a, which would dereference).
+# 01-tunable-dispatcher — install the native dispatcher + 94 aliases.
+# Replaces the former Python/bash dispatcher and 94 thin wrappers with one
+# Rust binary and symlinks. Preserves symlinks via ln -sf (not cp without -a,
+# which would dereference).
 set -euo pipefail
 
-# Install dispatcher (bash compat entrypoint).
-# NOTE: /usr/bin/kyth-tunable-rs is already placed by the Dockerfile COPY from
-# hub-web-builder before this layer runs; do not reinstall it here.
-install -Dm0755 /ctx/kyth-tunable /usr/bin/kyth-tunable
+# Install the full mutation-capable Rust dispatcher under both names. The
+# direct kyth-tunable name is intentionally native too; there is no Python
+# fallback in the supported image.
+# /usr/bin/kyth-tunable-rs is copied into the image before this static layer.
+ln -sfn kyth-tunable-rs /usr/bin/kyth-tunable
 
 # Create compat symlinks for every tunable in the native registry.
 mapfile -t tunables < <(/usr/bin/kyth-tunable-rs --list)
@@ -18,17 +20,12 @@ for t in "${native_tunables[@]}"; do
     native_lookup["$t"]=1
 done
 
-# All current registry entries have native Rust dispatch parity. Keep the
-# compatibility branch for forward-compatible registry additions and rollback
-# to older images.
-
 for t in "${tunables[@]}"; do
-    # ln -sf preserves symlink semantics; cp without -a would dereference and duplicate the file
-    if [[ ${native_lookup[$t]+yes} ]]; then
-        ln -sf kyth-tunable-rs "/usr/bin/kyth-${t}"
-    else
-        ln -sf kyth-tunable "/usr/bin/kyth-${t}"
+    if [[ ! ${native_lookup[$t]+yes} ]]; then
+        echo "tunable-dispatcher: registry entry lacks a Rust implementation: ${t}" >&2
+        exit 1
     fi
+    ln -sf kyth-tunable-rs "/usr/bin/kyth-${t}"
 done
 
 echo "tunable-dispatcher: installed kyth-tunable + ${#tunables[@]} symlinks (${#native_tunables[@]} native)"

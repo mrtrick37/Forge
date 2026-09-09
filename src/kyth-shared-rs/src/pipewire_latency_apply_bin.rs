@@ -9,7 +9,9 @@ use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use kyth_shared::atomic_io::atomic_write_text;
-use kyth_shared::system::pipewire_latency::{DEFAULT_RATE, TTL_PATH, TTL_SECS, apply, config_path, load, xdg_config};
+use kyth_shared::system::pipewire_latency::{
+    apply, config_path, load, xdg_config, DEFAULT_RATE, TTL_PATH, TTL_SECS,
+};
 
 fn main() -> std::process::ExitCode {
     let apps = load(config_path(None::<&Path>));

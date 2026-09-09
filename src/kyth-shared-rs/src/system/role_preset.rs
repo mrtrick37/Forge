@@ -7,7 +7,12 @@
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Role { Everyday, Gaming, Dev, Creator }
+pub enum Role {
+    Everyday,
+    Gaming,
+    Dev,
+    Creator,
+}
 
 impl Role {
     pub fn parse(value: Option<&str>) -> Self {
@@ -18,7 +23,14 @@ impl Role {
             _ => Self::Everyday,
         }
     }
-    pub fn as_str(self) -> &'static str { match self { Self::Everyday => "everyday", Self::Gaming => "gaming", Self::Dev => "dev", Self::Creator => "creator" } }
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Everyday => "everyday",
+            Self::Gaming => "gaming",
+            Self::Dev => "dev",
+            Self::Creator => "creator",
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,29 +43,80 @@ pub struct RolePreset {
 
 fn values(profile: Role) -> RolePreset {
     let (flatpaks, distroboxes, vscode_extensions) = match profile {
-        Role::Everyday => (vec!["com.brave.Browser", "com.valvesoftware.Steam"], vec![], vec![]),
-        Role::Gaming => (vec!["com.valvesoftware.Steam", "net.lutris.Lutris", "com.heroicgameslauncher.hgl", "com.github.Matoking.protontricks"], vec![], vec![]),
-        Role::Dev => (vec!["com.visualstudio.code", "com.github.flathub.flatpak-external-data-checker"], vec!["kyth-ai-dev"], vec!["ms-python.python", "rust-lang.rust-analyzer"]),
-        Role::Creator => (vec!["com.obsproject.Studio", "org.kde.kdenlive"], vec![], vec![]),
+        Role::Everyday => (
+            vec!["com.brave.Browser", "com.valvesoftware.Steam"],
+            vec![],
+            vec![],
+        ),
+        Role::Gaming => (
+            vec![
+                "com.valvesoftware.Steam",
+                "net.lutris.Lutris",
+                "com.heroicgameslauncher.hgl",
+                "com.github.Matoking.protontricks",
+            ],
+            vec![],
+            vec![],
+        ),
+        Role::Dev => (
+            vec![
+                "com.visualstudio.code",
+                "com.github.flathub.flatpak-external-data-checker",
+            ],
+            vec!["kyth-ai-dev"],
+            vec!["ms-python.python", "rust-lang.rust-analyzer"],
+        ),
+        Role::Creator => (
+            vec!["com.obsproject.Studio", "org.kde.kdenlive"],
+            vec![],
+            vec![],
+        ),
     };
-    RolePreset { profile, flatpaks: flatpaks.into_iter().map(String::from).collect(), distroboxes: distroboxes.into_iter().map(String::from).collect(), vscode_extensions: vscode_extensions.into_iter().map(String::from).collect() }
+    RolePreset {
+        profile,
+        flatpaks: flatpaks.into_iter().map(String::from).collect(),
+        distroboxes: distroboxes.into_iter().map(String::from).collect(),
+        vscode_extensions: vscode_extensions.into_iter().map(String::from).collect(),
+    }
 }
 
-impl Default for RolePreset { fn default() -> Self { values(Role::Everyday) } }
+impl Default for RolePreset {
+    fn default() -> Self {
+        values(Role::Everyday)
+    }
+}
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    if let Some(path) = path { return path.as_ref().to_path_buf(); }
-    if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(config).join("kyth/preset.toml"); }
-    PathBuf::from(std::env::var_os("HOME").unwrap_or_else(|| ".".into())).join(".config/kyth/preset.toml")
+    if let Some(path) = path {
+        return path.as_ref().to_path_buf();
+    }
+    if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") {
+        return PathBuf::from(config).join("kyth/preset.toml");
+    }
+    PathBuf::from(std::env::var_os("HOME").unwrap_or_else(|| ".".into()))
+        .join(".config/kyth/preset.toml")
 }
 
 fn strings(value: Option<&toml::Value>, fallback: &[String]) -> Vec<String> {
-    value.and_then(toml::Value::as_array).map(|items| items.iter().filter_map(toml::Value::as_str).map(String::from).collect()).unwrap_or_else(|| fallback.to_vec())
+    value
+        .and_then(toml::Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(toml::Value::as_str)
+                .map(String::from)
+                .collect()
+        })
+        .unwrap_or_else(|| fallback.to_vec())
 }
 
 pub fn load(path: impl AsRef<Path>) -> RolePreset {
-    let Ok(raw) = std::fs::read_to_string(path) else { return RolePreset::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return RolePreset::default(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return RolePreset::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return RolePreset::default();
+    };
     let profile = Role::parse(value.get("profile").and_then(toml::Value::as_str));
     let defaults = values(profile);
     RolePreset {
@@ -64,7 +127,16 @@ pub fn load(path: impl AsRef<Path>) -> RolePreset {
     }
 }
 
-fn array(values: &[String]) -> String { format!("[{}]", values.iter().map(|value| format!("{value:?}")).collect::<Vec<_>>().join(", ")) }
+fn array(values: &[String]) -> String {
+    format!(
+        "[{}]",
+        values
+            .iter()
+            .map(|value| format!("{value:?}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    )
+}
 
 /// Defaults for a validated profile, mirroring the launcher's overwrite of
 /// the TOML preset before applying (no TOML merge when a profile is given).
@@ -74,7 +146,11 @@ pub fn defaults_for(profile: Role) -> RolePreset {
 
 /// Parses `flatpak list --app --columns=application` output.
 pub fn parse_flatpak_list(text: &str) -> std::collections::HashSet<String> {
-    text.lines().map(str::trim).filter(|line| !line.is_empty()).map(String::from).collect()
+    text.lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(String::from)
+        .collect()
 }
 
 /// Parses `distrobox list --no-color` output (third whitespace column).
@@ -89,11 +165,21 @@ pub fn parse_distrobox_list(text: &str) -> std::collections::HashSet<String> {
 
 /// Parses `code --list-extensions` output (compared lowercased upstream).
 pub fn parse_extension_list(text: &str) -> std::collections::HashSet<String> {
-    text.lines().map(str::trim).filter(|line| !line.is_empty()).map(|line| line.to_lowercase()).collect()
+    text.lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(|line| line.to_lowercase())
+        .collect()
 }
 
 pub fn flatpak_install_argv(app: &str) -> Vec<String> {
-    vec!["flatpak".to_string(), "install".to_string(), "-y".to_string(), "flathub".to_string(), app.to_string()]
+    vec![
+        "flatpak".to_string(),
+        "install".to_string(),
+        "-y".to_string(),
+        "flathub".to_string(),
+        app.to_string(),
+    ]
 }
 
 pub fn distrobox_create_argv(name: &str) -> Vec<String> {
@@ -109,7 +195,11 @@ pub fn distrobox_create_argv(name: &str) -> Vec<String> {
 }
 
 pub fn extension_install_argv(binary: &str, extension: &str) -> Vec<String> {
-    vec![binary.to_string(), "--install-extension".to_string(), extension.to_string()]
+    vec![
+        binary.to_string(),
+        "--install-extension".to_string(),
+        extension.to_string(),
+    ]
 }
 
 pub const VSCODE_BINARIES: [&str; 3] = ["code", "codium", "code-insiders"];
@@ -127,19 +217,37 @@ pub fn plan_installs(
     let mut installed = Vec::new();
     let mut skipped = Vec::new();
     for app in &preset.flatpaks {
-        if have_flatpaks.contains(app) { skipped.push(app.clone()); } else { installed.push(app.clone()); }
+        if have_flatpaks.contains(app) {
+            skipped.push(app.clone());
+        } else {
+            installed.push(app.clone());
+        }
     }
     for name in &preset.distroboxes {
-        if have_boxes.contains(name) { skipped.push(name.clone()); } else { installed.push(name.clone()); }
+        if have_boxes.contains(name) {
+            skipped.push(name.clone());
+        } else {
+            installed.push(name.clone());
+        }
     }
     for extension in &preset.vscode_extensions {
-        if have_extensions.contains(&extension.to_lowercase()) { skipped.push(extension.clone()); } else { installed.push(extension.clone()); }
+        if have_extensions.contains(&extension.to_lowercase()) {
+            skipped.push(extension.clone());
+        } else {
+            installed.push(extension.clone());
+        }
     }
     (installed, skipped)
 }
 
 pub fn save(path: impl AsRef<Path>, preset: &RolePreset) -> std::io::Result<()> {
-    let text = format!("profile = {:?}\nflatpaks = {}\ndistroboxes = {}\nvscode_extensions = {}\n", preset.profile.as_str(), array(&preset.flatpaks), array(&preset.distroboxes), array(&preset.vscode_extensions));
+    let text = format!(
+        "profile = {:?}\nflatpaks = {}\ndistroboxes = {}\nvscode_extensions = {}\n",
+        preset.profile.as_str(),
+        array(&preset.flatpaks),
+        array(&preset.distroboxes),
+        array(&preset.vscode_extensions)
+    );
     crate::atomic_io::atomic_write_text(path, &text, Some(0o600))
 }
 
@@ -165,7 +273,8 @@ mod tests {
         let have_flatpaks = ["com.visualstudio.code".to_string()].into_iter().collect();
         let have_boxes = std::collections::HashSet::new();
         let have_extensions = ["ms-python.python".to_string()].into_iter().collect();
-        let (installed, skipped) = plan_installs(&preset, &have_flatpaks, &have_boxes, &have_extensions);
+        let (installed, skipped) =
+            plan_installs(&preset, &have_flatpaks, &have_boxes, &have_extensions);
         assert!(skipped.contains(&"com.visualstudio.code".to_string()));
         assert!(skipped.contains(&"ms-python.python".to_string()));
         assert!(installed.contains(&"kyth-ai-dev".to_string()));
@@ -173,7 +282,9 @@ mod tests {
         // row's third column, and skipping short lines).
         assert_eq!(
             parse_distrobox_list("id image name\n1 img kyth-ai-dev extra\nshort\n"),
-            ["name".to_string(), "kyth-ai-dev".to_string()].into_iter().collect()
+            ["name".to_string(), "kyth-ai-dev".to_string()]
+                .into_iter()
+                .collect()
         );
         assert!(parse_extension_list("MS-Python.Python\n").contains("ms-python.python"));
     }
@@ -182,7 +293,12 @@ mod tests {
     fn preserves_explicit_lists_and_round_trips() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("preset.toml");
-        let preset = RolePreset { profile: Role::Creator, flatpaks: vec!["org.example.App".into()], distroboxes: vec![], vscode_extensions: vec!["rust-lang.rust-analyzer".into()] };
+        let preset = RolePreset {
+            profile: Role::Creator,
+            flatpaks: vec!["org.example.App".into()],
+            distroboxes: vec![],
+            vscode_extensions: vec!["rust-lang.rust-analyzer".into()],
+        };
         save(&path, &preset).unwrap();
         assert_eq!(load(&path), preset);
     }

@@ -19,21 +19,41 @@ pub fn get_hardware_view_summary() -> Option<HardwareViewSummary> {
     // Read via existing probe helper — reuses DISK_TTL 30s and cache_read_paths()
     if let Some(raw) = crate::system::probe::read_section("hardware-summary") {
         let obj = raw.as_object()?;
-        let has_nvidia = obj.get("has_nvidia").and_then(|v| v.as_bool()).unwrap_or(false);
-        let is_hybrid = obj.get("is_hybrid").and_then(|v| v.as_bool()).unwrap_or(false);
+        let has_nvidia = obj
+            .get("has_nvidia")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let is_hybrid = obj
+            .get("is_hybrid")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         let capabilities = obj
             .get("capabilities")
             .and_then(|v| v.as_array())
-            .map(|arr| arr.iter().filter_map(|e| e.as_str().map(|s| s.to_string())).collect())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|e| e.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
             .unwrap_or_default();
-        return Some(HardwareViewSummary { has_nvidia, is_hybrid, capabilities, applied: HashMap::new() });
+        return Some(HardwareViewSummary {
+            has_nvidia,
+            is_hybrid,
+            capabilities,
+            applied: HashMap::new(),
+        });
     }
 
     let evaluation = crate::system::hardware_policy::evaluate_system().ok()?;
-    let has_nvidia = evaluation.inventory.pci.iter().any(|device| {
-        device.vendor == "10de" && device.class_code.starts_with("03")
-    });
-    let is_hybrid = evaluation.capabilities.iter().any(|cap| cap == "gpu.hybrid" || cap == "gpu.offload");
+    let has_nvidia = evaluation
+        .inventory
+        .pci
+        .iter()
+        .any(|device| device.vendor == "10de" && device.class_code.starts_with("03"));
+    let is_hybrid = evaluation
+        .capabilities
+        .iter()
+        .any(|cap| cap == "gpu.hybrid" || cap == "gpu.offload");
     Some(HardwareViewSummary {
         has_nvidia,
         is_hybrid,

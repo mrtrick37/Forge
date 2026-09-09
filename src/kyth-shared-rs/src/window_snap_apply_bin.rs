@@ -12,8 +12,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use kyth_shared::atomic_io::atomic_write_text;
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::window_snap::{
-    SHORTCUTS, TTL_PATH, TTL_SECS, config_path, electric_border_argv, kwriteconfig_candidates, load,
-    shortcut_argv,
+    config_path, electric_border_argv, kwriteconfig_candidates, load, shortcut_argv, SHORTCUTS,
+    TTL_PATH, TTL_SECS,
 };
 
 fn main() -> std::process::ExitCode {
@@ -27,9 +27,12 @@ fn main() -> std::process::ExitCode {
                 .map(|path| path.to_string_lossy().into_owned())
         })
     }) {
-        if run_bounded(&electric_border_argv(&binary, config.electric), Duration::from_secs(5))
-            .map(|output| output.status.success())
-            .unwrap_or(false)
+        if run_bounded(
+            &electric_border_argv(&binary, config.electric),
+            Duration::from_secs(5),
+        )
+        .map(|output| output.status.success())
+        .unwrap_or(false)
         {
             applied.push("kwinrc ElectricBorder".to_string());
         }

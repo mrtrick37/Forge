@@ -16,7 +16,11 @@ fn main() -> std::process::ExitCode {
     let user = current_user();
     // `getpass.getuser() or "this user"`: only an unresolvable account hits
     // the fallback, where the Rust helper reports "unknown".
-    let user = if user == "unknown" { "this user".to_string() } else { user };
+    let user = if user == "unknown" {
+        "this user".to_string()
+    } else {
+        user
+    };
     println!("VS Code and Brave KWallet integration enabled for {user}.");
     std::process::ExitCode::SUCCESS
 }

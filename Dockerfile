@@ -43,12 +43,8 @@ COPY src/kyth-shared-rs /build/kyth-shared-rs
 # real-repo checkout `cargo test`/check-hub-web-shell.sh build against
 # directly).
 COPY build_files/exe-handler-apps.json /build_files/exe-handler-apps.json
-# `main.rs` embeds the bundled compatibility catalog using a path relative to
-# `/build/kyth-hub-web/src-tauri/src`: ../../../kyth-welcome/... resolves to
-# `/build/kyth-welcome/...`.  Keep that source-relative layout in
-# the builder stage so the release container compile sees the same catalog as
-# the repository build.
-COPY src/kyth-welcome /build/kyth-welcome
+# The Hub embeds `src/data/compat_games.json` from its own source tree. The
+# retired Python service tree is not copied into the builder or final image.
 COPY src/kyth-hub-web /build/kyth-hub-web
 WORKDIR /build/kyth-hub-web
 RUN --mount=type=cache,id=kyth-hub-web-npm,target=/root/.npm \
@@ -58,7 +54,7 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     --mount=type=cache,id=kyth-hub-shell-target,target=/build/kyth-hub-web/src-tauri/target \
     cargo build --release --locked && \
     cp target/release/kyth-hub-shell /build/kyth-hub-shell && \
-    (cd /build/kyth-shared-rs && cargo build --release --locked --features telemetry-writer --bin kyth-runtime --bin kyth-build-support --bin kyth-ai-dev --bin kyth-probe --bin kyth-guardian --bin kyth-update-watcher --bin kyth-network-share --bin kyth-telem --bin kyth-privileged --bin kyth-post-update-check --bin kyth-firstboot-app-status --bin kyth-steam-game-export --bin kyth-hub-desktop-entries --bin kyth-safe-upgrade --bin kyth-bootc-guard --bin kyth-finalize-staged --bin kyth-btrfs-maint --bin kyth-ai-perfd --bin kyth-perf-gate-rs --bin kyth-doctor --bin kyth-health-check --bin kyth-smoke-check --bin kyth-resume-check --bin kyth-nvidia-status --bin kyth-controller-check --bin kyth-creator-check --bin kyth-exe-compat --bin kyth-snapshot-timeline --bin kyth-print-check --bin kyth-windows-verify --bin kyth-vm-acceptance-guest --bin kyth-tunable --bin kyth-tunable-rs --bin kyth-game-boost --bin kyth-configure-session --bin kyth-set-resolution --bin kyth-set-kickoff-icon --bin kyth-greeter-compositor --bin kyth-config-apply --bin kyth-apply-scx-preset --bin kyth-apply-explorer --bin kyth-apply-desktop-layout --bin kyth-apply-display-hdr --bin kyth-apply-input --bin kyth-apply-network --bin kyth-apply-pipewire-latency --bin kyth-apply-plasma --bin kyth-apply-quicksettings --bin kyth-apply-rgb --bin kyth-apply-role-preset --bin kyth-apply-scaling --bin kyth-apply-tailscale --bin kyth-apply-vrr --bin kyth-apply-window-snap --bin kyth-driver-switch --bin kyth-kali-desktop-fixup --bin kyth-ntfs-repair --bin kyth-performance-mode --bin kyth-refresh-boot-splash-initramfs --bin kyth-refresh-taskbar-pins --bin kyth-report-issue --bin kyth-session-snapshot --bin kyth-setup-devcontainer --bin kyth-setup-transfer --bin kyth-vscode-wallet --bin kyth-web-app-categorize --bin kyth-storage-sense --bin kyth-duperemove --bin kyth-batteryd --bin kyth-cloud-mount --bin kyth-save-sync --bin kyth-backup --bin kyth-game-launch --bin kyth-dynamic-lock --bin kyth-proton-cachyos-update --bin kyth-rclone-update --bin kyth-sched --bin kyth-user-polish --bin kyth-exe-handler) && \
+    (cd /build/kyth-shared-rs && cargo build --release --locked --features telemetry-writer --bin kyth-runtime --bin kyth-build-support --bin kyth-ai-dev --bin kyth-probe --bin kyth-guardian --bin kyth-update-watcher --bin kyth-network-share --bin kyth-telem --bin kyth-privileged --bin kyth-post-update-check --bin kyth-firstboot-app-status --bin kyth-steam-game-export --bin kyth-hub-desktop-entries --bin kyth-welcome-launch --bin kyth-safe-upgrade --bin kyth-bootc-guard --bin kyth-finalize-staged --bin kyth-btrfs-maint --bin kyth-ai-perfd --bin kyth-perf-gate-rs --bin kyth-doctor --bin kyth-health-check --bin kyth-smoke-check --bin kyth-resume-check --bin kyth-nvidia-status --bin kyth-controller-check --bin kyth-creator-check --bin kyth-exe-compat --bin kyth-snapshot-timeline --bin kyth-print-check --bin kyth-windows-verify --bin kyth-vm-acceptance-guest --bin kyth-tunable-rs --bin kyth-game-boost --bin kyth-configure-session --bin kyth-set-resolution --bin kyth-set-kickoff-icon --bin kyth-greeter-compositor --bin kyth-config-apply --bin kyth-apply-scx-preset --bin kyth-apply-explorer --bin kyth-apply-desktop-layout --bin kyth-apply-display-hdr --bin kyth-apply-input --bin kyth-apply-network --bin kyth-apply-pipewire-latency --bin kyth-apply-plasma --bin kyth-apply-quicksettings --bin kyth-apply-rgb --bin kyth-apply-role-preset --bin kyth-apply-scaling --bin kyth-apply-tailscale --bin kyth-apply-vrr --bin kyth-apply-window-snap --bin kyth-driver-switch --bin kyth-kali-desktop-fixup --bin kyth-ntfs-repair --bin kyth-performance-mode --bin kyth-refresh-boot-splash-initramfs --bin kyth-refresh-taskbar-pins --bin kyth-report-issue --bin kyth-session-snapshot --bin kyth-setup-devcontainer --bin kyth-vscode-wallet --bin kyth-web-app-categorize --bin kyth-storage-sense --bin kyth-duperemove --bin kyth-batteryd --bin kyth-cloud-mount --bin kyth-save-sync --bin kyth-backup --bin kyth-game-launch --bin kyth-dynamic-lock --bin kyth-proton-cachyos-update --bin kyth-rclone-update --bin kyth-sched --bin kyth-user-polish --bin kyth-exe-handler) && \
     (cd /build/kyth-shared-rs && cargo build --release --locked --bin kyth-boot-health) && \
     cp /build/kyth-shared-rs/target/release/kyth-boot-health /build/kyth-boot-health && \
     (cd /build/kyth-shared-rs && cargo build --release --locked --bin kyth-hardware-policy) && \
@@ -145,7 +141,6 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     cp /build/kyth-shared-rs/target/release/kyth-print-check /build/kyth-print-check && \
     cp /build/kyth-shared-rs/target/release/kyth-windows-verify /build/kyth-windows-verify && \
     cp /build/kyth-shared-rs/target/release/kyth-vm-acceptance-guest /build/kyth-vm-acceptance-guest && \
-    cp /build/kyth-shared-rs/target/release/kyth-tunable /build/kyth-tunable && \
     cp /build/kyth-shared-rs/target/release/kyth-tunable-rs /build/kyth-tunable-rs && \
     cp /build/kyth-shared-rs/target/release/kyth-game-boost /build/kyth-game-boost
 
@@ -258,17 +253,11 @@ RUN : "cache-bust:plymouth=${PLYMOUTH_HASH}" && \
 # sysconfig-static and sysconfig layers. COPY once so neither layer needs a
 # redundant bind-mount. sysconfig.sh removes these from /ctx once installed
 # (see its tail) so they don't linger as duplicate content in the final image.
-COPY build_files/game-performance build_files/kyth-shader-preheat build_files/kyth-sched-arbiter build_files/kyth-power-arbiter build_files/kyth-power-arbiter.service build_files/kyth-storage-gate build_files/kyth-readahead-hint build_files/kyth-shader-prune build_files/kyth-tunable /ctx/
+COPY build_files/game-performance build_files/kyth-shader-preheat build_files/kyth-sched-arbiter build_files/kyth-power-arbiter build_files/kyth-power-arbiter.service build_files/kyth-storage-gate build_files/kyth-readahead-hint build_files/kyth-shader-prune /ctx/
 
-# Install the shared Python distribution for runtime scripts.
-COPY build_files/kyth_shared /tmp/kyth-shared-package
-RUN python3 -m pip install \
-        --no-cache-dir \
-        --no-deps \
-        --no-build-isolation \
-        --prefix=/usr \
-        /tmp/kyth-shared-package && \
-    rm -rf /tmp/kyth-shared-package
+# The shared Python package is used only by build-time renderers and the
+# repository's compatibility tests. All supported installed Kyth entry points
+# are Rust/Tauri-owned; do not install the legacy package into the image.
 
 
 # Static system configuration — sysctl, kernel modules, PipeWire, Proton env
@@ -313,7 +302,6 @@ RUN --mount=type=bind,source=build_files/scripts/sysconfig-static.sh,target=/ctx
     --mount=type=bind,source=build_files/scripts/lib,target=/ctx/lib \
     --mount=type=bind,source=build_files/data,target=/ctx/data \
     --mount=type=bind,source=build_files/config,target=/ctx/config \
-    --mount=type=bind,source=build_files/kyth-tunable,target=/ctx/kyth-tunable \
     --mount=type=tmpfs,dst=/tmp \
     : "cache-bust:sysconfig=${SYSCONFIG_HASH}" && \
     bash /ctx/sysconfig-static.sh
@@ -369,9 +357,10 @@ RUN --mount=type=bind,source=build_files/scripts/sysconfig.sh,target=/ctx/syscon
 # stage declared near the top of this file (before BASE_IMAGE's own FROM,
 # so it doesn't disturb that ARG's global scope). Ships on every channel;
 # kyth-welcome-launch (installed below via 23-kyth-helper-ctx-installs.sh)
-# is the single normal launch wrapper; it requires the Tauri shell and never
-# falls back to the classic kyth-welcome UI.
+# is the single normal launch wrapper; it requires the Tauri shell and has no
+# Python UI fallback.
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-hub-shell /usr/bin/kyth-hub-shell
+COPY --from=hub-web-builder --chmod=0755 /build/kyth-welcome-launch /usr/bin/kyth-welcome-launch
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-runtime /usr/bin/kyth-runtime
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-probe /usr/bin/kyth-probe
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-guardian /usr/bin/kyth-guardian
@@ -400,7 +389,6 @@ COPY --from=hub-web-builder --chmod=0755 /build/kyth-snapshot-timeline /usr/bin/
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-print-check /usr/bin/kyth-print-check
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-windows-verify /usr/bin/kyth-windows-verify
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-vm-acceptance-guest /usr/bin/kyth-vm-acceptance-guest
-COPY --from=hub-web-builder --chmod=0755 /build/kyth-tunable /usr/bin/kyth-tunable
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-configure-session /usr/bin/kyth-configure-session
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-set-resolution /usr/bin/kyth-set-resolution
 COPY --from=hub-web-builder --chmod=0755 /build/kyth-set-kickoff-icon /usr/bin/kyth-set-kickoff-icon
@@ -431,10 +419,8 @@ ARG SECUREBOOT_SIGNING_REQUESTED=0
 # native dispatcher last so every tunable alias points at Rust in the
 # installed image and cannot be overwritten by a later fragment.
 RUN --mount=type=bind,source=build_files,target=/ctx \
-    --mount=type=bind,source=src/kyth-welcome,target=/ctx/kyth-welcome \
     --mount=type=bind,source=src/kyth_shared,target=/ctx/kyth_shared \
     --mount=type=bind,source=src,target=/src \
-    --mount=type=bind,source=src/kyth-welcome,target=/src/kyth-welcome \
     --mount=type=bind,source=src/kyth_shared,target=/src/kyth_shared \
     --mount=type=tmpfs,dst=/tmp \
     --mount=type=secret,id=mok_key \

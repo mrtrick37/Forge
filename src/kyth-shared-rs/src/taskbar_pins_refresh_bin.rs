@@ -10,9 +10,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use kyth_shared::system::desktop_plasma::{
-    CONFIG_FILE, default_application_roots, default_launchers, evaluate_plasma_argv,
-    filter_available_launchers, kreadconfig_argv, qdbus_candidates, render_pins_script,
-    taskbar_pins_state_path,
+    default_application_roots, default_launchers, evaluate_plasma_argv, filter_available_launchers,
+    kreadconfig_argv, qdbus_candidates, render_pins_script, taskbar_pins_state_path, CONFIG_FILE,
 };
 use kyth_shared::system::process::run_bounded;
 
@@ -27,19 +26,29 @@ fn find_binary(name: &str) -> Option<String> {
 
 fn kread(file: &str, group: &str, key: &str) -> Option<String> {
     let binary = find_binary("kreadconfig6").or_else(|| find_binary("kreadconfig"))?;
-    run_bounded(&kreadconfig_argv(&binary, file, group, key), Duration::from_secs(5))
-        .ok()
-        .and_then(|output| {
-            output.status.success().then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
-        })
+    run_bounded(
+        &kreadconfig_argv(&binary, file, group, key),
+        Duration::from_secs(5),
+    )
+    .ok()
+    .and_then(|output| {
+        output
+            .status
+            .success()
+            .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
+    })
 }
 
 fn refresh() -> i32 {
-    if kread(CONFIG_FILE, "KythOS", "KythComfortLayout").filter(|stamp| !stamp.is_empty()).is_none() {
+    if kread(CONFIG_FILE, "KythOS", "KythComfortLayout")
+        .filter(|stamp| !stamp.is_empty())
+        .is_none()
+    {
         return 0;
     }
     let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
-    let available = filter_available_launchers(&default_launchers(), &default_application_roots(&home));
+    let available =
+        filter_available_launchers(&default_launchers(), &default_application_roots(&home));
     let csv = available.join(",");
     if csv.is_empty() {
         return 0;
@@ -52,10 +61,15 @@ fn refresh() -> i32 {
             }
         }
     }
-    let Some(qdbus) = qdbus_candidates().iter().find_map(|name| find_binary(name)) else { return 0 };
-    let applied = run_bounded(&evaluate_plasma_argv(&qdbus, &render_pins_script(&csv)), Duration::from_secs(15))
-        .map(|output| output.status.success())
-        .unwrap_or(false);
+    let Some(qdbus) = qdbus_candidates().iter().find_map(|name| find_binary(name)) else {
+        return 0;
+    };
+    let applied = run_bounded(
+        &evaluate_plasma_argv(&qdbus, &render_pins_script(&csv)),
+        Duration::from_secs(15),
+    )
+    .map(|output| output.status.success())
+    .unwrap_or(false);
     if !applied {
         return 1;
     }

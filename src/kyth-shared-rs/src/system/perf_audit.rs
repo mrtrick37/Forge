@@ -7,15 +7,61 @@
 use serde_json::Value;
 
 pub const AUDIT_KEYS: &[&str] = &[
-    "master", "loader", "oom_gaming", "shader_tmpfs", "gaming_cfs", "thp", "irq", "btrfs",
-    "trim", "ananicy", "zswap", "sched", "wine", "kwin", "pipewire_gaming", "vm_watermark",
-    "tcp_notsent", "max_map_count", "dirty_ratio", "vfs_cache", "tcp_ecn", "tcp_slow_start",
-    "autogroup", "nr_migrate", "page_cluster", "tcp_retries2", "tcp_keepalive", "sched_child",
-    "vm_stat", "numa_balancing", "tcp_fastopen", "tcp_mtu_probing", "dirty_expire", "file_max",
-    "perf_cpu", "swappiness", "tcp_fin_timeout", "somaxconn", "inotify_watches", "min_free_kbytes",
-    "rmem_max", "wmem_max", "aio_max", "overcommit_memory", "netdev_budget", "rmem_default",
-    "wmem_default", "tcp_window_scaling", "tcp_sack", "tcp_timestamps", "busy_read", "busy_poll",
-    "tcp_no_metrics_save", "tcp_retries1", "tcp_orphan_retries",
+    "master",
+    "loader",
+    "oom_gaming",
+    "shader_tmpfs",
+    "gaming_cfs",
+    "thp",
+    "irq",
+    "btrfs",
+    "trim",
+    "ananicy",
+    "zswap",
+    "sched",
+    "wine",
+    "kwin",
+    "pipewire_gaming",
+    "vm_watermark",
+    "tcp_notsent",
+    "max_map_count",
+    "dirty_ratio",
+    "vfs_cache",
+    "tcp_ecn",
+    "tcp_slow_start",
+    "autogroup",
+    "nr_migrate",
+    "page_cluster",
+    "tcp_retries2",
+    "tcp_keepalive",
+    "sched_child",
+    "vm_stat",
+    "numa_balancing",
+    "tcp_fastopen",
+    "tcp_mtu_probing",
+    "dirty_expire",
+    "file_max",
+    "perf_cpu",
+    "swappiness",
+    "tcp_fin_timeout",
+    "somaxconn",
+    "inotify_watches",
+    "min_free_kbytes",
+    "rmem_max",
+    "wmem_max",
+    "aio_max",
+    "overcommit_memory",
+    "netdev_budget",
+    "rmem_default",
+    "wmem_default",
+    "tcp_window_scaling",
+    "tcp_sack",
+    "tcp_timestamps",
+    "busy_read",
+    "busy_poll",
+    "tcp_no_metrics_save",
+    "tcp_retries1",
+    "tcp_orphan_retries",
 ];
 
 fn python_value(value: Option<&Value>) -> String {
@@ -34,7 +80,10 @@ pub fn format_audit(audit: &Value) -> String {
     let object = audit.as_object();
     let mut lines = vec!["# Kyth perf audit — 46-140".to_string()];
     for key in AUDIT_KEYS {
-        lines.push(format!("{key}: {}", python_value(object.and_then(|object| object.get(*key)))));
+        lines.push(format!(
+            "{key}: {}",
+            python_value(object.and_then(|object| object.get(*key)))
+        ));
     }
     lines.push(format!(
         "systemd-analyze: {}",

@@ -76,7 +76,7 @@ Python `page_software.py` 7 mixins (Starter Packs, Flatpak Store, AppImages, Ins
 Python `src/kyth_shared/kyth_shared` `251` files / `≈1567` defs vs Rust `src/kyth-shared-rs/src` `176` files (`151` under `system::`) — roughly 70% file-count coverage; check `MIGRATION.md`'s "What's ported so far" table for the current module list. Coverage is skewed toward read-only inventory/parsers by design (`MIGRATION.md`'s "read-only first" rule). The installed probe collector, Guardian extended sweep, update watcher, telemetry writer, VPN/SAML workflow, privileged socket daemon, and network-share helper are native Rust; Python service authorities are no longer installed. Selected compatibility fixtures were removed in P2; installed-image acceptance and remaining helper cleanup are operational follow-up, not active service ownership blockers.
 
 ### 6. Launchers & single-instance — TAURI/REACT
-Rust/Tauri: the primary shell accepts `--page <key>`, forwards later launches through the single-instance plugin, and preserves the destination contract. `src/kyth-welcome/kyth-welcome-launch` starts `/usr/bin/kyth-hub-shell` and fails clearly if it is absent; it has no Python UI fallback. `Dockerfile` ships the Tauri binary, and `23-kyth-helper-ctx-installs.sh` installs only the launcher, desktop metadata, and generated route search entries.
+Rust/Tauri: the primary shell accepts `--page <key>`, forwards later launches through the single-instance plugin, and preserves the destination contract. The native Rust `kyth-welcome-launch` binary starts `/usr/bin/kyth-hub-shell` and fails clearly if it is absent; the compatibility name does not imply a Python implementation or fallback. `Dockerfile` ships both native binaries, and `23-kyth-helper-ctx-installs.sh` installs only the launcher, desktop metadata, and generated route search entries.
 
 ### 7. Work Setup actions — LIVE
 `WorkSetupSection.tsx` now covers the old page's day-one workflow: LibreOffice
@@ -125,5 +125,6 @@ and Guardian repairs execute with verification/cooldowns/history. The native
 Rust/Tauri migration now covers the common interactive paths plus read-only
 snapshot/deployment timeline and staged-update truth used by Repair. Remaining
 product work is dedicated controls for the listed high-risk workflows,
-installed-image acceptance testing, deeper parity in the remaining Python
-service paths, and retirement of compatibility service code.
+installed-image acceptance testing and retirement of unrelated compatibility
+service code. No Python module is part of the supported Hub build or runtime
+path.

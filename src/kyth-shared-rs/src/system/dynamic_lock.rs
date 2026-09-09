@@ -36,7 +36,9 @@ pub struct LockConfig {
 fn parse_grace(value: Option<&serde_json::Value>) -> u64 {
     let seconds = match value {
         Some(serde_json::Value::Bool(flag)) => Some(i64::from(*flag)),
-        Some(serde_json::Value::Number(number)) => number.as_i64().or_else(|| number.as_f64().map(|float| float as i64)),
+        Some(serde_json::Value::Number(number)) => number
+            .as_i64()
+            .or_else(|| number.as_f64().map(|float| float as i64)),
         Some(serde_json::Value::String(text)) => text.trim().parse::<i64>().ok(),
         _ => None,
     };
@@ -70,8 +72,9 @@ fn device_string(value: Option<&serde_json::Value>) -> String {
 /// Load and normalize the daemon config. Missing, unreadable, or
 /// non-object documents disable the daemon, mirroring the launcher.
 pub fn load_config(path: &Path) -> LockConfig {
-    let value: Option<serde_json::Value> =
-        std::fs::read_to_string(path).ok().and_then(|text| serde_json::from_str(&text).ok());
+    let value: Option<serde_json::Value> = std::fs::read_to_string(path)
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok());
     let table = value.and_then(|value| match value {
         serde_json::Value::Object(map) => Some(map),
         _ => None,
@@ -83,7 +86,11 @@ pub fn load_config(path: &Path) -> LockConfig {
         .is_some_and(|value| value.as_bool().unwrap_or(false))
         && !device_id.is_empty();
     let grace_seconds = parse_grace(table.as_ref().and_then(|map| map.get("grace_seconds")));
-    LockConfig { enabled, device_id, grace_seconds }
+    LockConfig {
+        enabled,
+        device_id,
+        grace_seconds,
+    }
 }
 
 /// One KDE Connect availability answer: a broken query (`Unavailable`)
@@ -157,19 +164,31 @@ mod tests {
     use super::*;
 
     fn config(device: &str, grace: u64) -> LockConfig {
-        LockConfig { enabled: true, device_id: device.to_string(), grace_seconds: grace }
+        LockConfig {
+            enabled: true,
+            device_id: device.to_string(),
+            grace_seconds: grace,
+        }
     }
 
     #[test]
     fn loads_and_clamps_daemon_config() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("kyth-dynamic-lock.json");
-        std::fs::write(&path, "{\"enabled\": true, \"device_id\": \"  abc  \", \"grace_seconds\": 5}").unwrap();
+        std::fs::write(
+            &path,
+            "{\"enabled\": true, \"device_id\": \"  abc  \", \"grace_seconds\": 5}",
+        )
+        .unwrap();
         let loaded = load_config(&path);
         assert!(loaded.enabled);
         assert_eq!(loaded.device_id, "abc");
         assert_eq!(loaded.grace_seconds, MIN_GRACE_SECONDS);
-        std::fs::write(&path, "{\"enabled\": true, \"device_id\": \"x\", \"grace_seconds\": \"nope\"}").unwrap();
+        std::fs::write(
+            &path,
+            "{\"enabled\": true, \"device_id\": \"x\", \"grace_seconds\": \"nope\"}",
+        )
+        .unwrap();
         assert_eq!(load_config(&path).grace_seconds, DEFAULT_GRACE_SECONDS);
         std::fs::write(&path, "[1, 2]").unwrap();
         assert!(!load_config(&path).enabled);
@@ -203,7 +222,11 @@ mod tests {
         monitor.step(&config, Availability::Unavailable, 5.0);
         assert!(monitor.armed);
         assert!(monitor.missing_since.is_none());
-        let off = LockConfig { enabled: false, device_id: String::new(), grace_seconds: 60 };
+        let off = LockConfig {
+            enabled: false,
+            device_id: String::new(),
+            grace_seconds: 60,
+        };
         monitor.step(&off, Availability::Present(false), 6.0);
         assert!(!monitor.armed);
         assert_eq!(monitor.device_id, "");

@@ -24,6 +24,20 @@ class PythonPackagingTests(unittest.TestCase):
                 self.assertEqual(metadata["build-system"]["build-backend"], "setuptools.build_meta")
                 self.assertEqual(metadata["project"]["name"], project_name)
 
+    def test_retired_python_ui_is_not_a_runtime_dependency(self):
+        packages = (ROOT / "build_files/scripts/packages/18-desktop-helper-and-creator-tooling.sh").read_text()
+        self.assertNotIn("python3-pyqt6", packages)
+        self.assertNotIn("python3-pyqt6-webengine", packages)
+
+    def test_native_builder_outputs_are_not_overwritten_by_python_fixtures(self):
+        dockerfile = (ROOT / "Dockerfile").read_text()
+        diagnostic = (ROOT / "build_files/scripts/branding/35-diagnostic-script-installs.sh").read_text()
+        exe_compat = (ROOT / "build_files/scripts/branding/74-exe-compat.sh").read_text()
+        for entry_point in ("kyth-creator-check", "kyth-exe-compat"):
+            self.assertIn(f"/build/{entry_point} /usr/bin/{entry_point}", dockerfile)
+        self.assertNotIn("install -m 0755 /ctx/kyth-creator-check", diagnostic)
+        self.assertNotIn("install -m 0755 /ctx/kyth-exe-compat", exe_compat)
+
     def test_app_packages_publish_console_entry_points(self):
         shared = self._metadata("build_files/kyth_shared")
         installer = self._metadata("build_files/kyth-installer")
@@ -71,15 +85,13 @@ class PythonPackagingTests(unittest.TestCase):
             ROOT / "build_files/scripts/branding/23-kyth-helper-ctx-installs.sh"
         ).read_text()
 
-        shared_install = dockerfile.index(
-            "COPY build_files/kyth_shared /tmp/kyth-shared-package"
-        )
         build_time_import = dockerfile.index("bash /ctx/sysconfig-static.sh")
-        self.assertLess(shared_install, build_time_import)
         self.assertIn(
             "source=build_files/kyth_shared,target=/ctx/kyth_shared",
             dockerfile,
         )
+        self.assertNotIn("COPY build_files/kyth_shared /tmp/kyth-shared-package", dockerfile)
+        self.assertNotIn("python3 -m pip install", dockerfile)
         self.assertIn("kyth-launch-installer", installer_build)
         self.assertIn("kyth-installerd.service", installer_build)
         self.assertNotIn("python3 -m pip install", installer_build)
@@ -206,6 +218,7 @@ class PythonPackagingTests(unittest.TestCase):
         ).read_text()
 
         self.assertIn('name = "kyth-tunable-rs"', cargo)
+        self.assertNotIn('name = "kyth-tunable"', cargo)
         native_copy = dockerfile.index(
             "COPY --from=hub-web-builder --chmod=0755 /build/kyth-tunable-rs /usr/bin/kyth-tunable-rs"
         )
@@ -219,8 +232,9 @@ class PythonPackagingTests(unittest.TestCase):
         )
         self.assertIn("--list-native", dispatcher)
         self.assertNotIn("python3", dispatcher)
+        self.assertIn("ln -sfn kyth-tunable-rs /usr/bin/kyth-tunable", dispatcher)
         self.assertIn('ln -sf kyth-tunable-rs "/usr/bin/kyth-${t}"', dispatcher)
-        self.assertIn('ln -sf kyth-tunable "/usr/bin/kyth-${t}"', dispatcher)
+        self.assertNotIn('ln -sf kyth-tunable "/usr/bin/kyth-${t}"', dispatcher)
         self.assertLess(
             dockerfile.index("bash /ctx/scripts/branding.sh"),
             dockerfile.index("bash /ctx/scripts/sysconfig/tunable/01-tunable-dispatcher.sh"),

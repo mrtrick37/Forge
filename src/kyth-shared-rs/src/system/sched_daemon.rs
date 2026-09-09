@@ -6,9 +6,9 @@
 //! state machine. Signal handling and the sleep loop stay with the
 //! launcher binary. `gaming.py` and `daemon.py` stay as fixtures.
 
-use crate::config_loader::load_toml_config;
 use super::gaming_activity::{active_uids_from_loginctl, gaming_reason, is_gaming_process};
-use serde_json::{Value as Json, json};
+use crate::config_loader::load_toml_config;
+use serde_json::{json, Value as Json};
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
@@ -37,20 +37,26 @@ impl Default for SchedConfig {
 }
 
 fn config_string(config: &BTreeMap<String, Json>, key: &str, fallback: &str) -> String {
-    config.get(key).and_then(|value| match value {
-        Json::String(text) => Some(text.clone()),
-        Json::Number(number) => Some(number.to_string()),
-        Json::Bool(flag) => Some(flag.to_string()),
-        _ => None,
-    }).unwrap_or_else(|| fallback.to_string())
+    config
+        .get(key)
+        .and_then(|value| match value {
+            Json::String(text) => Some(text.clone()),
+            Json::Number(number) => Some(number.to_string()),
+            Json::Bool(flag) => Some(flag.to_string()),
+            _ => None,
+        })
+        .unwrap_or_else(|| fallback.to_string())
 }
 
 fn config_float(config: &BTreeMap<String, Json>, key: &str, fallback: f64) -> f64 {
-    config.get(key).and_then(|value| match value {
-        Json::Number(number) => number.as_f64(),
-        Json::String(text) => text.trim().parse::<f64>().ok(),
-        _ => None,
-    }).unwrap_or(fallback)
+    config
+        .get(key)
+        .and_then(|value| match value {
+            Json::Number(number) => number.as_f64(),
+            Json::String(text) => text.trim().parse::<f64>().ok(),
+            _ => None,
+        })
+        .unwrap_or(fallback)
 }
 
 /// Load and merge the profile config: user file, system fallback,
@@ -67,19 +73,29 @@ pub fn load_sched_config() -> SchedConfig {
         desktop_scheduler: config_string(&merged, "desktop_scheduler", "default"),
         gaming_scheduler: config_string(&merged, "gaming_scheduler", "scx_rusty"),
         poll_interval: config_float(&merged, "poll_interval", 5.0),
-        integrate_perf_mode: merged.get("integrate_perf_mode").is_some_and(|value| match value {
-            Json::Bool(true) => true,
-            Json::Bool(false) => false,
-            Json::Number(number) => number.as_f64().is_some_and(|float| float != 0.0),
-            Json::String(text) => !text.trim().is_empty(),
-            _ => false,
-        }),
+        integrate_perf_mode: merged
+            .get("integrate_perf_mode")
+            .is_some_and(|value| match value {
+                Json::Bool(true) => true,
+                Json::Bool(false) => false,
+                Json::Number(number) => number.as_f64().is_some_and(|float| float != 0.0),
+                Json::String(text) => !text.trim().is_empty(),
+                _ => false,
+            }),
     }
 }
 
 /// UIDs with active systemd sessions; command failure yields none.
 pub fn session_uids(run: &dyn Fn(&[String], u64) -> Option<(i32, String)>) -> Vec<u32> {
-    match run(&["loginctl".to_string(), "list-sessions".to_string(), "--no-legend".to_string(), "--no-pager".to_string()], 5) {
+    match run(
+        &[
+            "loginctl".to_string(),
+            "list-sessions".to_string(),
+            "--no-legend".to_string(),
+            "--no-pager".to_string(),
+        ],
+        5,
+    ) {
         Some((0, stdout)) => active_uids_from_loginctl(&stdout),
         _ => Vec::new(),
     }
@@ -92,13 +108,22 @@ pub fn gamescope_active(uid: u32) -> bool {
 
 /// Scan a `/proc`-shaped tree for known gaming executables.
 pub fn proc_gaming_active_in(proc_root: &Path) -> bool {
-    let Ok(entries) = std::fs::read_dir(proc_root) else { return false };
+    let Ok(entries) = std::fs::read_dir(proc_root) else {
+        return false;
+    };
     for entry in entries.flatten() {
-        if !entry.file_name().to_string_lossy().chars().all(|char| char.is_ascii_digit()) {
+        if !entry
+            .file_name()
+            .to_string_lossy()
+            .chars()
+            .all(|char| char.is_ascii_digit())
+        {
             continue;
         }
         let link = entry.path().join("exe");
-        if std::fs::read_link(&link).is_ok_and(|target| is_gaming_process(&target.to_string_lossy())) {
+        if std::fs::read_link(&link)
+            .is_ok_and(|target| is_gaming_process(&target.to_string_lossy()))
+        {
             return true;
         }
     }
@@ -116,7 +141,9 @@ pub struct GamingCache {
 
 impl GamingCache {
     pub fn new() -> Self {
-        Self { entries: HashMap::new() }
+        Self {
+            entries: HashMap::new(),
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -194,10 +221,7 @@ pub fn current_scheduler(
 }
 
 /// Switch the scheduler via kyth-scx. Returns success.
-pub fn set_scheduler(
-    run: &dyn Fn(&[String], u64) -> Option<(i32, String)>,
-    name: &str,
-) -> bool {
+pub fn set_scheduler(run: &dyn Fn(&[String], u64) -> Option<(i32, String)>, name: &str) -> bool {
     if name == "default" {
         run_text(run, &["sudo", "-n", "/usr/bin/kyth-scx", "stop"], 5).0
     } else {
@@ -212,9 +236,16 @@ pub fn available_schedulers(
 ) -> Vec<String> {
     let (ok, out) = run_text(run, &["kyth-scx", "list"], 5);
     if ok && !out.is_empty() {
-        return out.lines().map(str::trim).filter(|line| !line.is_empty()).map(str::to_string).collect();
+        return out
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty())
+            .map(str::to_string)
+            .collect();
     }
-    let Ok(entries) = std::fs::read_dir(usr_bin) else { return Vec::new() };
+    let Ok(entries) = std::fs::read_dir(usr_bin) else {
+        return Vec::new();
+    };
     let mut names: Vec<String> = entries
         .flatten()
         .map(|entry| entry.file_name().to_string_lossy().into_owned())
@@ -240,7 +271,10 @@ pub fn write_status(
     now_secs: u64,
 ) {
     let path = status_path(runtime_dir);
-    if path.parent().is_some_and(|parent| std::fs::create_dir_all(parent).is_err()) {
+    if path
+        .parent()
+        .is_some_and(|parent| std::fs::create_dir_all(parent).is_err())
+    {
         return;
     }
     let document = json!({
@@ -269,7 +303,11 @@ pub struct SchedState {
 
 impl SchedState {
     pub fn new() -> Self {
-        Self { profile: "desktop".to_string(), gaming_prev: false, manual_override: None }
+        Self {
+            profile: "desktop".to_string(),
+            gaming_prev: false,
+            manual_override: None,
+        }
     }
 }
 
@@ -281,7 +319,11 @@ pub fn poll_step(
     gaming_detected: bool,
 ) -> Vec<SchedEffect> {
     let effective = state.manual_override.clone().unwrap_or_else(|| {
-        if gaming_detected { "gaming".to_string() } else { "desktop".to_string() }
+        if gaming_detected {
+            "gaming".to_string()
+        } else {
+            "desktop".to_string()
+        }
     });
     let gaming_now = effective == "gaming";
     if gaming_now == state.gaming_prev {
@@ -335,22 +377,30 @@ mod tests {
     fn gaming_cache_honors_ttl_and_precedence() {
         let mut cache = GamingCache::new();
         let first = cache.check(0.0, Some(1000), false, &[], &[1000], &[], false, 1000);
-        assert_eq!(first.as_deref(), Some("gamescope session active (uid 1000)"));
+        assert_eq!(
+            first.as_deref(),
+            Some("gamescope session active (uid 1000)")
+        );
         let cached = cache.check(30.0, Some(1000), false, &[], &[], &[], false, 1000);
         assert_eq!(cached, first);
         let refreshed = cache.check(61.0, Some(1000), false, &[], &[], &[], false, 1000);
         assert_eq!(refreshed, None);
         let gaming = cache.check(122.0, Some(1000), false, &[], &[], &[], true, 1000);
-        assert_eq!(gaming.as_deref(), Some("gaming process detected (/proc scan)"));
+        assert_eq!(
+            gaming.as_deref(),
+            Some("gaming process detected (/proc scan)")
+        );
     }
 
     #[test]
     fn scheduler_reads_sysfs_then_scx_then_unknown() {
         let run = |_: &[String], _: u64| None;
-        assert_eq!(current_scheduler(|| Some("scx_rusty".to_string()), &run), "scx_rusty");
-        let run = |_: &[String], _: u64| {
-            Some((0, "noise\nConfigured scheduler:   bore  \n".to_string()))
-        };
+        assert_eq!(
+            current_scheduler(|| Some("scx_rusty".to_string()), &run),
+            "scx_rusty"
+        );
+        let run =
+            |_: &[String], _: u64| Some((0, "noise\nConfigured scheduler:   bore  \n".to_string()));
         assert_eq!(current_scheduler(|| None, &run), "bore");
         let run = |_: &[String], _: u64| None;
         assert_eq!(current_scheduler(|| None, &run), "unknown");
@@ -386,7 +436,10 @@ mod tests {
             manual_override: Some("gaming".to_string()),
         };
         let effects = poll_step(&mut state, &config, false);
-        assert_eq!(effects[0], SchedEffect::SetScheduler("scx_rusty".to_string()));
+        assert_eq!(
+            effects[0],
+            SchedEffect::SetScheduler("scx_rusty".to_string())
+        );
     }
 
     #[test]
@@ -394,7 +447,8 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         write_status(dir.path(), "gaming", "scx_rusty", true, false, 1700000000);
         let document: serde_json::Value =
-            serde_json::from_str(&std::fs::read_to_string(status_path(dir.path())).unwrap()).unwrap();
+            serde_json::from_str(&std::fs::read_to_string(status_path(dir.path())).unwrap())
+                .unwrap();
         assert_eq!(document["profile"], "gaming");
         assert_eq!(document["gaming_active"], true);
         assert_eq!(document["manual_override"], false);
@@ -408,8 +462,14 @@ mod tests {
         std::fs::write(dir.path().join("scx_loader"), "").unwrap();
         std::fs::write(dir.path().join("other"), "").unwrap();
         let run = |_: &[String], _: u64| None;
-        assert_eq!(available_schedulers(&run, dir.path()), vec!["scx_rusty".to_string()]);
+        assert_eq!(
+            available_schedulers(&run, dir.path()),
+            vec!["scx_rusty".to_string()]
+        );
         let run = |_: &[String], _: u64| Some((0, "  bore\n\nbalanced\n".to_string()));
-        assert_eq!(available_schedulers(&run, dir.path()), vec!["bore".to_string(), "balanced".to_string()]);
+        assert_eq!(
+            available_schedulers(&run, dir.path()),
+            vec!["bore".to_string(), "balanced".to_string()]
+        );
     }
 }

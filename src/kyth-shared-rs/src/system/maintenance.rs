@@ -10,19 +10,33 @@ use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 
 pub fn supports_dedupe_filesystem(filesystem: &str) -> bool {
-    matches!(filesystem.trim().to_ascii_lowercase().as_str(), "btrfs" | "xfs")
+    matches!(
+        filesystem.trim().to_ascii_lowercase().as_str(),
+        "btrfs" | "xfs"
+    )
 }
 
 pub fn find_dedupe_targets(root: impl AsRef<Path>) -> Vec<PathBuf> {
     fn walk(current: &Path, depth: usize, targets: &mut Vec<PathBuf>) {
-        if depth > 7 { return; }
-        let Ok(entries) = std::fs::read_dir(current) else { return; };
+        if depth > 7 {
+            return;
+        }
+        let Ok(entries) = std::fs::read_dir(current) else {
+            return;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
-            let Ok(file_type) = entry.file_type() else { continue; };
-            if !file_type.is_dir() || file_type.is_symlink() { continue; }
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            if !file_type.is_dir() || file_type.is_symlink() {
+                continue;
+            }
             let text = path.to_string_lossy();
-            if depth >= 4 && (text.ends_with("/Steam/steamapps/compatdata") || text.ends_with("/Steam/steamapps/shadercache")) {
+            if depth >= 4
+                && (text.ends_with("/Steam/steamapps/compatdata")
+                    || text.ends_with("/Steam/steamapps/shadercache"))
+            {
                 targets.push(path);
                 continue;
             }
@@ -31,15 +45,25 @@ pub fn find_dedupe_targets(root: impl AsRef<Path>) -> Vec<PathBuf> {
     }
     let mut targets = Vec::new();
     let root = root.as_ref();
-    if root.is_dir() { walk(root, 1, &mut targets); }
+    if root.is_dir() {
+        walk(root, 1, &mut targets);
+    }
     targets.sort();
     targets.dedup();
     targets
 }
 
-pub fn dedupe_command(target: impl AsRef<Path>, hash_file: impl AsRef<Path>, ionice_available: bool) -> Vec<String> {
+pub fn dedupe_command(
+    target: impl AsRef<Path>,
+    hash_file: impl AsRef<Path>,
+    ionice_available: bool,
+) -> Vec<String> {
     let core = ["nice", "-n", "19", "duperemove", "-rdh", "--hashfile"];
-    let mut command = if ionice_available { vec!["ionice".into(), "-c3".into()] } else { Vec::new() };
+    let mut command = if ionice_available {
+        vec!["ionice".into(), "-c3".into()]
+    } else {
+        Vec::new()
+    };
     command.extend(core.into_iter().map(String::from));
     command.push(hash_file.as_ref().display().to_string());
     command.push(target.as_ref().display().to_string());
@@ -59,7 +83,10 @@ pub fn secure_dedupe_hash_file(dir: &Path, state_dir: &Path) -> Result<PathBuf, 
     let dir_meta = std::fs::symlink_metadata(state_dir)
         .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
     if !dir_meta.is_dir() || dir_meta.file_type().is_symlink() {
-        return Err(format!("Unsafe duperemove state directory: {}", state_dir.display()));
+        return Err(format!(
+            "Unsafe duperemove state directory: {}",
+            state_dir.display()
+        ));
     }
     if dir_meta.uid() != unsafe { libc::geteuid() } {
         return Err(format!(
@@ -86,7 +113,10 @@ pub fn secure_dedupe_hash_file(dir: &Path, state_dir: &Path) -> Result<PathBuf, 
         .metadata()
         .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
     if !file_meta.is_file() || file_meta.uid() != unsafe { libc::geteuid() } {
-        return Err(format!("Unsafe duperemove hash database: {}", hash_file.display()));
+        return Err(format!(
+            "Unsafe duperemove hash database: {}",
+            hash_file.display()
+        ));
     }
     file.set_permissions(std::fs::Permissions::from_mode(0o600))
         .map_err(|error| format!("Cannot prepare duperemove state: {error}"))?;
@@ -94,11 +124,21 @@ pub fn secure_dedupe_hash_file(dir: &Path, state_dir: &Path) -> Result<PathBuf, 
 }
 
 pub fn cleanup_flatpaks_command() -> Vec<String> {
-    vec!["flatpak".into(), "uninstall".into(), "--unused".into(), "-y".into(), "--noninteractive".into()]
+    vec![
+        "flatpak".into(),
+        "uninstall".into(),
+        "--unused".into(),
+        "-y".into(),
+        "--noninteractive".into(),
+    ]
 }
 
 pub fn vacuum_user_journal_command(days: i64) -> Vec<String> {
-    vec!["journalctl".into(), "--user".into(), format!("--vacuum-time={days}d")]
+    vec![
+        "journalctl".into(),
+        "--user".into(),
+        format!("--vacuum-time={days}d"),
+    ]
 }
 
 /// Parse a trash `DeletionDate=` value to UTC epoch seconds, mirroring
@@ -190,8 +230,8 @@ pub fn prune_trash(home: &Path, days: i64, now_secs: i64) -> usize {
         if let Some(name) = info.file_stem() {
             let target = files_dir.join(name);
             if target.exists() {
-                let is_real_dir =
-                    std::fs::symlink_metadata(&target).is_ok_and(|meta| meta.file_type().is_dir() && !meta.file_type().is_symlink());
+                let is_real_dir = std::fs::symlink_metadata(&target)
+                    .is_ok_and(|meta| meta.file_type().is_dir() && !meta.file_type().is_symlink());
                 if is_real_dir {
                     let _ = std::fs::remove_dir_all(&target);
                 } else {
@@ -225,23 +265,56 @@ mod tests {
 
     #[test]
     fn projects_nice_ionice_dedupe_argv_without_running_it() {
-        let command = dedupe_command("/var/home/user/Steam/steamapps/shadercache", "/var/lib/kyth/abc.hash", true);
-        assert_eq!(command, vec!["ionice", "-c3", "nice", "-n", "19", "duperemove", "-rdh", "--hashfile", "/var/lib/kyth/abc.hash", "/var/home/user/Steam/steamapps/shadercache"]);
+        let command = dedupe_command(
+            "/var/home/user/Steam/steamapps/shadercache",
+            "/var/lib/kyth/abc.hash",
+            true,
+        );
+        assert_eq!(
+            command,
+            vec![
+                "ionice",
+                "-c3",
+                "nice",
+                "-n",
+                "19",
+                "duperemove",
+                "-rdh",
+                "--hashfile",
+                "/var/lib/kyth/abc.hash",
+                "/var/home/user/Steam/steamapps/shadercache"
+            ]
+        );
     }
 
     #[test]
     fn projects_noninteractive_cleanup_commands() {
-        assert_eq!(cleanup_flatpaks_command(), vec!["flatpak", "uninstall", "--unused", "-y", "--noninteractive"]);
-        assert_eq!(vacuum_user_journal_command(30), vec!["journalctl", "--user", "--vacuum-time=30d"]);
+        assert_eq!(
+            cleanup_flatpaks_command(),
+            vec!["flatpak", "uninstall", "--unused", "-y", "--noninteractive"]
+        );
+        assert_eq!(
+            vacuum_user_journal_command(30),
+            vec!["journalctl", "--user", "--vacuum-time=30d"]
+        );
     }
 
     #[test]
     fn parses_trash_deletion_dates_like_fromisoformat() {
         let naive = parse_deletion_epoch("2026-07-20T14:30:00").unwrap();
-        assert_eq!(parse_deletion_epoch("2026-07-20T14:30:00.123").unwrap(), naive);
+        assert_eq!(
+            parse_deletion_epoch("2026-07-20T14:30:00.123").unwrap(),
+            naive
+        );
         assert_eq!(parse_deletion_epoch("2026-07-20T14:30:00Z").unwrap(), naive);
-        assert_eq!(parse_deletion_epoch("2026-07-20T16:30:00+02:00").unwrap(), naive);
-        assert_eq!(parse_deletion_epoch("2026-07-20T09:30:00-05:00").unwrap(), naive);
+        assert_eq!(
+            parse_deletion_epoch("2026-07-20T16:30:00+02:00").unwrap(),
+            naive
+        );
+        assert_eq!(
+            parse_deletion_epoch("2026-07-20T09:30:00-05:00").unwrap(),
+            naive
+        );
         assert!(parse_deletion_epoch("not a date").is_none());
         assert!(parse_deletion_epoch("2026-07-20").is_none());
     }
@@ -255,8 +328,14 @@ mod tests {
         let state = work.path().join("state");
         let hash = secure_dedupe_hash_file(&target, &state).unwrap();
         assert_eq!(hash.parent().unwrap(), state);
-        assert_eq!(fs::metadata(&state).unwrap().permissions().mode() & 0o777, 0o700);
-        assert_eq!(fs::metadata(&hash).unwrap().permissions().mode() & 0o777, 0o600);
+        assert_eq!(
+            fs::metadata(&state).unwrap().permissions().mode() & 0o777,
+            0o700
+        );
+        assert_eq!(
+            fs::metadata(&hash).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
         let again = secure_dedupe_hash_file(&target, &state).unwrap();
         assert_eq!(again, hash);
         let link_state = work.path().join("link-state");
@@ -278,7 +357,11 @@ mod tests {
         fs::write(info.join("nodate.trashinfo"), "[Trash Info]\nPath=/tmp/x\n").unwrap();
         fs::write(files.join("old"), "data").unwrap();
         fs::create_dir_all(files.join("gone-dir")).unwrap();
-        fs::write(info.join("gone-dir.trashinfo"), old.replace("old", "gone-dir")).unwrap();
+        fs::write(
+            info.join("gone-dir.trashinfo"),
+            old.replace("old", "gone-dir"),
+        )
+        .unwrap();
         let now = parse_deletion_epoch("2026-01-01T00:00:00").unwrap();
         assert_eq!(prune_trash(home.path(), 30, now), 2);
         assert!(!info.join("old.trashinfo").exists());

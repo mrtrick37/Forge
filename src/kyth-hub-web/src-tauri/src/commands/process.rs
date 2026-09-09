@@ -56,7 +56,8 @@ mod tests {
 
     #[test]
     fn missing_helper_is_a_typed_spawn_error() {
-        let error = output("/definitely/missing/kyth-helper", &[]).expect_err("missing helper should fail");
+        let error =
+            output("/definitely/missing/kyth-helper", &[]).expect_err("missing helper should fail");
         assert!(matches!(error, CommandError::Spawn(_)));
     }
 }

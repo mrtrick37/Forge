@@ -8,11 +8,16 @@ fn main() {
     }
     let printers = kyth_shared::system::printing::ipp_discover();
     if args == ["--json"] {
-        println!("{}", serde_json::to_string_pretty(&printers).expect("printer list serializes"));
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&printers).expect("printer list serializes")
+        );
     } else if printers.is_empty() {
         println!("kyth-print-check: no printers or discovery command missing");
     } else {
-        for printer in printers { println!("{printer}"); }
+        for printer in printers {
+            println!("{printer}");
+        }
     }
 }
 
@@ -20,6 +25,9 @@ fn main() {
 mod tests {
     #[test]
     fn empty_discovery_has_stable_json_shape() {
-        assert_eq!(serde_json::to_string_pretty(&Vec::<String>::new()).unwrap(), "[]");
+        assert_eq!(
+            serde_json::to_string_pretty(&Vec::<String>::new()).unwrap(),
+            "[]"
+        );
     }
 }

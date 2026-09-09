@@ -52,7 +52,9 @@ pub fn registry_host(image_ref: &str) -> String {
     let image = image_ref.strip_prefix("docker://").unwrap_or(image_ref);
     let host = image.split_once('/').map_or(image, |(host, _)| host);
     let host = host.split_once('@').map_or(host, |(host, _)| host);
-    host.rsplit_once(':').map_or(host, |(host, _)| host).to_string()
+    host.rsplit_once(':')
+        .map_or(host, |(host, _)| host)
+        .to_string()
 }
 
 /// Split an OCI transport reference into `(layout_path, tag)`.
@@ -73,13 +75,12 @@ pub fn oci_layout_ref(image_ref: &str) -> (String, String) {
 }
 
 /// Derive source and target image references for the selected kernel.
-pub fn install_images(
-    kernel: &str,
-    source_image: &str,
-    target_image: &str,
-) -> (String, String) {
+pub fn install_images(kernel: &str, source_image: &str, target_image: &str) -> (String, String) {
     if kernel == "fedora" {
-        return (source_image_ref(source_image, source_image), target_image.to_string());
+        return (
+            source_image_ref(source_image, source_image),
+            target_image.to_string(),
+        );
     }
     let (registry, tag) = target_image.rsplit_once(':').map_or_else(
         || (target_image, "latest"),
@@ -115,13 +116,13 @@ pub fn classify_source_refs(
 }
 
 fn read_json_file(path: &Path, label: &str) -> Result<Value, String> {
-    let metadata = fs::symlink_metadata(path)
-        .map_err(|error| format!("could not read {label}: {error}"))?;
+    let metadata =
+        fs::symlink_metadata(path).map_err(|error| format!("could not read {label}: {error}"))?;
     if !metadata.file_type().is_file() {
         return Err(format!("{label} is missing or unsafe: {}", path.display()));
     }
-    let contents = fs::read_to_string(path)
-        .map_err(|error| format!("could not read {label}: {error}"))?;
+    let contents =
+        fs::read_to_string(path).map_err(|error| format!("could not read {label}: {error}"))?;
     serde_json::from_str(&contents).map_err(|error| format!("could not parse {label}: {error}"))
 }
 
@@ -131,15 +132,20 @@ fn sha256_file(path: &Path) -> Result<String, String> {
     if !metadata.file_type().is_file() {
         return Err("embedded OCI manifest blob is missing or unsafe".to_string());
     }
-    let contents = fs::read(path)
-        .map_err(|error| format!("could not read manifest blob: {error}"))?;
+    let contents =
+        fs::read(path).map_err(|error| format!("could not read manifest blob: {error}"))?;
     let digest = Sha256::digest(contents);
     Ok(format!("sha256:{digest:x}"))
 }
 
 fn valid_sha256_digest(value: &str) -> bool {
-    let Some(hex) = value.strip_prefix("sha256:") else { return false; };
-    hex.len() == 64 && hex.bytes().all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte) || (b'A'..=b'F').contains(&byte))
+    let Some(hex) = value.strip_prefix("sha256:") else {
+        return false;
+    };
+    hex.len() == 64
+        && hex.bytes().all(|byte| {
+            byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte) || (b'A'..=b'F').contains(&byte)
+        })
 }
 
 /// Verify an embedded OCI layout against a release-pinned digest.
@@ -158,7 +164,10 @@ pub fn verify_oci_source(
     let root_metadata = fs::symlink_metadata(root)
         .map_err(|error| format!("could not read embedded OCI image: {error}"))?;
     if root_metadata.file_type().is_symlink() || !root_metadata.is_dir() {
-        return Err(format!("embedded OCI layout is missing or unsafe: {}", root.display()));
+        return Err(format!(
+            "embedded OCI layout is missing or unsafe: {}",
+            root.display()
+        ));
     }
     let layout = read_json_file(&root.join("oci-layout"), "embedded OCI layout")?;
     let index = read_json_file(&root.join("index.json"), "embedded OCI index")?;
@@ -187,7 +196,10 @@ pub fn verify_oci_source(
     if !valid_sha256_digest(digest) {
         return Err("embedded OCI image has no valid manifest digest".to_string());
     }
-    let blob = root.join("blobs").join("sha256").join(&digest["sha256:".len()..]);
+    let blob = root
+        .join("blobs")
+        .join("sha256")
+        .join(&digest["sha256:".len()..]);
     if sha256_file(&blob)? != digest {
         return Err("embedded OCI manifest failed its SHA-256 integrity check".to_string());
     }
@@ -200,9 +212,13 @@ pub fn verify_oci_source(
         .get("digest")
         .and_then(Value::as_str)
         .unwrap_or_default();
-    let configured_digest = expected_digest.filter(|value| !value.is_empty()).unwrap_or(metadata_digest);
+    let configured_digest = expected_digest
+        .filter(|value| !value.is_empty())
+        .unwrap_or(metadata_digest);
     if configured_digest.is_empty() || configured_digest != digest || metadata_digest != digest {
-        return Err("embedded OCI image does not match the digest pinned by this ISO release".to_string());
+        return Err(
+            "embedded OCI image does not match the digest pinned by this ISO release".to_string(),
+        );
     }
     if let Some(expected_target) = expected_target {
         let metadata_target = metadata
@@ -210,7 +226,9 @@ pub fn verify_oci_source(
             .and_then(Value::as_str)
             .unwrap_or_default();
         if !metadata_target.is_empty() && metadata_target != expected_target {
-            return Err("embedded-image metadata does not match the configured update target".to_string());
+            return Err(
+                "embedded-image metadata does not match the configured update target".to_string(),
+            );
         }
     }
     Ok(digest.to_string())
@@ -224,8 +242,14 @@ mod tests {
 
     #[test]
     fn normalizes_transports_and_network_classification() {
-        assert_eq!(source_image_ref("", "oci:/embedded:latest"), "oci:/embedded:latest");
-        assert_eq!(source_image_ref("registry/kyth:latest", "unused"), "docker://registry/kyth:latest");
+        assert_eq!(
+            source_image_ref("", "oci:/embedded:latest"),
+            "oci:/embedded:latest"
+        );
+        assert_eq!(
+            source_image_ref("registry/kyth:latest", "unused"),
+            "docker://registry/kyth:latest"
+        );
         assert_eq!(source_image_ref(" ostree:kyth", "unused"), "ostree:kyth");
         assert!(image_requires_network("docker://registry/kyth:latest"));
         assert!(!image_requires_network("oci:/embedded:latest"));
@@ -233,21 +257,39 @@ mod tests {
 
     #[test]
     fn extracts_registry_host_and_oci_tag() {
-        assert_eq!(registry_host("docker://registry.example:5443/kyth/os@sha256:abc"), "registry.example");
-        assert_eq!(registry_host("docker://registry.example/kyth:latest"), "registry.example");
-        assert_eq!(oci_layout_ref("oci:/run/media/kyth/image:v2"), ("/run/media/kyth/image".to_string(), "v2".to_string()));
-        assert_eq!(oci_layout_ref("oci:/run/media/kyth/image"), ("/run/media/kyth/image".to_string(), "latest".to_string()));
+        assert_eq!(
+            registry_host("docker://registry.example:5443/kyth/os@sha256:abc"),
+            "registry.example"
+        );
+        assert_eq!(
+            registry_host("docker://registry.example/kyth:latest"),
+            "registry.example"
+        );
+        assert_eq!(
+            oci_layout_ref("oci:/run/media/kyth/image:v2"),
+            ("/run/media/kyth/image".to_string(), "v2".to_string())
+        );
+        assert_eq!(
+            oci_layout_ref("oci:/run/media/kyth/image"),
+            ("/run/media/kyth/image".to_string(), "latest".to_string())
+        );
     }
 
     #[test]
     fn derives_cachyos_images_without_double_suffix() {
         assert_eq!(
             install_images("cachyos", "unused", "registry/kyth:stable"),
-            ("docker://registry/kyth:stable-cachy".to_string(), "registry/kyth:stable-cachy".to_string())
+            (
+                "docker://registry/kyth:stable-cachy".to_string(),
+                "registry/kyth:stable-cachy".to_string()
+            )
         );
         assert_eq!(
             install_images("cachyos", "unused", "registry/kyth:stable-cachy"),
-            ("docker://registry/kyth:stable-cachy".to_string(), "registry/kyth:stable-cachy".to_string())
+            (
+                "docker://registry/kyth:stable-cachy".to_string(),
+                "registry/kyth:stable-cachy".to_string()
+            )
         );
     }
 
@@ -304,8 +346,7 @@ mod tests {
         let temp = tempdir().expect("temporary OCI directory");
         let root = temp.path().join("missing");
         let metadata = temp.path().join("source.json");
-        fs::write(&metadata, r#"{"schema_version":1,"digest":"sha256:bad"}"#)
-            .expect("metadata");
+        fs::write(&metadata, r#"{"schema_version":1,"digest":"sha256:bad"}"#).expect("metadata");
         let error = verify_oci_source(
             &format!("oci:{}:latest", root.display()),
             Some("sha256:bad"),

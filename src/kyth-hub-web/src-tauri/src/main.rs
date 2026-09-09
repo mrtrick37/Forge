@@ -1,14 +1,11 @@
 // Tauri shell for the Kyth Hub web frontend. It owns the native window,
 // single-instance behavior, `--page` deep links, and typed Rust commands.
 //
-// The four bridge commands below used to shell out to backend/*.py
-// scripts (see git history if you need the old ones) — they now call
-// straight into the kyth-shared crate (../../kyth-shared-rs), no
-// subprocess, no JSON-over-stdout round trip. That crate is the first
-// slice of kyth_shared (the ~200-module Python library) ported to Rust —
-// see its MIGRATION.md for scope. Everything kyth_shared does that isn't
-// in that crate yet — most of it — stays Python for now; nothing here
-// assumes the rest gets ported on any particular timeline.
+// Hub reads and actions cross this typed Rust/Tauri boundary. The React
+// frontend owns presentation; native behavior belongs in this crate or the
+// shared Rust crate, with fixed external argv only where the OS owns the
+// operation. The retired Python Hub is source-only compatibility material and
+// is not part of the supported build or runtime path.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::collections::HashMap;
@@ -1214,7 +1211,7 @@ struct CompatibilityBundle {
 /// the frontend only owns filtering and presentation.
 #[tauri::command]
 fn compatibility_games() -> Vec<CompatibilityGameResponse> {
-    const BUNDLED: &str = include_str!("../../../kyth-welcome/kyth_welcome/compat_games.json");
+    const BUNDLED: &str = include_str!("../../src/data/compat_games.json");
     serde_json::from_str::<CompatibilityBundle>(BUNDLED)
         .map(|bundle| bundle.games)
         .unwrap_or_default()

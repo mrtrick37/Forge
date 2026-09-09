@@ -20,19 +20,31 @@ pub fn current_branch() -> Option<String> {
 pub fn current_kernel_flavor() -> String {
     if let Ok(s) = std::fs::read_to_string("/usr/share/kyth/kernel-flavor") {
         let f = s.trim().to_lowercase();
-        if f == "cachy" || f == "fedora" { return f; }
+        if f == "cachy" || f == "fedora" {
+            return f;
+        }
     }
     // fallback uname -r check
-    if let Some((_, stdout)) = run_with_timeout(&["uname".to_string(), "-r".to_string()], std::time::Duration::from_secs(2)) {
-        if stdout.to_lowercase().contains("cachy") { return "cachy".to_string(); }
+    if let Some((_, stdout)) = run_with_timeout(
+        &["uname".to_string(), "-r".to_string()],
+        std::time::Duration::from_secs(2),
+    ) {
+        if stdout.to_lowercase().contains("cachy") {
+            return "cachy".to_string();
+        }
     }
     "fedora".to_string()
 }
 
 fn run_with_timeout(cmd: &[String], timeout: std::time::Duration) -> Option<(i32, String)> {
-    if cmd.is_empty() { return None; }
+    if cmd.is_empty() {
+        return None;
+    }
     let output = super::process::run_bounded(cmd, timeout).ok()?;
-    Some((output.status.code().unwrap_or(-1), String::from_utf8_lossy(&output.stdout).to_string()))
+    Some((
+        output.status.code().unwrap_or(-1),
+        String::from_utf8_lossy(&output.stdout).to_string(),
+    ))
 }
 
 pub fn has_staged_update() -> bool {
@@ -61,7 +73,10 @@ mod tests {
     use super::*;
     #[test]
     fn branch() {
-        assert_eq!(branch_from_ref(Some("ghcr.io/kyth-os/kyth:latest")), Some("latest".to_string()));
+        assert_eq!(
+            branch_from_ref(Some("ghcr.io/kyth-os/kyth:latest")),
+            Some("latest".to_string())
+        );
     }
     #[test]
     fn staged_bool() {

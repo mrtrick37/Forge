@@ -10,5 +10,16 @@ fn main() -> std::process::ExitCode {
     } else {
         kyth_shared::system::boot_finalize::finalize_staged(mode == "reboot")
     };
-    match result { Ok(output) => { if !output.is_empty() { println!("{output}"); } std::process::ExitCode::SUCCESS }, Err(error) => { eprintln!("kyth-finalize-staged: {error}"); std::process::ExitCode::from(1) } }
+    match result {
+        Ok(output) => {
+            if !output.is_empty() {
+                println!("{output}");
+            }
+            std::process::ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("kyth-finalize-staged: {error}");
+            std::process::ExitCode::from(1)
+        }
+    }
 }

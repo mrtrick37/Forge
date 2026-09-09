@@ -18,7 +18,12 @@ pub struct ExplorerConfig {
 
 impl Default for ExplorerConfig {
     fn default() -> Self {
-        Self { click: "double".into(), preview: true, preview_pane: true, drives_on_desktop: true }
+        Self {
+            click: "double".into(),
+            preview: true,
+            preview_pane: true,
+            drives_on_desktop: true,
+        }
     }
 }
 
@@ -29,17 +34,27 @@ pub fn explorer_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") {
         return PathBuf::from(config).join("kyth/explorer.toml");
     }
-    PathBuf::from(std::env::var_os("HOME").unwrap_or_else(|| ".".into())).join(".config/kyth/explorer.toml")
+    PathBuf::from(std::env::var_os("HOME").unwrap_or_else(|| ".".into()))
+        .join(".config/kyth/explorer.toml")
 }
 
 pub fn load_explorer(path: impl AsRef<Path>) -> ExplorerConfig {
-    let Ok(raw) = std::fs::read_to_string(path) else { return ExplorerConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return ExplorerConfig::default(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return ExplorerConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return ExplorerConfig::default();
+    };
     let click = match value.get("click").and_then(toml::Value::as_str) {
         Some("single") => "single",
         _ => "double",
     };
-    let flag = |key: &str| value.get(key).and_then(toml::Value::as_bool).unwrap_or(true);
+    let flag = |key: &str| {
+        value
+            .get(key)
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true)
+    };
     ExplorerConfig {
         click: click.into(),
         preview: flag("preview"),
@@ -49,7 +64,11 @@ pub fn load_explorer(path: impl AsRef<Path>) -> ExplorerConfig {
 }
 
 pub fn save_explorer(path: impl AsRef<Path>, config: &ExplorerConfig) -> std::io::Result<()> {
-    let click = if config.click == "single" { "single" } else { "double" };
+    let click = if config.click == "single" {
+        "single"
+    } else {
+        "double"
+    };
     let content = format!(
         "# Kyth Explorer parity — Windows double-click + preview + drives\nclick = \"{click}\"\npreview = {}\npreview_pane = {}\ndrives_on_desktop = {}\n",
         config.preview, config.preview_pane, config.drives_on_desktop,
@@ -80,20 +99,50 @@ pub fn save_explorer(path: impl AsRef<Path>, config: &ExplorerConfig) -> std::io
 /// Kept separate from `apply_explorer` so the projection is testable without
 /// depending on whether `kwriteconfig5` is actually installed.
 pub fn single_click_argv(config: &ExplorerConfig) -> Vec<String> {
-    let single = if config.click == "single" { "true" } else { "false" };
-    ["kwriteconfig5", "--file", "kdeglobals", "--group", "KDE", "--key", "SingleClick", single].map(String::from).to_vec()
+    let single = if config.click == "single" {
+        "true"
+    } else {
+        "false"
+    };
+    [
+        "kwriteconfig5",
+        "--file",
+        "kdeglobals",
+        "--group",
+        "KDE",
+        "--key",
+        "SingleClick",
+        single,
+    ]
+    .map(String::from)
+    .to_vec()
 }
 
 /// Project `config`'s `ShowPreview` write to the fixed `kwriteconfig5` argv.
 pub fn show_preview_argv(config: &ExplorerConfig) -> Vec<String> {
     let preview = if config.preview { "true" } else { "false" };
-    ["kwriteconfig5", "--file", "dolphinrc", "--group", "General", "--key", "ShowPreview", preview].map(String::from).to_vec()
+    [
+        "kwriteconfig5",
+        "--file",
+        "dolphinrc",
+        "--group",
+        "General",
+        "--key",
+        "ShowPreview",
+        preview,
+    ]
+    .map(String::from)
+    .to_vec()
 }
 
 pub fn apply_explorer(config: &ExplorerConfig) -> Vec<String> {
     let mut applied = Vec::new();
     if run_bounded(&single_click_argv(config), Duration::from_secs(5)).is_ok() {
-        let single = if config.click == "single" { "true" } else { "false" };
+        let single = if config.click == "single" {
+            "true"
+        } else {
+            "false"
+        };
         applied.push(format!("SingleClick={single}"));
     }
     let _ = run_bounded(&show_preview_argv(config), Duration::from_secs(5));
@@ -102,7 +151,11 @@ pub fn apply_explorer(config: &ExplorerConfig) -> Vec<String> {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    let _ = crate::atomic_io::atomic_write_text("/run/kyth-explorer-ttl", &(now + 30).to_string(), None);
+    let _ = crate::atomic_io::atomic_write_text(
+        "/run/kyth-explorer-ttl",
+        &(now + 30).to_string(),
+        None,
+    );
 
     applied
 }
@@ -115,7 +168,10 @@ mod tests {
     #[test]
     fn defaults_when_missing_or_malformed() {
         let directory = tempdir().unwrap();
-        assert_eq!(load_explorer(directory.path().join("missing.toml")), ExplorerConfig::default());
+        assert_eq!(
+            load_explorer(directory.path().join("missing.toml")),
+            ExplorerConfig::default()
+        );
         let malformed = directory.path().join("bad.toml");
         std::fs::write(&malformed, "not valid toml {{{").unwrap();
         assert_eq!(load_explorer(&malformed), ExplorerConfig::default());
@@ -125,7 +181,12 @@ mod tests {
     fn round_trips_and_rejects_invalid_click() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("explorer.toml");
-        let config = ExplorerConfig { click: "single".into(), preview: false, preview_pane: false, drives_on_desktop: false };
+        let config = ExplorerConfig {
+            click: "single".into(),
+            preview: false,
+            preview_pane: false,
+            drives_on_desktop: false,
+        };
         save_explorer(&path, &config).unwrap();
         assert_eq!(load_explorer(&path), config);
 
@@ -138,26 +199,56 @@ mod tests {
         // Env-var fallback branches are exercised by inspection against the
         // Python original rather than by mutating process-global XDG_*
         // state here — see MIGRATION.md on keeping tests parallel-safe.
-        assert_eq!(explorer_path(Some("/tmp/x.toml")), PathBuf::from("/tmp/x.toml"));
+        assert_eq!(
+            explorer_path(Some("/tmp/x.toml")),
+            PathBuf::from("/tmp/x.toml")
+        );
     }
 
     #[test]
     fn single_click_argv_reflects_click_mode() {
-        let single = ExplorerConfig { click: "single".into(), ..ExplorerConfig::default() };
+        let single = ExplorerConfig {
+            click: "single".into(),
+            ..ExplorerConfig::default()
+        };
         assert_eq!(
             single_click_argv(&single),
-            vec!["kwriteconfig5", "--file", "kdeglobals", "--group", "KDE", "--key", "SingleClick", "true"],
+            vec![
+                "kwriteconfig5",
+                "--file",
+                "kdeglobals",
+                "--group",
+                "KDE",
+                "--key",
+                "SingleClick",
+                "true"
+            ],
         );
-        let double = ExplorerConfig { click: "double".into(), ..ExplorerConfig::default() };
+        let double = ExplorerConfig {
+            click: "double".into(),
+            ..ExplorerConfig::default()
+        };
         assert_eq!(single_click_argv(&double).last().unwrap(), "false");
     }
 
     #[test]
     fn show_preview_argv_reflects_preview_flag() {
-        let off = ExplorerConfig { preview: false, ..ExplorerConfig::default() };
+        let off = ExplorerConfig {
+            preview: false,
+            ..ExplorerConfig::default()
+        };
         assert_eq!(
             show_preview_argv(&off),
-            vec!["kwriteconfig5", "--file", "dolphinrc", "--group", "General", "--key", "ShowPreview", "false"],
+            vec![
+                "kwriteconfig5",
+                "--file",
+                "dolphinrc",
+                "--group",
+                "General",
+                "--key",
+                "ShowPreview",
+                "false"
+            ],
         );
     }
 
@@ -167,7 +258,10 @@ mod tests {
         // Kinoite 44 image — see apply_explorer's doc comment), so this
         // exercises the same dead-path Python's try/except swallows: no
         // panic, and SingleClick is only recorded when the spawn succeeds.
-        let config = ExplorerConfig { click: "single".into(), ..ExplorerConfig::default() };
+        let config = ExplorerConfig {
+            click: "single".into(),
+            ..ExplorerConfig::default()
+        };
         let applied = apply_explorer(&config);
         assert!(applied.is_empty() || applied == vec!["SingleClick=true"]);
     }

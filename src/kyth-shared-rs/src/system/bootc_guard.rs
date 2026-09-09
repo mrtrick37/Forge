@@ -6,12 +6,17 @@ use std::time::Duration;
 fn run(program: &str, args: &[&str], timeout: Duration) -> Result<Output, String> {
     let mut argv = vec![program.to_string()];
     argv.extend(args.iter().map(|arg| (*arg).to_string()));
-    crate::system::process::run_bounded(&argv, timeout).map_err(|error| format!("{program} could not run: {error}"))
+    crate::system::process::run_bounded(&argv, timeout)
+        .map_err(|error| format!("{program} could not run: {error}"))
 }
 
 pub fn status(json: bool) -> Result<String, String> {
     crate::system::boot_finalize::prepare_boot()?;
-    let args = if json { vec!["status", "--json"] } else { vec!["status"] };
+    let args = if json {
+        vec!["status", "--json"]
+    } else {
+        vec!["status"]
+    };
     let output = run("/usr/bin/bootc", &args, Duration::from_secs(30))?;
     if output.status.success() {
         return Ok(String::from_utf8_lossy(&output.stdout).to_string());
@@ -35,8 +40,16 @@ pub fn switch(channel: &str) -> Result<String, String> {
         _ => return Err("unsupported bootc channel".to_string()),
     };
     crate::system::boot_finalize::prepare_boot()?;
-    let output = run("/usr/bin/bootc", &["switch", reference], Duration::from_secs(3600))?;
-    let detail = format!("{}{}", String::from_utf8_lossy(&output.stdout), String::from_utf8_lossy(&output.stderr));
+    let output = run(
+        "/usr/bin/bootc",
+        &["switch", reference],
+        Duration::from_secs(3600),
+    )?;
+    let detail = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
     if !output.status.success() {
         return Err(detail.trim().to_string());
     }

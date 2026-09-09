@@ -13,9 +13,9 @@ use std::process::ExitCode;
 use std::time::Duration;
 
 use kyth_shared::system::plymouth::{
-    DRACUT_CONF_PATH, FINGERPRINT_FILE, FINGERPRINT_INPUTS, MARKER_FILE, STATE_DIR, WATERMARK_SOURCE,
-    collect_images, dracut_image_argv, dracut_regenerate_all_argv, ensure_dracut_config, fingerprint,
-    inspect_listing, prepare_include,
+    collect_images, dracut_image_argv, dracut_regenerate_all_argv, ensure_dracut_config,
+    fingerprint, inspect_listing, prepare_include, DRACUT_CONF_PATH, FINGERPRINT_FILE,
+    FINGERPRINT_INPUTS, MARKER_FILE, STATE_DIR, WATERMARK_SOURCE,
 };
 use kyth_shared::system::process::run_bounded;
 
@@ -30,7 +30,10 @@ fn on_path(name: &str) -> bool {
 
 fn run_text(argv: &[String], timeout: Duration) -> Option<(bool, String)> {
     run_bounded(argv, timeout).ok().map(|output| {
-        (output.status.success(), String::from_utf8_lossy(&output.stdout).into_owned())
+        (
+            output.status.success(),
+            String::from_utf8_lossy(&output.stdout).into_owned(),
+        )
     })
 }
 
@@ -39,7 +42,10 @@ fn inspect_image(image: &Path) -> Vec<String> {
         return vec!["lsinitrd is unavailable".to_string()];
     }
     let image_str = image.to_string_lossy().into_owned();
-    let listing = run_text(&["lsinitrd".to_string(), image_str.clone()], INSPECT_TIMEOUT);
+    let listing = run_text(
+        &["lsinitrd".to_string(), image_str.clone()],
+        INSPECT_TIMEOUT,
+    );
     let defaults = run_text(
         &[
             "lsinitrd".to_string(),
@@ -60,10 +66,16 @@ fn inspect_image(image: &Path) -> Vec<String> {
     )
     .ok();
     let Some((listing_ok, listing_text)) = listing else {
-        return vec![format!("unable to inspect refreshed initramfs: {}", image.display())];
+        return vec![format!(
+            "unable to inspect refreshed initramfs: {}",
+            image.display()
+        )];
     };
     if !listing_ok {
-        return vec![format!("unable to inspect refreshed initramfs: {}", image.display())];
+        return vec![format!(
+            "unable to inspect refreshed initramfs: {}",
+            image.display()
+        )];
     }
     let defaults_text = defaults.and_then(|(ok, text)| ok.then_some(text));
     // Mirror run_optional: a spawned-but-failed logo probe reports the
@@ -110,9 +122,10 @@ fn refresh_writable() -> Result<i32, String> {
         &["plymouth-set-default-theme".to_string(), "kyth".to_string()],
         Duration::from_secs(60),
     );
-    for guard in
-        ["/usr/libexec/kyth-boot-branding-guard", "/usr/libexec/kyth-plymouth-branding-guard"]
-    {
+    for guard in [
+        "/usr/libexec/kyth-boot-branding-guard",
+        "/usr/libexec/kyth-plymouth-branding-guard",
+    ] {
         if Path::new(guard).is_file() {
             let _ = run_bounded(&[guard.to_string()], Duration::from_secs(120));
         }
@@ -125,7 +138,12 @@ fn refresh_writable() -> Result<i32, String> {
     let images = collect_images(boot, modules);
     let old = fp_file
         .is_file()
-        .then(|| std::fs::read_to_string(fp_file).unwrap_or_default().trim().to_string())
+        .then(|| {
+            std::fs::read_to_string(fp_file)
+                .unwrap_or_default()
+                .trim()
+                .to_string()
+        })
         .unwrap_or_default();
     if marker.exists()
         && old == current
@@ -171,8 +189,11 @@ impl TempDir {
             .duration_since(std::time::UNIX_EPOCH)
             .map(|duration| duration.as_nanos())
             .unwrap_or(0);
-        let path =
-            Path::new("/tmp").join(format!("kyth-plymouth-initramfs-{}.{}", std::process::id(), nanos));
+        let path = Path::new("/tmp").join(format!(
+            "kyth-plymouth-initramfs-{}.{}",
+            std::process::id(),
+            nanos
+        ));
         std::fs::create_dir(&path)?;
         Ok(Self { path })
     }
@@ -190,7 +211,12 @@ impl Drop for TempDir {
 
 fn boot_is_readonly() -> bool {
     run_text(
-        &["findmnt".to_string(), "-no".to_string(), "OPTIONS".to_string(), "/boot".to_string()],
+        &[
+            "findmnt".to_string(),
+            "-no".to_string(),
+            "OPTIONS".to_string(),
+            "/boot".to_string(),
+        ],
         Duration::from_secs(10),
     )
     .map(|(ok, text)| ok && text.trim().split(',').any(|option| option == "ro"))
@@ -201,13 +227,23 @@ fn refresh() -> i32 {
     let readonly = boot_is_readonly();
     if readonly {
         let remounted = run_bounded(
-            &["mount".to_string(), "-o".to_string(), "remount,bind,rw".to_string(), "/boot".to_string()],
+            &[
+                "mount".to_string(),
+                "-o".to_string(),
+                "remount,bind,rw".to_string(),
+                "/boot".to_string(),
+            ],
             Duration::from_secs(30),
         )
         .map(|output| output.status.success())
         .unwrap_or(false)
             || run_bounded(
-                &["mount".to_string(), "-o".to_string(), "remount,rw".to_string(), "/boot".to_string()],
+                &[
+                    "mount".to_string(),
+                    "-o".to_string(),
+                    "remount,rw".to_string(),
+                    "/boot".to_string(),
+                ],
                 Duration::from_secs(30),
             )
             .map(|output| output.status.success())
@@ -222,7 +258,12 @@ fn refresh() -> i32 {
     let result = refresh_writable();
     if readonly {
         let _ = run_bounded(
-            &["mount".to_string(), "-o".to_string(), "remount,ro".to_string(), "/boot".to_string()],
+            &[
+                "mount".to_string(),
+                "-o".to_string(),
+                "remount,ro".to_string(),
+                "/boot".to_string(),
+            ],
             Duration::from_secs(30),
         );
     }

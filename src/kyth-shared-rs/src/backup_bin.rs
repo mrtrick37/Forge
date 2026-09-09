@@ -19,12 +19,20 @@ fn run(argv: &[&str], timeout_secs: u64) {
 
 fn first_usb_dir() -> Option<PathBuf> {
     let mut groups: Vec<PathBuf> = std::fs::read_dir("/run/media")
-        .map(|entries| entries.filter_map(|entry| entry.ok().map(|entry| entry.path())).collect())
+        .map(|entries| {
+            entries
+                .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+                .collect()
+        })
         .unwrap_or_default();
     groups.sort();
     for group in &groups {
         let mut children: Vec<PathBuf> = std::fs::read_dir(group)
-            .map(|entries| entries.filter_map(|entry| entry.ok().map(|entry| entry.path())).collect())
+            .map(|entries| {
+                entries
+                    .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+                    .collect()
+            })
             .unwrap_or_default();
         children.sort();
         if let Some(first) = children.into_iter().find(|child| child.is_dir()) {
@@ -45,14 +53,29 @@ fn main() -> std::process::ExitCode {
     if !repo.join("config").exists() {
         run(&["restic", "init", "--repo", &repo.to_string_lossy()], 10);
     }
-    run(&["restic", "--repo", &repo.to_string_lossy(), "backup", &home.to_string_lossy()], 120);
+    run(
+        &[
+            "restic",
+            "--repo",
+            &repo.to_string_lossy(),
+            "backup",
+            &home.to_string_lossy(),
+        ],
+        120,
+    );
     if config.btrfs_send && !on_battery() {
         if let Some(usb) = first_usb_dir() {
-            run(&["btrfs", "send", "-p", "/home", &usb.to_string_lossy()], 300);
+            run(
+                &["btrfs", "send", "-p", "/home", &usb.to_string_lossy()],
+                300,
+            );
         }
     }
     if !config.remote.is_empty() && home.join(".config/rclone/rclone.conf").exists() {
-        run(&["rclone", "sync", &repo.to_string_lossy(), &config.remote], 120);
+        run(
+            &["rclone", "sync", &repo.to_string_lossy(), &config.remote],
+            120,
+        );
     }
     println!("kyth-backup: repo {}", repo.display());
     std::process::ExitCode::SUCCESS

@@ -14,8 +14,8 @@ use kyth_shared::atomic_io::atomic_write_text;
 use kyth_shared::system::display::parse_kscreen_outputs;
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::scaling::{
-    ICC_DEST_DIR, TTL_PATH, TTL_SECS, IccOutcome, config_path, icc_outcome, is_output_name_valid, load,
-    scale_arg, scale_argv,
+    config_path, icc_outcome, is_output_name_valid, load, scale_arg, scale_argv, IccOutcome,
+    ICC_DEST_DIR, TTL_PATH, TTL_SECS,
 };
 
 fn on_path(name: &str) -> bool {
@@ -48,15 +48,19 @@ fn apply() -> (Vec<String>, bool) {
     if !on_path("kscreen-doctor") {
         return (vec!["kscreen-doctor unavailable".to_string()], false);
     }
-    let listed = match run_bounded(&["kscreen-doctor".to_string(), "-o".to_string()], Duration::from_secs(8)) {
+    let listed = match run_bounded(
+        &["kscreen-doctor".to_string(), "-o".to_string()],
+        Duration::from_secs(8),
+    ) {
         Ok(output) if output.status.success() => output,
         _ => return (vec!["kscreen-doctor -o failed".to_string()], false),
     };
-    let connected: HashSet<String> = parse_kscreen_outputs(&String::from_utf8_lossy(&listed.stdout))
-        .into_iter()
-        .filter(|output| output.connected && is_output_name_valid(&output.name))
-        .map(|output| output.name)
-        .collect();
+    let connected: HashSet<String> =
+        parse_kscreen_outputs(&String::from_utf8_lossy(&listed.stdout))
+            .into_iter()
+            .filter(|output| output.connected && is_output_name_valid(&output.name))
+            .map(|output| output.name)
+            .collect();
     let mut applied = Vec::new();
     for (conn, entry) in &outputs {
         if !connected.contains(conn) {
@@ -74,7 +78,9 @@ fn apply() -> (Vec<String>, bool) {
         }
         match icc_outcome(conn, &entry.icc, Path::new(ICC_DEST_DIR)) {
             IccOutcome::Skipped => {}
-            IccOutcome::Deployed(note) | IccOutcome::NotDeployed(note) | IccOutcome::Failed(note) => {
+            IccOutcome::Deployed(note)
+            | IccOutcome::NotDeployed(note)
+            | IccOutcome::Failed(note) => {
                 applied.push(note);
             }
         }

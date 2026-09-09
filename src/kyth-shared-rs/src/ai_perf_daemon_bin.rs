@@ -39,7 +39,9 @@ fn read_first(paths: &[&str]) -> Option<String> {
 }
 
 fn process_gaming_active() -> bool {
-    let Ok(entries) = fs::read_dir("/proc") else { return false; };
+    let Ok(entries) = fs::read_dir("/proc") else {
+        return false;
+    };
     entries.flatten().any(|entry| {
         let name = entry.file_name().to_string_lossy().to_string();
         name.chars().all(|character| character.is_ascii_digit())
@@ -76,14 +78,20 @@ fn detect_gaming() -> bool {
 
 fn hardware_caps() -> (bool, bool) {
     if let Ok(evaluation) = kyth_shared::system::hardware_policy::evaluate_system() {
-        let has_nvidia = evaluation.capabilities.iter().any(|cap| cap == "gpu.nvidia");
+        let has_nvidia = evaluation
+            .capabilities
+            .iter()
+            .any(|cap| cap == "gpu.nvidia");
         let has_amd = evaluation.capabilities.iter().any(|cap| cap == "gpu.amd");
         return (has_nvidia, has_amd);
     }
 
     // A missing policy file must not turn into a false healthy state.  These
     // module markers are a bounded fallback for the daemon's GPU hint only.
-    (Path::new("/sys/module/nvidia").exists(), Path::new("/sys/module/amdgpu").exists())
+    (
+        Path::new("/sys/module/nvidia").exists(),
+        Path::new("/sys/module/amdgpu").exists(),
+    )
 }
 
 fn collect_sample() -> PerfSample {
@@ -96,7 +104,11 @@ fn collect_sample() -> PerfSample {
         "/sys/class/power_supply/BAT1/capacity",
     ]
     .iter()
-    .find_map(|path| fs::read_to_string(path).ok().and_then(|text| battery_percent(&text)));
+    .find_map(|path| {
+        fs::read_to_string(path)
+            .ok()
+            .and_then(|text| battery_percent(&text))
+    });
     let profile = command("powerprofilesctl", &["get"], COMMAND_TIMEOUT)
         .map(|(success, output)| power_profile(success, &output))
         .unwrap_or_else(|| "unknown".into());
@@ -114,13 +126,22 @@ fn collect_sample() -> PerfSample {
 
 fn write_policy(policy: &PerfPolicy) -> std::io::Result<()> {
     let scx = if policy.scx == "none" {
-        format!("# kyth-ai-perfd: no scx (ttl {}) reason: {}\n", policy.ttl, policy.reason)
+        format!(
+            "# kyth-ai-perfd: no scx (ttl {}) reason: {}\n",
+            policy.ttl, policy.reason
+        )
     } else {
-        format!("SCX_SCHEDULER={}\n# reason: {} ttl {}\n", policy.scx, policy.reason, policy.ttl)
+        format!(
+            "SCX_SCHEDULER={}\n# reason: {} ttl {}\n",
+            policy.scx, policy.reason, policy.ttl
+        )
     };
     kyth_shared::atomic_io::atomic_write_text(SCX_LOADER_CONF, &scx, Some(0o644))?;
 
-    let mut sysctl = format!("# kyth-ai-perfd ttl {} reason: {}\n", policy.ttl, policy.reason);
+    let mut sysctl = format!(
+        "# kyth-ai-perfd ttl {} reason: {}\n",
+        policy.ttl, policy.reason
+    );
     for (key, value) in &policy.sysctl {
         sysctl.push_str(&format!("{key} = {value}\n"));
     }
@@ -139,11 +160,17 @@ fn apply_gpu_power(policy: &PerfPolicy) {
     if !matches!(policy.gpu_power.as_str(), "high" | "auto" | "low") {
         return;
     }
-    let Ok(entries) = fs::read_dir("/sys/class/drm") else { return; };
+    let Ok(entries) = fs::read_dir("/sys/class/drm") else {
+        return;
+    };
     for entry in entries.flatten() {
         let name = entry.file_name().to_string_lossy().to_string();
-        if !name.starts_with("card") { continue; }
-        let target = entry.path().join("device/power_dpm_force_performance_level");
+        if !name.starts_with("card") {
+            continue;
+        }
+        let target = entry
+            .path()
+            .join("device/power_dpm_force_performance_level");
         if target.is_file() {
             let _ = fs::write(target, policy.gpu_power.as_bytes());
         }
@@ -192,13 +219,23 @@ fn main() -> std::process::ExitCode {
         match argument.as_str() {
             "--once" => once = true,
             "--print" => print = true,
-            "-h" | "--help" => { usage(); return std::process::ExitCode::SUCCESS; }
-            _ => { usage(); return std::process::ExitCode::from(2); }
+            "-h" | "--help" => {
+                usage();
+                return std::process::ExitCode::SUCCESS;
+            }
+            _ => {
+                usage();
+                return std::process::ExitCode::from(2);
+            }
         }
     }
 
     if once {
-        return if cycle(print) { std::process::ExitCode::SUCCESS } else { std::process::ExitCode::from(1) };
+        return if cycle(print) {
+            std::process::ExitCode::SUCCESS
+        } else {
+            std::process::ExitCode::from(1)
+        };
     }
     loop {
         let _ = cycle(false);

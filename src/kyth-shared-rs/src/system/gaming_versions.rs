@@ -23,7 +23,9 @@ pub struct GamingVersions {
     pub mesa_git_copr: String,
 }
 
-fn default_repo() -> String { DEFAULT_REPO.into() }
+fn default_repo() -> String {
+    DEFAULT_REPO.into()
+}
 
 impl Default for GamingVersions {
     fn default() -> Self {
@@ -42,11 +44,14 @@ impl GamingVersions {
     }
 
     pub fn from_value(value: &Value) -> Self {
-        let Some(object) = value.as_object() else { return Self::default(); };
+        let Some(object) = value.as_object() else {
+            return Self::default();
+        };
         Self {
             umu_version: value_string(object.get("umu_version")),
             proton_cachyos_version: value_string(object.get("proton_cachyos_version")),
-            proton_cachyos_repo: value_string(object.get("proton_cachyos_repo")).if_empty_then(default_repo),
+            proton_cachyos_repo: value_string(object.get("proton_cachyos_repo"))
+                .if_empty_then(default_repo),
             mesa_git_copr: value_string(object.get("mesa_git_copr")),
         }
     }
@@ -76,7 +81,8 @@ impl GamingVersions {
     /// Load the first valid object from the resolver's candidate paths.
     pub fn load_candidates(paths: impl IntoIterator<Item = impl AsRef<Path>>) -> Option<Self> {
         paths.into_iter().find_map(|path| {
-            let value = std::fs::read_to_string(path).ok()
+            let value = std::fs::read_to_string(path)
+                .ok()
                 .and_then(|text| serde_json::from_str::<Value>(&text).ok())?;
             value.as_object()?;
             Some(Self::from_value(&value))
@@ -91,7 +97,8 @@ impl GamingVersions {
         umu_env: Option<&str>,
         proton_env: Option<&str>,
     ) -> Self {
-        let source = file_values.filter(|value| value.as_object().is_some())
+        let source = file_values
+            .filter(|value| value.as_object().is_some())
             .or_else(|| cache_values.filter(|value| value.as_object().is_some()));
         let defaults = source.map(Self::from_value).unwrap_or_default();
         Self {
@@ -104,11 +111,18 @@ impl GamingVersions {
     /// Resolve installed/runtime metadata using the same precedence as the
     /// Python entry point. Cache persistence remains caller-owned.
     pub fn load_runtime() -> Self {
-        let file = Self::candidate_paths().iter().find_map(|path| read_object(path));
+        let file = Self::candidate_paths()
+            .iter()
+            .find_map(|path| read_object(path));
         let cache = read_object(Path::new(CACHE_PATH));
         let umu = std::env::var("UMU_VERSION").ok();
         let proton = std::env::var("PROTON_CACHYOS_VER").ok();
-        Self::resolve(file.as_ref(), cache.as_ref(), umu.as_deref(), proton.as_deref())
+        Self::resolve(
+            file.as_ref(),
+            cache.as_ref(),
+            umu.as_deref(),
+            proton.as_deref(),
+        )
     }
 
     pub fn label(&self) -> String {
@@ -122,7 +136,11 @@ impl GamingVersions {
         if !self.mesa_git_copr.is_empty() {
             parts.push(format!("mesa-git:{}", self.mesa_git_copr));
         }
-        if parts.is_empty() { "unpinned".into() } else { parts.join(", ") }
+        if parts.is_empty() {
+            "unpinned".into()
+        } else {
+            parts.join(", ")
+        }
     }
 }
 
@@ -135,7 +153,10 @@ fn read_object(path: &Path) -> Option<Value> {
 }
 
 fn nonempty_or(value: Option<&str>, fallback: String) -> String {
-    value.filter(|value| !value.is_empty()).map(str::to_string).unwrap_or(fallback)
+    value
+        .filter(|value| !value.is_empty())
+        .map(str::to_string)
+        .unwrap_or(fallback)
 }
 
 trait EmptyFallback {
@@ -144,7 +165,11 @@ trait EmptyFallback {
 
 impl EmptyFallback for String {
     fn if_empty_then(self, fallback: impl FnOnce() -> String) -> String {
-        if self.is_empty() { fallback() } else { self }
+        if self.is_empty() {
+            fallback()
+        } else {
+            self
+        }
     }
 }
 
@@ -166,17 +191,29 @@ mod tests {
     fn loads_pinned_versions_and_formats_label() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("gaming-versions.json");
-        std::fs::write(&path, r#"{"umu_version":"0.10","proton_cachyos_version":"9.0","mesa_git_copr":"user/mesa"}"#).unwrap();
+        std::fs::write(
+            &path,
+            r#"{"umu_version":"0.10","proton_cachyos_version":"9.0","mesa_git_copr":"user/mesa"}"#,
+        )
+        .unwrap();
         let versions = GamingVersions::load(&path);
         assert!(versions.is_pinned());
         assert_eq!(versions.proton_cachyos_repo, "CachyOS/proton-cachyos");
-        assert_eq!(versions.label(), "umu@0.10, proton-cachyos@9.0, mesa-git:user/mesa");
+        assert_eq!(
+            versions.label(),
+            "umu@0.10, proton-cachyos@9.0, mesa-git:user/mesa"
+        );
     }
 
     #[test]
     fn defaults_to_unpinned_and_ignores_invalid_json() {
-        assert_eq!(GamingVersions::from_value(&serde_json::json!({})), GamingVersions::default());
-        let versions = GamingVersions::from_value(&serde_json::json!({"umu_version": 12, "proton_cachyos_version": true}));
+        assert_eq!(
+            GamingVersions::from_value(&serde_json::json!({})),
+            GamingVersions::default()
+        );
+        let versions = GamingVersions::from_value(
+            &serde_json::json!({"umu_version": 12, "proton_cachyos_version": true}),
+        );
         assert!(versions.is_pinned());
         assert_eq!(versions.label(), "umu@12, proton-cachyos@true");
     }

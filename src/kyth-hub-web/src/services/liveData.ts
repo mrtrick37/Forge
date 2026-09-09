@@ -491,9 +491,8 @@ export async function fetchDisplayDetect(): Promise<DisplayDetect | null> {
   return fetchProbeSection<DisplayDetect>("display-detect");
 }
 
-// ntfs-drives — other-system NTFS/BitLocker partitions from lsblk, via
-// probe_cached("ntfs-drives") in kyth_welcome/services/hardware/drives.py
-// (also written to the shared probe-cache.json so Hub can read it).
+// ntfs-drives — other-system NTFS/BitLocker partitions from the native Rust
+// probe cache (also written to the shared probe-cache.json so Hub can read it).
 export interface NtfsDrive {
   dev: string;
   name: string;

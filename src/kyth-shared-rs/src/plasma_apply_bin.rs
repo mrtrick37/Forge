@@ -12,8 +12,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use kyth_shared::atomic_io::atomic_write_text;
 use kyth_shared::system::plasma_drift::{
-    TTL_PATH, TTL_SECS, apply_sections, config_path, kwriteconfig_candidates, load, qdbus_candidates,
-    reconfigure_argv, run_timeout,
+    apply_sections, config_path, kwriteconfig_candidates, load, qdbus_candidates, reconfigure_argv,
+    run_timeout, TTL_PATH, TTL_SECS,
 };
 use kyth_shared::system::process::run_bounded;
 
@@ -32,7 +32,9 @@ fn first_binary(names: &[&str]) -> Option<String> {
 
 fn reconfigure_kwin() {
     for name in qdbus_candidates() {
-        let Some(qdbus) = find_binary(name) else { continue };
+        let Some(qdbus) = find_binary(name) else {
+            continue;
+        };
         // Mirror Python: return after the first spawn attempt regardless of
         // its exit status; only a spawn failure tries the next binary.
         if run_bounded(&reconfigure_argv(&qdbus), run_timeout()).is_ok() {
@@ -46,7 +48,9 @@ fn main() -> std::process::ExitCode {
     let mut applied = Vec::new();
     if let Some(binary) = first_binary(&kwriteconfig_candidates()) {
         applied = apply_sections(&sections, &binary, &|argv| {
-            run_bounded(argv, run_timeout()).map(|output| output.status.success()).unwrap_or(false)
+            run_bounded(argv, run_timeout())
+                .map(|output| output.status.success())
+                .unwrap_or(false)
         });
         reconfigure_kwin();
         if let Ok(now) = SystemTime::now().duration_since(UNIX_EPOCH) {

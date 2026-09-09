@@ -33,22 +33,50 @@ fn scalar_text(value: &toml::Value) -> String {
 
 fn load_tier_file(tier: &str, config_dir: &Path) -> Tier {
     let path = config_dir.join(format!("{tier}.toml"));
-    let Ok(raw) = std::fs::read_to_string(path) else { return BTreeMap::new(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return BTreeMap::new(); };
-    let Some(keys) = value.get("keys").and_then(toml::Value::as_table) else { return BTreeMap::new(); };
-    keys.iter().filter_map(|(key, value)| {
-        let table = value.as_table()?;
-        let value = table.get("value").map(scalar_text).unwrap_or_default().trim().to_string();
-        if value.is_empty() { return None; }
-        let comment = table.get("comment").map(scalar_text).unwrap_or_default().trim().to_string();
-        Some((key.trim().to_string(), SysctlEntry { value, comment }))
-    }).collect()
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return BTreeMap::new();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return BTreeMap::new();
+    };
+    let Some(keys) = value.get("keys").and_then(toml::Value::as_table) else {
+        return BTreeMap::new();
+    };
+    keys.iter()
+        .filter_map(|(key, value)| {
+            let table = value.as_table()?;
+            let value = table
+                .get("value")
+                .map(scalar_text)
+                .unwrap_or_default()
+                .trim()
+                .to_string();
+            if value.is_empty() {
+                return None;
+            }
+            let comment = table
+                .get("comment")
+                .map(scalar_text)
+                .unwrap_or_default()
+                .trim()
+                .to_string();
+            Some((key.trim().to_string(), SysctlEntry { value, comment }))
+        })
+        .collect()
 }
 
 /// Load the three canonical sysctl tiers. Missing or malformed tier files
 /// behave like the Python composer: they contribute no keys.
 pub fn load_inputs(config_dir: impl AsRef<Path>) -> Inputs {
-    TIERS.iter().map(|tier| ((*tier).to_string(), load_tier_file(tier, config_dir.as_ref()))).collect()
+    TIERS
+        .iter()
+        .map(|tier| {
+            (
+                (*tier).to_string(),
+                load_tier_file(tier, config_dir.as_ref()),
+            )
+        })
+        .collect()
 }
 
 /// Return duplicate-key descriptions in tier order.
@@ -56,12 +84,16 @@ pub fn duplicate_keys(inputs: &Inputs) -> Vec<String> {
     let mut seen: BTreeMap<String, String> = BTreeMap::new();
     let mut duplicates = Vec::new();
     for tier in TIERS {
-        let Some(keys) = inputs.get(tier) else { continue; };
+        let Some(keys) = inputs.get(tier) else {
+            continue;
+        };
         // TOML tables are ordered by key in this implementation. Sorting here
         // also makes diagnostics deterministic for caller-supplied maps.
         for key in keys.keys() {
             if let Some(previous) = seen.get(key) {
-                duplicates.push(format!("duplicate key {key:?} in tiers {previous:?} and {tier:?}"));
+                duplicates.push(format!(
+                    "duplicate key {key:?} in tiers {previous:?} and {tier:?}"
+                ));
             } else {
                 seen.insert(key.clone(), tier.to_string());
             }
@@ -72,7 +104,9 @@ pub fn duplicate_keys(inputs: &Inputs) -> Vec<String> {
 
 /// Render one tier with the same ordering and comments as the Python tool.
 pub fn render_tier(keys: &Tier) -> String {
-    if keys.is_empty() { return HEADER.to_string(); }
+    if keys.is_empty() {
+        return HEADER.to_string();
+    }
     let mut output = String::from(HEADER);
     output.push('\n');
     for (key, entry) in keys {
@@ -96,15 +130,30 @@ pub fn render_tier(keys: &Tier) -> String {
 pub fn compose(config_dir: impl AsRef<Path>) -> Result<BTreeMap<String, String>, Vec<String>> {
     let inputs = load_inputs(config_dir);
     let duplicates = duplicate_keys(&inputs);
-    if !duplicates.is_empty() { return Err(duplicates); }
-    Ok(TIERS.iter().map(|tier| ((*tier).to_string(), render_tier(inputs.get(*tier).unwrap_or(&BTreeMap::new())))).collect())
+    if !duplicates.is_empty() {
+        return Err(duplicates);
+    }
+    Ok(TIERS
+        .iter()
+        .map(|tier| {
+            (
+                (*tier).to_string(),
+                render_tier(inputs.get(*tier).unwrap_or(&BTreeMap::new())),
+            )
+        })
+        .collect())
 }
 
 /// Write only the three generated tier files below an explicit destination.
 /// This intentionally does not remove legacy files or apply sysctl values;
 /// those side effects stay with the existing build/service owner.
-pub fn write_tiers(config_dir: impl AsRef<Path>, destination: impl AsRef<Path>) -> std::io::Result<Vec<PathBuf>> {
-    let rendered = compose(config_dir).map_err(|duplicates| std::io::Error::new(std::io::ErrorKind::InvalidData, duplicates.join("\n")))?;
+pub fn write_tiers(
+    config_dir: impl AsRef<Path>,
+    destination: impl AsRef<Path>,
+) -> std::io::Result<Vec<PathBuf>> {
+    let rendered = compose(config_dir).map_err(|duplicates| {
+        std::io::Error::new(std::io::ErrorKind::InvalidData, duplicates.join("\n"))
+    })?;
     let destination = destination.as_ref();
     std::fs::create_dir_all(destination)?;
     let mut written = Vec::new();
@@ -120,7 +169,11 @@ pub fn write_tiers(config_dir: impl AsRef<Path>, destination: impl AsRef<Path>) 
             }
             continue;
         }
-        crate::atomic_io::atomic_write_text(&path, rendered.get(tier).unwrap_or(&String::new()), Some(0o644))?;
+        crate::atomic_io::atomic_write_text(
+            &path,
+            rendered.get(tier).unwrap_or(&String::new()),
+            Some(0o644),
+        )?;
         written.push(path);
     }
     Ok(written)
@@ -128,7 +181,10 @@ pub fn write_tiers(config_dir: impl AsRef<Path>, destination: impl AsRef<Path>) 
 
 /// Return all keys that are present in at least one tier.
 pub fn key_set(inputs: &Inputs) -> BTreeSet<String> {
-    inputs.values().flat_map(|tier| tier.keys().cloned()).collect()
+    inputs
+        .values()
+        .flat_map(|tier| tier.keys().cloned())
+        .collect()
 }
 
 #[cfg(test)]
@@ -151,31 +207,76 @@ mod tests {
     #[test]
     fn reports_duplicate_keys_in_tier_order() {
         let inputs = BTreeMap::from([
-            ("base".into(), BTreeMap::from([("vm.swappiness".into(), SysctlEntry { value: "1".into(), comment: String::new() })])),
+            (
+                "base".into(),
+                BTreeMap::from([(
+                    "vm.swappiness".into(),
+                    SysctlEntry {
+                        value: "1".into(),
+                        comment: String::new(),
+                    },
+                )]),
+            ),
             ("gaming".into(), BTreeMap::new()),
-            ("network".into(), BTreeMap::from([("vm.swappiness".into(), SysctlEntry { value: "2".into(), comment: String::new() })])),
+            (
+                "network".into(),
+                BTreeMap::from([(
+                    "vm.swappiness".into(),
+                    SysctlEntry {
+                        value: "2".into(),
+                        comment: String::new(),
+                    },
+                )]),
+            ),
         ]);
         let duplicates = duplicate_keys(&inputs);
-        assert_eq!(duplicates, vec!["duplicate key \"vm.swappiness\" in tiers \"base\" and \"network\""]);
+        assert_eq!(
+            duplicates,
+            vec!["duplicate key \"vm.swappiness\" in tiers \"base\" and \"network\""]
+        );
         assert!(compose_with_inputs_for_test(inputs).is_err());
     }
 
-    fn compose_with_inputs_for_test(inputs: Inputs) -> Result<BTreeMap<String, String>, Vec<String>> {
+    fn compose_with_inputs_for_test(
+        inputs: Inputs,
+    ) -> Result<BTreeMap<String, String>, Vec<String>> {
         let duplicates = duplicate_keys(&inputs);
-        if !duplicates.is_empty() { return Err(duplicates); }
-        Ok(TIERS.iter().map(|tier| ((*tier).into(), render_tier(inputs.get(*tier).unwrap_or(&BTreeMap::new())))).collect())
+        if !duplicates.is_empty() {
+            return Err(duplicates);
+        }
+        Ok(TIERS
+            .iter()
+            .map(|tier| {
+                (
+                    (*tier).into(),
+                    render_tier(inputs.get(*tier).unwrap_or(&BTreeMap::new())),
+                )
+            })
+            .collect())
     }
 
     #[test]
     fn writes_tiers_and_removes_empty_gaming_dropin() {
         let config = tempdir().unwrap();
-        fs::write(config.path().join("base.toml"), "[keys.\"vm.swappiness\"]\nvalue = \"10\"\n").unwrap();
-        fs::write(config.path().join("network.toml"), "[keys.\"net.ipv4.tcp_ecn\"]\nvalue = \"1\"\n").unwrap();
+        fs::write(
+            config.path().join("base.toml"),
+            "[keys.\"vm.swappiness\"]\nvalue = \"10\"\n",
+        )
+        .unwrap();
+        fs::write(
+            config.path().join("network.toml"),
+            "[keys.\"net.ipv4.tcp_ecn\"]\nvalue = \"1\"\n",
+        )
+        .unwrap();
         let destination = tempdir().unwrap();
         fs::write(destination.path().join("99-kyth-gaming.conf"), "stale\n").unwrap();
         let written = write_tiers(config.path(), destination.path()).unwrap();
         assert_eq!(written.len(), 2);
         assert!(!destination.path().join("99-kyth-gaming.conf").exists());
-        assert!(fs::read_to_string(destination.path().join("99-kyth-base.conf")).unwrap().contains("vm.swappiness = 10"));
+        assert!(
+            fs::read_to_string(destination.path().join("99-kyth-base.conf"))
+                .unwrap()
+                .contains("vm.swappiness = 10")
+        );
     }
 }

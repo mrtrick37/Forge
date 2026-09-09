@@ -11,6 +11,9 @@ use kyth_shared::system::driver_config::{config_path, load};
 
 fn main() -> std::process::ExitCode {
     let config = load(config_path(None::<&Path>));
-    println!("kyth-driver-switch: gpu {} mesa_git {}", config.gpu, config.mesa_git);
+    println!(
+        "kyth-driver-switch: gpu {} mesa_git {}",
+        config.gpu, config.mesa_git
+    );
     std::process::ExitCode::SUCCESS
 }

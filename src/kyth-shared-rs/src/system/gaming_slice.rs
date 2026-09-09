@@ -21,9 +21,18 @@ pub fn gaming_slice_command(argv: &[String], use_user: Option<bool>) -> Vec<Stri
         false
     });
     let mut base = if use_user {
-        vec!["systemd-run".to_string(), "--user".to_string(), "--scope".to_string(), "--slice=gaming.slice".to_string()]
+        vec![
+            "systemd-run".to_string(),
+            "--user".to_string(),
+            "--scope".to_string(),
+            "--slice=gaming.slice".to_string(),
+        ]
     } else {
-        vec!["systemd-run".to_string(), "--scope".to_string(), "--slice=gaming.slice".to_string()]
+        vec![
+            "systemd-run".to_string(),
+            "--scope".to_string(),
+            "--slice=gaming.slice".to_string(),
+        ]
     };
     base.push("--".to_string());
     base.extend_from_slice(argv);

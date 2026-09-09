@@ -27,7 +27,10 @@ pub struct RuntimeCheck {
 }
 
 fn run_text(args: &[&str], timeout: Duration) -> Option<(bool, String)> {
-    let argv = args.iter().map(|arg| (*arg).to_string()).collect::<Vec<_>>();
+    let argv = args
+        .iter()
+        .map(|arg| (*arg).to_string())
+        .collect::<Vec<_>>();
     let output = super::process::run_bounded(&argv, timeout).ok()?;
     let text = format!(
         "{}{}",
@@ -93,7 +96,9 @@ fn drm_devices() -> Vec<String> {
 
 fn software_compose_rescue() -> bool {
     let cmdline = std::fs::read_to_string("/proc/cmdline").unwrap_or_default();
-    cmdline.split_whitespace().any(|token| token == "nomodeset" || token == "kyth.live")
+    cmdline
+        .split_whitespace()
+        .any(|token| token == "nomodeset" || token == "kyth.live")
 }
 
 fn display_manager_active<F>(active: &F) -> bool
@@ -166,14 +171,24 @@ where
             detail: if reached {
                 "display manager active".to_string()
             } else {
-                format!("display manager not reached within {:.0}s", deadline.as_secs_f64())
+                format!(
+                    "display manager not reached within {:.0}s",
+                    deadline.as_secs_f64()
+                )
             },
         });
     } else {
         checks.push(RuntimeCheck {
             name: "Graphical session".to_string(),
             passed: true,
-            detail: format!("skipped: default target is {}", if target.is_empty() { "unknown" } else { &target }),
+            detail: format!(
+                "skipped: default target is {}",
+                if target.is_empty() {
+                    "unknown"
+                } else {
+                    &target
+                }
+            ),
         });
     }
 
@@ -205,7 +220,14 @@ where
         checks.push(RuntimeCheck {
             name: "Display device".to_string(),
             passed: true,
-            detail: format!("skipped: default target is {}", if target.is_empty() { "unknown" } else { &target }),
+            detail: format!(
+                "skipped: default target is {}",
+                if target.is_empty() {
+                    "unknown"
+                } else {
+                    &target
+                }
+            ),
         });
     }
 
@@ -232,7 +254,10 @@ pub fn boot_runtime_checks() -> Vec<RuntimeCheck> {
 /// Run the same native runtime assertions with a caller-selected budget.
 /// Interactive Hub health reporting uses this bounded variant so a missing
 /// boot-health record cannot turn a read-only page into a five-minute wait.
-pub fn boot_runtime_checks_with_deadline(deadline: Duration, interval: Duration) -> Vec<RuntimeCheck> {
+pub fn boot_runtime_checks_with_deadline(
+    deadline: Duration,
+    interval: Duration,
+) -> Vec<RuntimeCheck> {
     runtime_checks_with(
         systemd_booted,
         unit_active,
@@ -286,13 +311,21 @@ mod tests {
             || true,
             |unit| unit == "plasmalogin.service",
             || "graphical.target".to_string(),
-            || vec!["plasmalogin.service".to_string(), "cups.service".to_string()],
+            || {
+                vec![
+                    "plasmalogin.service".to_string(),
+                    "cups.service".to_string(),
+                ]
+            },
             || vec!["card0".to_string()],
             || false,
             Duration::ZERO,
             Duration::ZERO,
         );
-        let critical = checks.iter().find(|check| check.name == "Critical units").unwrap();
+        let critical = checks
+            .iter()
+            .find(|check| check.name == "Critical units")
+            .unwrap();
         assert!(!critical.passed);
         assert!(critical.detail.contains("plasmalogin.service"));
     }

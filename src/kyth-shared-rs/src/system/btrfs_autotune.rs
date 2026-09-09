@@ -9,35 +9,65 @@ pub struct BtrfsAutotuneConfig {
 }
 
 impl Default for BtrfsAutotuneConfig {
-    fn default() -> Self { Self { enabled: true, threshold: 80 } }
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            threshold: 80,
+        }
+    }
 }
 
-fn clamp(config: BtrfsAutotuneConfig) -> BtrfsAutotuneConfig { BtrfsAutotuneConfig { threshold: config.threshold.clamp(50, 95), ..config } }
+fn clamp(config: BtrfsAutotuneConfig) -> BtrfsAutotuneConfig {
+    BtrfsAutotuneConfig {
+        threshold: config.threshold.clamp(50, 95),
+        ..config
+    }
+}
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    if let Some(path) = path { return path.as_ref().to_path_buf(); }
+    if let Some(path) = path {
+        return path.as_ref().to_path_buf();
+    }
     if std::env::var("KYTH_TEST_MODE").ok().as_deref() == Some("1") {
-        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(config).join("kyth/btrfs-autotune.toml"); }
+        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") {
+            return PathBuf::from(config).join("kyth/btrfs-autotune.toml");
+        }
     }
     PathBuf::from("/etc/kyth/btrfs-autotune.toml")
 }
 
 pub fn load(path: impl AsRef<Path>) -> BtrfsAutotuneConfig {
-    let Ok(raw) = std::fs::read_to_string(path) else { return BtrfsAutotuneConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return BtrfsAutotuneConfig::default(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return BtrfsAutotuneConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return BtrfsAutotuneConfig::default();
+    };
     clamp(BtrfsAutotuneConfig {
-        enabled: value.get("enabled").and_then(toml::Value::as_bool).unwrap_or(true),
-        threshold: value.get("threshold").and_then(toml::Value::as_integer).unwrap_or(80),
+        enabled: value
+            .get("enabled")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true),
+        threshold: value
+            .get("threshold")
+            .and_then(toml::Value::as_integer)
+            .unwrap_or(80),
     })
 }
 
 pub fn save(path: impl AsRef<Path>, config: BtrfsAutotuneConfig) -> std::io::Result<()> {
     let config = clamp(config);
-    let text = format!("# Kyth btrfs autotune — offline\nenabled = {}\nthreshold = {}\n", config.enabled, config.threshold);
+    let text = format!(
+        "# Kyth btrfs autotune — offline\nenabled = {}\nthreshold = {}\n",
+        config.enabled, config.threshold
+    );
     crate::atomic_io::atomic_write_text(path, &text, Some(0o600))
 }
 
-pub fn generate(config: BtrfsAutotuneConfig, script: impl AsRef<Path>) -> std::io::Result<Option<PathBuf>> {
+pub fn generate(
+    config: BtrfsAutotuneConfig,
+    script: impl AsRef<Path>,
+) -> std::io::Result<Option<PathBuf>> {
     let config = clamp(config);
     let script = script.as_ref();
     if !config.enabled {
@@ -48,7 +78,8 @@ pub fn generate(config: BtrfsAutotuneConfig, script: impl AsRef<Path>) -> std::i
         }
         return Ok(None);
     }
-    let content = format!(r##"#!/usr/bin/env bash
+    let content = format!(
+        r##"#!/usr/bin/env bash
 set -euo pipefail
 # Kyth btrfs autotune — generated, runs weekly
 th={}
@@ -66,12 +97,20 @@ for mp in / /var; do
     fi
   fi
 done
-"##, config.threshold);
+"##,
+        config.threshold
+    );
     crate::atomic_io::atomic_write_text(script, &content, Some(0o755))?;
     Ok(Some(script.to_path_buf()))
 }
 
-pub fn status(script: impl AsRef<Path>) -> &'static str { if script.as_ref().is_file() { "enabled" } else { "off" } }
+pub fn status(script: impl AsRef<Path>) -> &'static str {
+    if script.as_ref().is_file() {
+        "enabled"
+    } else {
+        "off"
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -83,7 +122,14 @@ mod tests {
         let directory = tempdir().unwrap();
         let config_path = directory.path().join("btrfs-autotune.toml");
         let script = directory.path().join("kyth-btrfs-autotune");
-        save(&config_path, BtrfsAutotuneConfig { enabled: true, threshold: 1 }).unwrap();
+        save(
+            &config_path,
+            BtrfsAutotuneConfig {
+                enabled: true,
+                threshold: 1,
+            },
+        )
+        .unwrap();
         let config = load(&config_path);
         assert_eq!(config.threshold, 50);
         generate(config, &script).unwrap();
@@ -95,7 +141,17 @@ mod tests {
         let directory = tempdir().unwrap();
         let script = directory.path().join("script");
         std::fs::write(&script, "generated").unwrap();
-        assert_eq!(generate(BtrfsAutotuneConfig { enabled: false, threshold: 80 }, &script).unwrap(), None);
+        assert_eq!(
+            generate(
+                BtrfsAutotuneConfig {
+                    enabled: false,
+                    threshold: 80
+                },
+                &script
+            )
+            .unwrap(),
+            None
+        );
         assert_eq!(status(&script), "off");
     }
 }

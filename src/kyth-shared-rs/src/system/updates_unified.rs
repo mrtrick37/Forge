@@ -5,12 +5,22 @@ pub fn pending_updates_summary() -> std::collections::HashMap<String, String> {
     let firmware = crate::system::firmware::check_firmware_updates(20);
     out.insert("firmware".to_string(), firmware.to_string());
     // flatpak
-    let (flatpak_count, flatpak_detail) = crate::system::update_availability::flatpak_updates_count(false);
+    let (flatpak_count, flatpak_detail) =
+        crate::system::update_availability::flatpak_updates_count(false);
     out.insert("flatpak".to_string(), flatpak_count.to_string());
-    if !flatpak_detail.is_empty() { out.insert("flatpak_detail".to_string(), flatpak_detail); }
+    if !flatpak_detail.is_empty() {
+        out.insert("flatpak_detail".to_string(), flatpak_detail);
+    }
     // bootc
     let bootc = crate::system::bootc_query::fetch_status_data()
-        .map(|data| if crate::system::bootc::deployment_present(&data, "staged") { "staged" } else { "current" }.to_string())
+        .map(|data| {
+            if crate::system::bootc::deployment_present(&data, "staged") {
+                "staged"
+            } else {
+                "current"
+            }
+            .to_string()
+        })
         .unwrap_or_else(|| "unknown".to_string());
     out.insert("bootc".to_string(), bootc);
     out

@@ -37,8 +37,10 @@ pub const HIDDEN_TRAY_ITEMS: [&str; 2] = [
 /// Mirrors `apply_desktop_layout`'s version gate: an already-stamped layout
 /// (current or legacy marker) is current unless `--force` is given.
 pub fn is_layout_current(current: Option<&str>, legacy: Option<&str>) -> bool {
-    matches!(current, Some("kyth-comfort-v4" | "kyth-comfort-v2" | "kyth-comfort-v3"))
-        || legacy == Some("windows-familiar-v1")
+    matches!(
+        current,
+        Some("kyth-comfort-v4" | "kyth-comfort-v2" | "kyth-comfort-v3")
+    ) || legacy == Some("windows-familiar-v1")
 }
 
 /// Outcome of the launcher gate before any Plasma mutation.
@@ -52,7 +54,12 @@ pub enum LayoutDecision {
 /// Mirrors the Python launcher's exit codes: `0` when the stamped layout is
 /// already current, `64` when neither `--force` nor `--initial` was passed,
 /// otherwise proceed to the qdbus apply step.
-pub fn decide_layout(force: bool, initial: bool, current: Option<&str>, legacy: Option<&str>) -> LayoutDecision {
+pub fn decide_layout(
+    force: bool,
+    initial: bool,
+    current: Option<&str>,
+    legacy: Option<&str>,
+) -> LayoutDecision {
     if !force && is_layout_current(current, legacy) {
         LayoutDecision::AlreadyCurrent
     } else if !force && !initial {
@@ -201,22 +208,37 @@ pub fn desktop_exists(value: &str, roots: &[impl AsRef<Path>]) -> bool {
     roots.iter().any(|root| root.as_ref().join(name).is_file())
 }
 
-pub fn filter_available_launchers(choices: &[LauncherChoice], roots: &[impl AsRef<Path>]) -> Vec<String> {
-    choices.iter().filter_map(|choice| {
-        let candidates = match choice {
-            LauncherChoice::Single(value) => std::slice::from_ref(value),
-            LauncherChoice::Alternatives(values) => values.as_slice(),
-        };
-        candidates.iter().find(|candidate| desktop_exists(candidate, roots)).cloned()
-    }).collect()
+pub fn filter_available_launchers(
+    choices: &[LauncherChoice],
+    roots: &[impl AsRef<Path>],
+) -> Vec<String> {
+    choices
+        .iter()
+        .filter_map(|choice| {
+            let candidates = match choice {
+                LauncherChoice::Single(value) => std::slice::from_ref(value),
+                LauncherChoice::Alternatives(values) => values.as_slice(),
+            };
+            candidates
+                .iter()
+                .find(|candidate| desktop_exists(candidate, roots))
+                .cloned()
+        })
+        .collect()
 }
 
 pub fn default_launchers() -> Vec<LauncherChoice> {
     vec![
         LauncherChoice::Single("applications:kyth-welcome.desktop".into()),
         LauncherChoice::Single("applications:kyth-app-store.desktop".into()),
-        LauncherChoice::Alternatives(vec!["applications:com.valvesoftware.Steam.desktop".into(), "applications:steam.desktop".into()]),
-        LauncherChoice::Alternatives(vec!["applications:com.brave.Browser.desktop".into(), "applications:chromium-browser.desktop".into()]),
+        LauncherChoice::Alternatives(vec![
+            "applications:com.valvesoftware.Steam.desktop".into(),
+            "applications:steam.desktop".into(),
+        ]),
+        LauncherChoice::Alternatives(vec![
+            "applications:com.brave.Browser.desktop".into(),
+            "applications:chromium-browser.desktop".into(),
+        ]),
         LauncherChoice::Single("applications:org.kde.dolphin.desktop".into()),
         LauncherChoice::Single("applications:org.kde.konsole.desktop".into()),
     ]
@@ -227,20 +249,45 @@ pub fn qdbus_candidates() -> [&'static str; 3] {
 }
 
 pub fn kreadconfig_argv(binary: &str, file: &str, group: &str, key: &str) -> Vec<String> {
-    vec![binary.into(), "--file".into(), file.into(), "--group".into(), group.into(), "--key".into(), key.into()]
+    vec![
+        binary.into(),
+        "--file".into(),
+        file.into(),
+        "--group".into(),
+        group.into(),
+        "--key".into(),
+        key.into(),
+    ]
 }
 
-pub fn kwriteconfig_argv(binary: &str, file: &str, groups: &[&str], key: &str, value: &str, value_type: Option<&str>) -> Vec<String> {
+pub fn kwriteconfig_argv(
+    binary: &str,
+    file: &str,
+    groups: &[&str],
+    key: &str,
+    value: &str,
+    value_type: Option<&str>,
+) -> Vec<String> {
     let mut argv = vec![binary.into(), "--file".into(), file.into()];
-    for group in groups { argv.extend(["--group".into(), (*group).into()]); }
+    for group in groups {
+        argv.extend(["--group".into(), (*group).into()]);
+    }
     argv.extend(["--key".into(), key.into()]);
-    if let Some(value_type) = value_type { argv.extend(["--type".into(), value_type.into()]); }
+    if let Some(value_type) = value_type {
+        argv.extend(["--type".into(), value_type.into()]);
+    }
     argv.push(value.into());
     argv
 }
 
 pub fn evaluate_plasma_argv(qdbus: &str, script: &str) -> Vec<String> {
-    vec![qdbus.into(), "org.kde.plasmashell".into(), "/PlasmaShell".into(), "org.kde.PlasmaShell.evaluateScript".into(), script.into()]
+    vec![
+        qdbus.into(),
+        "org.kde.plasmashell".into(),
+        "/PlasmaShell".into(),
+        "org.kde.PlasmaShell.evaluateScript".into(),
+        script.into(),
+    ]
 }
 
 /// Launcher sets for `kyth-apply-role-preset`, mirroring
@@ -411,15 +458,60 @@ mod tests {
     fn filters_first_available_launcher_alternative() {
         let directory = tempdir().unwrap();
         fs::write(directory.path().join("steam.desktop"), "[Desktop Entry]\n").unwrap();
-        let choices = vec![LauncherChoice::Alternatives(vec!["applications:missing.desktop".into(), "applications:steam.desktop".into()])];
-        assert_eq!(filter_available_launchers(&choices, &[directory.path()]), vec!["applications:steam.desktop"]);
+        let choices = vec![LauncherChoice::Alternatives(vec![
+            "applications:missing.desktop".into(),
+            "applications:steam.desktop".into(),
+        ])];
+        assert_eq!(
+            filter_available_launchers(&choices, &[directory.path()]),
+            vec!["applications:steam.desktop"]
+        );
     }
 
     #[test]
     fn projects_nested_kwriteconfig_and_qdbus_argv() {
-        assert_eq!(kreadconfig_argv("kreadconfig6", "kwinrc", "Compositing", "AllowTearing"), vec!["kreadconfig6", "--file", "kwinrc", "--group", "Compositing", "--key", "AllowTearing"]);
-        assert_eq!(kwriteconfig_argv("kwriteconfig6", "kwinrc", &["Containments", "1", "General"], "foo", "bar", Some("string")), vec!["kwriteconfig6", "--file", "kwinrc", "--group", "Containments", "--group", "1", "--group", "General", "--key", "foo", "--type", "string", "bar"]);
-        assert_eq!(evaluate_plasma_argv("qdbus6", "print('ok')")[3], "org.kde.PlasmaShell.evaluateScript");
+        assert_eq!(
+            kreadconfig_argv("kreadconfig6", "kwinrc", "Compositing", "AllowTearing"),
+            vec![
+                "kreadconfig6",
+                "--file",
+                "kwinrc",
+                "--group",
+                "Compositing",
+                "--key",
+                "AllowTearing"
+            ]
+        );
+        assert_eq!(
+            kwriteconfig_argv(
+                "kwriteconfig6",
+                "kwinrc",
+                &["Containments", "1", "General"],
+                "foo",
+                "bar",
+                Some("string")
+            ),
+            vec![
+                "kwriteconfig6",
+                "--file",
+                "kwinrc",
+                "--group",
+                "Containments",
+                "--group",
+                "1",
+                "--group",
+                "General",
+                "--key",
+                "foo",
+                "--type",
+                "string",
+                "bar"
+            ]
+        );
+        assert_eq!(
+            evaluate_plasma_argv("qdbus6", "print('ok')")[3],
+            "org.kde.PlasmaShell.evaluateScript"
+        );
     }
 
     #[test]
@@ -433,19 +525,46 @@ mod tests {
     #[test]
     fn layout_gate_mirrors_python_exit_codes() {
         // Already stamped: exit 0 without --force.
-        assert_eq!(decide_layout(false, false, Some("kyth-comfort-v4"), None), LayoutDecision::AlreadyCurrent);
-        assert_eq!(decide_layout(false, false, Some("kyth-comfort-v2"), None), LayoutDecision::AlreadyCurrent);
-        assert_eq!(decide_layout(false, false, Some("kyth-comfort-v3"), None), LayoutDecision::AlreadyCurrent);
-        assert_eq!(decide_layout(false, false, None, Some("windows-familiar-v1")), LayoutDecision::AlreadyCurrent);
+        assert_eq!(
+            decide_layout(false, false, Some("kyth-comfort-v4"), None),
+            LayoutDecision::AlreadyCurrent
+        );
+        assert_eq!(
+            decide_layout(false, false, Some("kyth-comfort-v2"), None),
+            LayoutDecision::AlreadyCurrent
+        );
+        assert_eq!(
+            decide_layout(false, false, Some("kyth-comfort-v3"), None),
+            LayoutDecision::AlreadyCurrent
+        );
+        assert_eq!(
+            decide_layout(false, false, None, Some("windows-familiar-v1")),
+            LayoutDecision::AlreadyCurrent
+        );
         // No stamp, no flags: exit 64.
-        assert_eq!(decide_layout(false, false, None, None), LayoutDecision::Refused);
-        assert_eq!(decide_layout(false, false, Some("other"), None), LayoutDecision::Refused);
+        assert_eq!(
+            decide_layout(false, false, None, None),
+            LayoutDecision::Refused
+        );
+        assert_eq!(
+            decide_layout(false, false, Some("other"), None),
+            LayoutDecision::Refused
+        );
         // --force or --initial proceeds.
-        assert_eq!(decide_layout(true, false, Some("kyth-comfort-v4"), None), LayoutDecision::Apply);
-        assert_eq!(decide_layout(false, true, None, None), LayoutDecision::Apply);
+        assert_eq!(
+            decide_layout(true, false, Some("kyth-comfort-v4"), None),
+            LayoutDecision::Apply
+        );
+        assert_eq!(
+            decide_layout(false, true, None, None),
+            LayoutDecision::Apply
+        );
         // Stamp check runs before the flag check: --initial on a stamped
         // layout still exits 0 unless --force is given.
-        assert_eq!(decide_layout(false, true, Some("kyth-comfort-v4"), None), LayoutDecision::AlreadyCurrent);
+        assert_eq!(
+            decide_layout(false, true, Some("kyth-comfort-v4"), None),
+            LayoutDecision::AlreadyCurrent
+        );
     }
 
     #[test]
@@ -476,7 +595,8 @@ mod tests {
     fn pins_script_matches_python_template_shape() {
         let script = render_pins_script("A,B");
         assert_eq!(script.len(), 570);
-        assert!(script.starts_with("var launchers = \"A,B\";\nfor (var i = 0; i < panelIds.length; ++i)"));
+        assert!(script
+            .starts_with("var launchers = \"A,B\";\nfor (var i = 0; i < panelIds.length; ++i)"));
         assert!(script.ends_with("    }\n}\n"));
         assert!(!script.contains("{{") && !script.contains("}}"));
     }
@@ -490,7 +610,15 @@ mod tests {
         assert!(script.starts_with("var launchers = \"a,b\";\nvar trayItems = \"t1\";\nvar hiddenTrayItems = \"h1\";\n\nfunction safeSet"));
         assert!(script.ends_with("addKythDefaultPanel(screens[i]);\n}\n"));
         assert!(!script.contains("{{") && !script.contains("}}"));
-        for marker in ["org.kde.plasma.kickoff", "org.kde.plasma.icontasks", "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop", "/usr/share/wallpapers/kyth/contents/images/1920x1080.svg", "kyth-kickoff"] {
+        for marker in [
+            "org.kde.plasma.kickoff",
+            "org.kde.plasma.icontasks",
+            "org.kde.plasma.systemtray",
+            "org.kde.plasma.digitalclock",
+            "org.kde.plasma.showdesktop",
+            "/usr/share/wallpapers/kyth/contents/images/1920x1080.svg",
+            "kyth-kickoff",
+        ] {
             assert!(script.contains(marker), "{marker}");
         }
     }

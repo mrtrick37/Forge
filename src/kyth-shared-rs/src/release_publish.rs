@@ -42,19 +42,44 @@ pub fn immutable_release_url(repository: &str, immutable_tag: &str) -> String {
     format!("https://github.com/{repository}/releases/tag/{immutable_tag}")
 }
 
-pub fn create_command(tag: &str, target: &str, title: &str, notes_file: &str, prerelease: bool, latest: bool) -> Vec<String> {
+pub fn create_command(
+    tag: &str,
+    target: &str,
+    title: &str,
+    notes_file: &str,
+    prerelease: bool,
+    latest: bool,
+) -> Vec<String> {
     let mut command = vec![
-        "gh".into(), "release".into(), "create".into(), tag.into(), "--target".into(), target.into(),
-        "--title".into(), title.into(), "--notes-file".into(), notes_file.into(),
+        "gh".into(),
+        "release".into(),
+        "create".into(),
+        tag.into(),
+        "--target".into(),
+        target.into(),
+        "--title".into(),
+        title.into(),
+        "--notes-file".into(),
+        notes_file.into(),
     ];
-    if prerelease { command.push("--prerelease".into()); }
-    if latest { command.push("--latest".into()); }
+    if prerelease {
+        command.push("--prerelease".into());
+    }
+    if latest {
+        command.push("--latest".into());
+    }
     command
 }
 
-pub fn upload_command(tag: &str, files: impl IntoIterator<Item = impl Into<String>>, clobber: bool) -> Vec<String> {
+pub fn upload_command(
+    tag: &str,
+    files: impl IntoIterator<Item = impl Into<String>>,
+    clobber: bool,
+) -> Vec<String> {
     let mut command = vec!["gh".into(), "release".into(), "upload".into(), tag.into()];
-    if clobber { command.push("--clobber".into()); }
+    if clobber {
+        command.push("--clobber".into());
+    }
     command.extend(files.into_iter().map(Into::into));
     command
 }
@@ -68,7 +93,10 @@ mod tests {
         let testing = presentation("testing", "iso-testing-abc");
         assert!(testing.prerelease);
         assert!(!testing.latest);
-        assert_eq!(testing.immutable_title, "Kyth Live ISO - Testing - iso-testing-abc");
+        assert_eq!(
+            testing.immutable_title,
+            "Kyth Live ISO - Testing - iso-testing-abc"
+        );
         let stable = presentation("stable", "iso-stable-abc");
         assert!(!stable.prerelease);
         assert!(stable.latest);
@@ -77,8 +105,34 @@ mod tests {
     #[test]
     fn command_projection_keeps_flags_and_files_as_separate_argv() {
         let create = create_command("testing", "sha256:abc", "Testing", "notes.md", true, false);
-        assert_eq!(create, vec!["gh", "release", "create", "testing", "--target", "sha256:abc", "--title", "Testing", "--notes-file", "notes.md", "--prerelease"]);
+        assert_eq!(
+            create,
+            vec![
+                "gh",
+                "release",
+                "create",
+                "testing",
+                "--target",
+                "sha256:abc",
+                "--title",
+                "Testing",
+                "--notes-file",
+                "notes.md",
+                "--prerelease"
+            ]
+        );
         let upload = upload_command("testing", ["iso.sig", "iso.bundle"], true);
-        assert_eq!(upload, vec!["gh", "release", "upload", "testing", "--clobber", "iso.sig", "iso.bundle"]);
+        assert_eq!(
+            upload,
+            vec![
+                "gh",
+                "release",
+                "upload",
+                "testing",
+                "--clobber",
+                "iso.sig",
+                "iso.bundle"
+            ]
+        );
     }
 }

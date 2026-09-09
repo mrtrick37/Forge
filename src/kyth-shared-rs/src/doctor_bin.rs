@@ -25,7 +25,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::render_report;
-    use kyth_shared::doctor::{DoctorReport};
+    use kyth_shared::doctor::DoctorReport;
 
     #[test]
     fn preserves_python_human_report_shape() {
@@ -42,7 +42,14 @@ mod tests {
 
     #[test]
     fn omits_suggestions_section_when_empty() {
-        let report = DoctorReport { score: 100, checks: vec!["btrfs: yes".into()], suggestions: vec![] };
-        assert_eq!(render_report(&report), "KythOS health: 100/100\n - btrfs: yes\n");
+        let report = DoctorReport {
+            score: 100,
+            checks: vec!["btrfs: yes".into()],
+            suggestions: vec![],
+        };
+        assert_eq!(
+            render_report(&report),
+            "KythOS health: 100/100\n - btrfs: yes\n"
+        );
     }
 }

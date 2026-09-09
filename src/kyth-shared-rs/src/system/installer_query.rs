@@ -132,13 +132,15 @@ mod tests {
 
     #[test]
     fn parses_bootcurrent_entry_and_fails_closed() {
-        let output =
-            "BootCurrent: 0002\nBootOrder: 0002,0001\nBoot0002* KythOS HD(1,GPT)\n";
+        let output = "BootCurrent: 0002\nBootOrder: 0002,0001\nBoot0002* KythOS HD(1,GPT)\n";
         assert_eq!(
             bootcurrent_entry(output).as_deref(),
             Some("Boot0002* KythOS HD(1,GPT)")
         );
-        assert_eq!(bootcurrent_entry("BootCurrent: nope\nBoot0001* old\n"), None);
+        assert_eq!(
+            bootcurrent_entry("BootCurrent: nope\nBoot0001* old\n"),
+            None
+        );
         assert_eq!(bootcurrent_entry("BootOrder: 0001\nBoot0001* old\n"), None);
     }
 

@@ -51,6 +51,10 @@ name = "kyth-hub-desktop-entries"
 path = "src/hub_desktop_entries_bin.rs"
 
 [[bin]]
+name = "kyth-welcome-launch"
+path = "src/hub_launcher_bin.rs"
+
+[[bin]]
 name = "kyth-safe-upgrade"
 path = "src/safe_upgrade_bin.rs"
 
@@ -121,10 +125,6 @@ path = "src/windows_verify_bin.rs"
 [[bin]]
 name = "kyth-vm-acceptance-guest"
 path = "src/vm_acceptance_guest_bin.rs"
-
-[[bin]]
-name = "kyth-tunable"
-path = "src/tunable_readonly_bin.rs"
 
 [[bin]]
 name = "kyth-game-boost"

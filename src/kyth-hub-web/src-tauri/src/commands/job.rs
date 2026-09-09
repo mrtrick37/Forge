@@ -49,7 +49,11 @@ pub(crate) fn job_status(job: String) -> crate::InstallStatus {
         .ok()
         .and_then(|store| store.get(&job).cloned())
         .unwrap_or(("unknown".into(), "Job not found.".into()));
-    crate::InstallStatus { id: job, state, detail }
+    crate::InstallStatus {
+        id: job,
+        state,
+        detail,
+    }
 }
 
 /// Same truncation/direction convention as the Hub action output helper:
@@ -67,7 +71,14 @@ pub(crate) fn failure_detail(action: &str, output: &Output) -> String {
     let text = kyth_shared::system::process::redact_sensitive_text(
         kyth_shared::system::process::strip_ansi(text.trim()).as_str(),
     );
-    let tail: String = text.chars().rev().take(500).collect::<String>().chars().rev().collect();
+    let tail: String = text
+        .chars()
+        .rev()
+        .take(500)
+        .collect::<String>()
+        .chars()
+        .rev()
+        .collect();
     if tail.trim().is_empty() {
         match output.status.code() {
             Some(code) => format!("{action} failed (exit {code})."),

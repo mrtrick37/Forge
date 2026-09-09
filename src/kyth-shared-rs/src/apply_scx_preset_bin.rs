@@ -36,6 +36,9 @@ fn main() -> std::process::ExitCode {
         }
         let _ = std::fs::write(dest, format!("SCX_SCHEDULER={scx}\n# per-game explicit\n"));
     }
-    println!("kyth-apply-scx-preset: {} games \u{2192} {scx}", presets.len());
+    println!(
+        "kyth-apply-scx-preset: {} games \u{2192} {scx}",
+        presets.len()
+    );
     std::process::ExitCode::SUCCESS
 }

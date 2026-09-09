@@ -28,12 +28,24 @@ pub struct HealthSummary {
 }
 
 impl HealthReport {
-    pub fn create_at(generated_at: impl Into<String>, results: impl IntoIterator<Item = HealthResult>) -> Self {
+    pub fn create_at(
+        generated_at: impl Into<String>,
+        results: impl IntoIterator<Item = HealthResult>,
+    ) -> Self {
         let results: Vec<_> = results.into_iter().collect();
         let summary = HealthSummary {
-            healthy: results.iter().filter(|result| result.severity == "healthy").count(),
-            warning: results.iter().filter(|result| result.severity == "warning").count(),
-            error: results.iter().filter(|result| result.severity == "error").count(),
+            healthy: results
+                .iter()
+                .filter(|result| result.severity == "healthy")
+                .count(),
+            warning: results
+                .iter()
+                .filter(|result| result.severity == "warning")
+                .count(),
+            error: results
+                .iter()
+                .filter(|result| result.severity == "error")
+                .count(),
         };
         let overall = if summary.error > 0 {
             "error"
@@ -70,7 +82,12 @@ impl HealthReport {
                     lines.extend([String::new(), format!("== {} ==", result.section)]);
                 }
             }
-            lines.push(format!("{:<7} {}: {}", result.severity.to_uppercase(), result.component, result.evidence));
+            lines.push(format!(
+                "{:<7} {}: {}",
+                result.severity.to_uppercase(),
+                result.component,
+                result.evidence
+            ));
             if !result.remediation.is_empty() {
                 lines.push(format!("        Fix: {}", result.remediation));
             }
@@ -98,7 +115,12 @@ pub fn remediation_for(component: &str) -> &'static str {
     }
 }
 
-pub fn from_check(component: impl Into<String>, level: &str, evidence: impl Into<String>, section: impl Into<String>) -> HealthResult {
+pub fn from_check(
+    component: impl Into<String>,
+    level: &str,
+    evidence: impl Into<String>,
+    section: impl Into<String>,
+) -> HealthResult {
     let severity = match level.to_ascii_uppercase().as_str() {
         "PASS" | "HEALTHY" | "OK" => "healthy",
         "FAIL" | "ERROR" => "error",
@@ -106,7 +128,9 @@ pub fn from_check(component: impl Into<String>, level: &str, evidence: impl Into
     };
     let component = component.into();
     HealthResult {
-        remediation: (severity != "healthy").then(|| remediation_for(&component).to_string()).unwrap_or_default(),
+        remediation: (severity != "healthy")
+            .then(|| remediation_for(&component).to_string())
+            .unwrap_or_default(),
         component,
         severity: severity.to_string(),
         evidence: evidence.into(),
@@ -115,11 +139,21 @@ pub fn from_check(component: impl Into<String>, level: &str, evidence: impl Into
 }
 
 /// Project a read-only smoke report into the support-safe health schema.
-pub fn from_smoke_report(generated_at: impl Into<String>, report: &crate::system::smoke_check::Report) -> HealthReport {
-    HealthReport::create_at(generated_at, report.results.iter().map(|row| {
-        let level = match row.level { crate::system::smoke_check::Level::Pass => "PASS", crate::system::smoke_check::Level::Warn => "WARN", crate::system::smoke_check::Level::Fail => "FAIL" };
-        from_check(&row.name, level, &row.detail, &row.section)
-    }))
+pub fn from_smoke_report(
+    generated_at: impl Into<String>,
+    report: &crate::system::smoke_check::Report,
+) -> HealthReport {
+    HealthReport::create_at(
+        generated_at,
+        report.results.iter().map(|row| {
+            let level = match row.level {
+                crate::system::smoke_check::Level::Pass => "PASS",
+                crate::system::smoke_check::Level::Warn => "WARN",
+                crate::system::smoke_check::Level::Fail => "FAIL",
+            };
+            from_check(&row.name, level, &row.detail, &row.section)
+        }),
+    )
 }
 
 fn rfc3339_now() -> String {
@@ -141,7 +175,9 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
     let z = days + 719_468;
     let era = (if z >= 0 { z } else { z - 146_096 }).div_euclid(146_097);
     let day_of_era = z - era * 146_097;
-    let year_of_era = (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096).div_euclid(365);
+    let year_of_era = (day_of_era - day_of_era / 1_460 + day_of_era / 36_524
+        - day_of_era / 146_096)
+        .div_euclid(365);
     let year = year_of_era + era * 400;
     let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
     let month_part = (5 * day_of_year + 2).div_euclid(153);

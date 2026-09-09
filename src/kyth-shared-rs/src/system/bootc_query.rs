@@ -1,39 +1,70 @@
 //! Port of `kyth_shared.system.bootc_query` — bootc status queries.
 
-use std::time::Duration;
-use serde_json::Value;
 use regex::Regex;
+use serde_json::Value;
+use std::time::Duration;
 
 pub fn nested_get<'a>(data: &'a Value, path: &[&str]) -> Option<&'a Value> {
     let mut cur = data;
-    for k in path { cur = cur.get(*k)?; }
+    for k in path {
+        cur = cur.get(*k)?;
+    }
     Some(cur)
 }
 
 pub fn walk_strings(v: &Value, out: &mut Vec<String>) {
     match v {
         Value::String(s) => out.push(s.clone()),
-        Value::Object(m) => for val in m.values() { walk_strings(val, out); },
-        Value::Array(arr) => for val in arr { walk_strings(val, out); },
+        Value::Object(m) => {
+            for val in m.values() {
+                walk_strings(val, out);
+            }
+        }
+        Value::Array(arr) => {
+            for val in arr {
+                walk_strings(val, out);
+            }
+        }
         _ => {}
     }
 }
 
 fn run_with_timeout(cmd: &[String], timeout: Duration) -> Option<(i32, String)> {
-    if cmd.is_empty() { return None; }
+    if cmd.is_empty() {
+        return None;
+    }
     let output = super::process::run_bounded(cmd, timeout).ok()?;
-    Some((output.status.code().unwrap_or(-1), String::from_utf8_lossy(&output.stdout).to_string()))
+    Some((
+        output.status.code().unwrap_or(-1),
+        String::from_utf8_lossy(&output.stdout).to_string(),
+    ))
 }
 
 fn status_commands(json_mode: bool) -> Vec<Vec<String>> {
     let guard_op = if json_mode { "status-json" } else { "status" };
-    let guard = vec!["/usr/bin/kyth-bootc-guard".to_string(), guard_op.to_string()];
-    let bootc = if json_mode { vec!["bootc".to_string(), "status".to_string(), "--json".to_string()] } else { vec!["bootc".to_string(), "status".to_string()] };
+    let guard = vec![
+        "/usr/bin/kyth-bootc-guard".to_string(),
+        guard_op.to_string(),
+    ];
+    let bootc = if json_mode {
+        vec![
+            "bootc".to_string(),
+            "status".to_string(),
+            "--json".to_string(),
+        ]
+    } else {
+        vec!["bootc".to_string(), "status".to_string()]
+    };
     if effective_uid() == 0 {
         vec![guard, bootc]
     } else {
         vec![
-            vec!["sudo".to_string(), "-n".to_string(), guard[0].clone(), guard[1].clone()],
+            vec![
+                "sudo".to_string(),
+                "-n".to_string(),
+                guard[0].clone(),
+                guard[1].clone(),
+            ],
             bootc,
         ]
     }
@@ -63,9 +94,13 @@ pub fn holds_sysroot_lock(cmdline: &str) -> bool {
 
 pub fn active_operation() -> Option<String> {
     let output = super::process::run_bounded(
-        &["ps", "-eo", "pid=,args="].into_iter().map(String::from).collect::<Vec<_>>(),
+        &["ps", "-eo", "pid=,args="]
+            .into_iter()
+            .map(String::from)
+            .collect::<Vec<_>>(),
         Duration::from_secs(3),
-    ).ok()?;
+    )
+    .ok()?;
     if !output.status.success() {
         return None;
     }
@@ -77,21 +112,29 @@ pub fn active_operation() -> Option<String> {
 }
 
 pub fn fetch_status_text() -> String {
-    if active_operation().is_some() { return String::new(); }
+    if active_operation().is_some() {
+        return String::new();
+    }
     for cmd in status_commands(false) {
         if let Some((0, stdout)) = run_with_timeout(&cmd, Duration::from_secs(10)) {
             let t = stdout.trim().to_string();
-            if !t.is_empty() { return t; }
+            if !t.is_empty() {
+                return t;
+            }
         }
     }
     String::new()
 }
 
 pub fn fetch_status_data() -> Option<Value> {
-    if active_operation().is_some() { return None; }
+    if active_operation().is_some() {
+        return None;
+    }
     for cmd in status_commands(true) {
         if let Some((0, stdout)) = run_with_timeout(&cmd, Duration::from_secs(10)) {
-            if let Some(value) = parse_status_data(&stdout) { return Some(value); }
+            if let Some(value) = parse_status_data(&stdout) {
+                return Some(value);
+            }
         }
     }
     None
@@ -110,7 +153,10 @@ pub fn image_reference_from_status(data: &Value) -> Option<String> {
 
 /// Resolve an image reference from structured bootc data, then from the
 /// human-readable status output used by older bootc versions.
-pub fn image_reference_from_status_with_output(data: &Value, status_output: &str) -> Option<String> {
+pub fn image_reference_from_status_with_output(
+    data: &Value,
+    status_output: &str,
+) -> Option<String> {
     // Try status.booted.image.reference etc.
     for path in [
         vec!["status", "booted", "image", "reference"],
@@ -122,10 +168,22 @@ pub fn image_reference_from_status_with_output(data: &Value, status_output: &str
         vec!["spec", "image", "reference"],
     ] {
         if let Some(v) = nested_get(data, &path.iter().map(|s| *s).collect::<Vec<_>>()) {
-            if let Some(s) = v.as_str() { if !s.trim().is_empty() { return Some(s.trim().to_string()); } }
+            if let Some(s) = v.as_str() {
+                if !s.trim().is_empty() {
+                    return Some(s.trim().to_string());
+                }
+            }
             if let Some(obj) = v.as_object() {
-                if let Some(s) = obj.get("reference").and_then(|x| x.as_str()) { if !s.trim().is_empty() { return Some(s.trim().to_string()); } }
-                if let Some(s) = obj.get("image").and_then(|x| x.as_str()) { if !s.trim().is_empty() { return Some(s.trim().to_string()); } }
+                if let Some(s) = obj.get("reference").and_then(|x| x.as_str()) {
+                    if !s.trim().is_empty() {
+                        return Some(s.trim().to_string());
+                    }
+                }
+                if let Some(s) = obj.get("image").and_then(|x| x.as_str()) {
+                    if !s.trim().is_empty() {
+                        return Some(s.trim().to_string());
+                    }
+                }
             }
         }
     }
@@ -138,8 +196,13 @@ pub fn image_reference_from_status_with_output(data: &Value, status_output: &str
         }
     }
     if !status_output.is_empty() {
-        let pattern = Regex::new(r"(ghcr\.io/kyth-os/kyth(?::[A-Za-z0-9._-]+)?(?:@sha256:[a-fA-F0-9]+)?)").ok()?;
-        if let Some(reference) = pattern.captures(status_output).and_then(|captures| captures.get(1)) {
+        let pattern =
+            Regex::new(r"(ghcr\.io/kyth-os/kyth(?::[A-Za-z0-9._-]+)?(?:@sha256:[a-fA-F0-9]+)?)")
+                .ok()?;
+        if let Some(reference) = pattern
+            .captures(status_output)
+            .and_then(|captures| captures.get(1))
+        {
             return Some(reference.as_str().to_string());
         }
     }
@@ -163,7 +226,9 @@ pub fn image_reference() -> Option<String> {
     let command = vec!["rpm-ostree".to_string(), "status".to_string()];
     run_with_timeout(&command, Duration::from_secs(10))
         .filter(|(code, _)| *code == 0)
-        .and_then(|(_, output)| image_reference_from_status_with_output(&Value::Object(serde_json::Map::new()), &output))
+        .and_then(|(_, output)| {
+            image_reference_from_status_with_output(&Value::Object(serde_json::Map::new()), &output)
+        })
 }
 
 pub fn image_digest_from_status(data: &Value, section: &str) -> Option<String> {
@@ -196,27 +261,40 @@ mod tests {
     #[test]
     fn nested() {
         let v = json!({"a":{"b":2}});
-        assert_eq!(nested_get(&v, &["a","b"]).unwrap().as_i64(), Some(2));
-        assert!(nested_get(&v, &["a","c"]).is_none());
+        assert_eq!(nested_get(&v, &["a", "b"]).unwrap().as_i64(), Some(2));
+        assert!(nested_get(&v, &["a", "c"]).is_none());
     }
     #[test]
     fn image_ref() {
         let v = json!({"status":{"booted":{"image":{"reference":"ghcr.io/kyth-os/kyth:latest"}}}});
-        assert_eq!(image_reference_from_status(&v), Some("ghcr.io/kyth-os/kyth:latest".to_string()));
+        assert_eq!(
+            image_reference_from_status(&v),
+            Some("ghcr.io/kyth-os/kyth:latest".to_string())
+        );
     }
 
     #[test]
     fn image_ref_falls_back_to_human_readable_status_output() {
         let output = "Image: ghcr.io/kyth-os/kyth:testing@sha256:abcdef1234\n";
-        assert_eq!(image_reference_from_status_with_output(&Value::Null, output), Some("ghcr.io/kyth-os/kyth:testing@sha256:abcdef1234".into()));
-        assert!(image_reference_from_status_with_output(&Value::Null, "Image: quay.io/example/other:latest").is_none());
+        assert_eq!(
+            image_reference_from_status_with_output(&Value::Null, output),
+            Some("ghcr.io/kyth-os/kyth:testing@sha256:abcdef1234".into())
+        );
+        assert!(image_reference_from_status_with_output(
+            &Value::Null,
+            "Image: quay.io/example/other:latest"
+        )
+        .is_none());
     }
 
     #[test]
     fn status_json_fallback_rejects_non_object_documents() {
         assert!(parse_status_data("[]").is_none());
         assert!(parse_status_data("{bad").is_none());
-        assert_eq!(parse_status_data(r#"{"status":{}}"#).unwrap()["status"], json!({}));
+        assert_eq!(
+            parse_status_data(r#"{"status":{}}"#).unwrap()["status"],
+            json!({})
+        );
     }
 
     #[test]
@@ -229,6 +307,9 @@ mod tests {
     #[test]
     fn digest_shortens_without_the_algorithm_prefix() {
         let v = serde_json::json!({"status":{"staged":{"image":{"imageDigest":"sha256:1234567890abcdef"}}}});
-        assert_eq!(image_digest(&v, "staged"), Some(("1234567890ab".into(), "1234567890abcdef".into())));
+        assert_eq!(
+            image_digest(&v, "staged"),
+            Some(("1234567890ab".into(), "1234567890abcdef".into()))
+        );
     }
 }

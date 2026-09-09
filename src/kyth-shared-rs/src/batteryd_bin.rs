@@ -10,8 +10,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use kyth_shared::system::battery::{
-    LEDGER_PATH, append_ledger, apply_threshold, battery_config_path, load_battery,
-    read_battery_health,
+    append_ledger, apply_threshold, battery_config_path, load_battery, read_battery_health,
+    LEDGER_PATH,
 };
 
 fn main() -> std::process::ExitCode {

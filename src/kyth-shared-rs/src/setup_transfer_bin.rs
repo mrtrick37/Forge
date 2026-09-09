@@ -9,7 +9,9 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use kyth_shared::setup_transfer::{SetupCtx, archive_summary, export_setup, restore_setup, stream_command};
+use kyth_shared::setup_transfer::{
+    archive_summary, export_setup, restore_setup, stream_command, SetupCtx,
+};
 use kyth_shared::system::issue_draft::local_timestamp;
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::session_snapshot::current_host;
@@ -31,7 +33,9 @@ fn expand_user(value: &str, home: &Path) -> PathBuf {
 }
 
 fn usage() -> ! {
-    eprintln!("Usage: kyth-setup-transfer {{export <destination>|summary <archive>|restore <archive>}}");
+    eprintln!(
+        "Usage: kyth-setup-transfer {{export <destination>|summary <archive>|restore <archive>}}"
+    );
     std::process::exit(2);
 }
 
@@ -45,16 +49,20 @@ fn run() -> Result<i32, String> {
         }
         _ => usage(),
     };
-    let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/root"));
+    let home = env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/root"));
     let ctx = SetupCtx {
         home: &home,
         run_text: &|argv, secs| {
-            run_bounded(argv, Duration::from_secs(secs)).ok().map(|output| {
-                (
-                    output.status.code().unwrap_or(1),
-                    String::from_utf8_lossy(&output.stdout).into_owned(),
-                )
-            })
+            run_bounded(argv, Duration::from_secs(secs))
+                .ok()
+                .map(|output| {
+                    (
+                        output.status.code().unwrap_or(1),
+                        String::from_utf8_lossy(&output.stdout).into_owned(),
+                    )
+                })
         },
         stamp: &local_timestamp,
         iso_now: &kyth_shared::setup_transfer::now_iso_seconds,
@@ -86,15 +94,23 @@ fn run() -> Result<i32, String> {
                 report.paths, report.defaults, report.apps_ok
             );
             if report.apps_failed > 0 {
-                println!("{} app install(s) failed; retry them from Discover Apps.", report.apps_failed);
+                println!(
+                    "{} app install(s) failed; retry them from Discover Apps.",
+                    report.apps_failed
+                );
             }
             if !report.cloud_names.is_empty() {
-                println!("Reconnect cloud account(s) in Cloud Storage: {}", report.cloud_names.join(", "));
+                println!(
+                    "Reconnect cloud account(s) in Cloud Storage: {}",
+                    report.cloud_names.join(", ")
+                );
             }
             if report.dynamic_lock {
                 println!("Trusted-device Dynamic Lock restored.");
             }
-            println!("Re-enter network-share passwords from Network Shares, then sign out and back in.");
+            println!(
+                "Re-enter network-share passwords from Network Shares, then sign out and back in."
+            );
         }
     }
     Ok(0)

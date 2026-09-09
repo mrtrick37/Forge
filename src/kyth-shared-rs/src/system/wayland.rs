@@ -8,7 +8,8 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 pub const PLASMA_WAYLAND_SESSION: &str = "plasma.desktop";
-pub const PLM_SESSION_CONF: &str = "[General]\nDefaultSession=plasma.desktop\n\n[Autologin]\nSession=plasma.desktop\n";
+pub const PLM_SESSION_CONF: &str =
+    "[General]\nDefaultSession=plasma.desktop\n\n[Autologin]\nSession=plasma.desktop\n";
 
 pub fn software_compose_env() -> BTreeMap<&'static str, &'static str> {
     BTreeMap::from([
@@ -21,25 +22,53 @@ pub fn software_compose_env() -> BTreeMap<&'static str, &'static str> {
 }
 
 fn has_token(cmdline: Option<&str>, token: &str) -> bool {
-    cmdline.unwrap_or_default().split_whitespace().any(|value| value == token)
+    cmdline
+        .unwrap_or_default()
+        .split_whitespace()
+        .any(|value| value == token)
 }
 
-pub fn hwgl_forced(cmdline: Option<&str>) -> bool { has_token(cmdline, "kyth.hwgl=1") }
-pub fn is_live_image(cmdline: Option<&str>) -> bool { cmdline.unwrap_or_default().split_whitespace().any(|value| value == "kyth.live" || value.starts_with("kyth.live=")) }
-pub fn nomodeset_requested(cmdline: Option<&str>) -> bool { has_token(cmdline, "nomodeset") }
+pub fn hwgl_forced(cmdline: Option<&str>) -> bool {
+    has_token(cmdline, "kyth.hwgl=1")
+}
+pub fn is_live_image(cmdline: Option<&str>) -> bool {
+    cmdline
+        .unwrap_or_default()
+        .split_whitespace()
+        .any(|value| value == "kyth.live" || value.starts_with("kyth.live="))
+}
+pub fn nomodeset_requested(cmdline: Option<&str>) -> bool {
+    has_token(cmdline, "nomodeset")
+}
 
 pub fn has_drm_render_node(dri: impl AsRef<Path>) -> bool {
-    dri.as_ref().read_dir().ok().into_iter().flatten().filter_map(Result::ok).any(|entry| entry.file_name().to_string_lossy().starts_with("renderD"))
+    dri.as_ref()
+        .read_dir()
+        .ok()
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .any(|entry| entry.file_name().to_string_lossy().starts_with("renderD"))
 }
 
 pub fn has_drm_card(dri: impl AsRef<Path>) -> bool {
-    dri.as_ref().read_dir().ok().into_iter().flatten().filter_map(Result::ok).any(|entry| entry.file_name().to_string_lossy().starts_with("card"))
+    dri.as_ref()
+        .read_dir()
+        .ok()
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .any(|entry| entry.file_name().to_string_lossy().starts_with("card"))
 }
 
-pub fn greeter_session_conf() -> &'static str { PLM_SESSION_CONF }
+pub fn greeter_session_conf() -> &'static str {
+    PLM_SESSION_CONF
+}
 
 pub fn needs_software_compose(dri: impl AsRef<Path>, cmdline: Option<&str>) -> bool {
-    if hwgl_forced(cmdline) { return false; }
+    if hwgl_forced(cmdline) {
+        return false;
+    }
     nomodeset_requested(cmdline) || is_live_image(cmdline) || !has_drm_render_node(dri)
 }
 
@@ -48,13 +77,34 @@ pub fn software_compose_rescue_justified(cmdline: Option<&str>) -> bool {
 }
 
 pub fn compositor_argv(extra: &[String]) -> Vec<String> {
-    if !extra.is_empty() { return std::iter::once("kwin_wayland".into()).chain(extra.iter().cloned()).collect(); }
-    vec!["kwin_wayland", "--no-lockscreen", "--no-global-shortcuts", "--no-kactivities", "--inputmethod", "plasma-keyboard", "--locale1"].into_iter().map(String::from).collect()
+    if !extra.is_empty() {
+        return std::iter::once("kwin_wayland".into())
+            .chain(extra.iter().cloned())
+            .collect();
+    }
+    vec![
+        "kwin_wayland",
+        "--no-lockscreen",
+        "--no-global-shortcuts",
+        "--no-kactivities",
+        "--inputmethod",
+        "plasma-keyboard",
+        "--locale1",
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect()
 }
 
 pub fn session_is_plasma_x11(value: &str) -> bool {
-    let token = value.trim().trim_matches(['"', '\'']).to_ascii_lowercase().replace('\\', "/");
-    if token.is_empty() { return false; }
+    let token = value
+        .trim()
+        .trim_matches(['"', '\''])
+        .to_ascii_lowercase()
+        .replace('\\', "/");
+    if token.is_empty() {
+        return false;
+    }
     let name = token.rsplit('/').next().unwrap_or(&token);
     name.contains("plasmax11") || token.contains("/xsessions/")
 }
@@ -63,23 +113,33 @@ pub fn session_is_plasma_x11(value: &str) -> bool {
 pub fn rewrite_session_key(text: &str, key: &str) -> (String, bool) {
     let prefix = format!("{key}=").to_ascii_lowercase();
     let mut changed = false;
-    let rewritten = text.split_inclusive('\n').map(|line_with_ending| {
-        let (line, ending) = if let Some(line) = line_with_ending.strip_suffix('\n') {
-            if let Some(line) = line.strip_suffix('\r') { (line, "\r\n") } else { (line, "\n") }
-        } else {
-            (line_with_ending, "")
-        };
-        let stripped = line.trim_start();
-        if stripped.to_ascii_lowercase().starts_with(&prefix) && !stripped.starts_with('#') {
-            let value = stripped.split_once('=').map(|(_, value)| value.trim()).unwrap_or_default();
-            if session_is_plasma_x11(value) {
-                changed = true;
-                let indent = &line[..line.len() - line.trim_start().len()];
-                return format!("{indent}{key}={PLASMA_WAYLAND_SESSION}{ending}");
+    let rewritten = text
+        .split_inclusive('\n')
+        .map(|line_with_ending| {
+            let (line, ending) = if let Some(line) = line_with_ending.strip_suffix('\n') {
+                if let Some(line) = line.strip_suffix('\r') {
+                    (line, "\r\n")
+                } else {
+                    (line, "\n")
+                }
+            } else {
+                (line_with_ending, "")
+            };
+            let stripped = line.trim_start();
+            if stripped.to_ascii_lowercase().starts_with(&prefix) && !stripped.starts_with('#') {
+                let value = stripped
+                    .split_once('=')
+                    .map(|(_, value)| value.trim())
+                    .unwrap_or_default();
+                if session_is_plasma_x11(value) {
+                    changed = true;
+                    let indent = &line[..line.len() - line.trim_start().len()];
+                    return format!("{indent}{key}={PLASMA_WAYLAND_SESSION}{ending}");
+                }
             }
-        }
-        line_with_ending.to_string()
-    }).collect::<String>();
+            line_with_ending.to_string()
+        })
+        .collect::<String>();
     (rewritten, changed)
 }
 
@@ -96,7 +156,10 @@ mod tests {
         assert!(!needs_software_compose(directory.path(), Some("quiet")));
         assert!(has_drm_card(directory.path()));
         assert!(needs_software_compose(directory.path(), Some("nomodeset")));
-        assert!(!needs_software_compose(directory.path(), Some("nomodeset kyth.hwgl=1")));
+        assert!(!needs_software_compose(
+            directory.path(),
+            Some("nomodeset kyth.hwgl=1")
+        ));
         assert!(software_compose_rescue_justified(Some("kyth.live")));
         assert!(!software_compose_rescue_justified(Some("quiet")));
     }

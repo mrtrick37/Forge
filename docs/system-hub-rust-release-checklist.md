@@ -78,10 +78,13 @@ open and are not implied by the acceptance run.
 
 ## Python retirement gate
 
-The Python Hub UI package is no longer installed in the normal image. The
+The Python Hub UI package is no longer installed or copied into the Hub build.
+The native Rust launcher, Tauri bridge, React frontend, desktop metadata, and
+embedded compatibility catalog are the supported Hub implementation. The
 locally built installed image has been exercised by the VM guest; promoted
-image acceptance remains a release gate. The remaining
-Python pieces are transitional authorities or source artifacts:
+image acceptance remains a release gate. Remaining Python pieces are outside
+the Hub runtime and are transitional authorities or source artifacts for other
+parts of the OS:
 
 - `kyth-guardian` now owns the extended deterministic sweep and a bounded,
   schema-validated local-model investigation path; missing model assets are
@@ -100,8 +103,9 @@ Python pieces are transitional authorities or source artifacts:
   `telemetry-writer` feature; its former Python fixture was removed in P2 and
   is not installed or enabled;
 - retired Python Hub UI source and UI-only tests, removed in Phase 4; the
-  route metadata generator is now the native Rust `kyth-hub-desktop-entries`
-  build utility; and
+  launcher is native Rust, the compatibility catalog and desktop metadata are
+  Hub-owned assets, and the route metadata generator is now the native Rust
+  `kyth-hub-desktop-entries` build utility; and
 - any workflow whose Rust command is not yet listed in the command ledger.
 
 ## Strict service-ownership gate

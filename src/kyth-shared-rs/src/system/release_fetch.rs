@@ -40,7 +40,10 @@ pub fn release_assets(release: &Value) -> Vec<ReleaseAsset> {
                     if name.is_empty() || url.is_empty() {
                         return None;
                     }
-                    Some(ReleaseAsset { name: name.to_string(), url: url.to_string() })
+                    Some(ReleaseAsset {
+                        name: name.to_string(),
+                        url: url.to_string(),
+                    })
                 })
                 .collect()
         })
@@ -59,7 +62,9 @@ pub fn find_release_asset<'a>(
 /// URLs, mirroring `re.fullmatch`.
 pub fn validate_version(version: &str, pattern: &str, component: &str) -> Result<String, String> {
     let full = format!("^(?:{pattern})$");
-    let matched = Regex::new(&full).ok().is_some_and(|matcher| matcher.is_match(version));
+    let matched = Regex::new(&full)
+        .ok()
+        .is_some_and(|matcher| matcher.is_match(version));
     if matched {
         Ok(version.to_string())
     } else {
@@ -98,8 +103,11 @@ pub fn prune_installations(
         })
         .map_err(|error| format!("Cannot scan installations: {error}"))?;
     entries.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| b.1.cmp(&a.1)));
-    let removed: Vec<PathBuf> =
-        entries.into_iter().skip(keep).map(|(_, path)| path).collect();
+    let removed: Vec<PathBuf> = entries
+        .into_iter()
+        .skip(keep)
+        .map(|(_, path)| path)
+        .collect();
     for path in &removed {
         std::fs::remove_dir_all(path)
             .map_err(|error| format!("Cannot remove {}: {error}", path.display()))?;
@@ -108,10 +116,16 @@ pub fn prune_installations(
 }
 
 /// Default GitHub headers, incorporating auth tokens when available.
-pub fn github_headers(secret_token: Option<&str>, env_token: Option<&str>) -> BTreeMap<String, String> {
+pub fn github_headers(
+    secret_token: Option<&str>,
+    env_token: Option<&str>,
+) -> BTreeMap<String, String> {
     let mut headers = BTreeMap::from([
         ("User-Agent".to_string(), USER_AGENT.to_string()),
-        ("Accept".to_string(), "application/vnd.github.v3+json".to_string()),
+        (
+            "Accept".to_string(),
+            "application/vnd.github.v3+json".to_string(),
+        ),
     ]);
     let token = secret_token
         .map(str::trim)
@@ -128,7 +142,10 @@ pub fn read_secret_file(path: &Path) -> Option<String> {
     if !path.is_file() {
         return None;
     }
-    std::fs::read_to_string(path).ok().map(|text| text.trim().to_string()).filter(|text| !text.is_empty())
+    std::fs::read_to_string(path)
+        .ok()
+        .map(|text| text.trim().to_string())
+        .filter(|text| !text.is_empty())
 }
 
 fn header_args(headers: &BTreeMap<String, String>) -> Vec<String> {
@@ -141,7 +158,11 @@ fn header_args(headers: &BTreeMap<String, String>) -> Vec<String> {
 }
 
 /// `curl` argv for fetching a JSON document with a time bound.
-pub fn curl_fetch_argv(url: &str, headers: &BTreeMap<String, String>, timeout_secs: u64) -> Vec<String> {
+pub fn curl_fetch_argv(
+    url: &str,
+    headers: &BTreeMap<String, String>,
+    timeout_secs: u64,
+) -> Vec<String> {
     let mut argv = vec![
         "curl".to_string(),
         "-fsSL".to_string(),
@@ -183,7 +204,10 @@ pub fn fetch_github_latest_release(
     match (run)(&curl_fetch_argv(&url, headers, 30), 35) {
         Some((0, stdout)) => serde_json::from_str(&stdout)
             .map_err(|error| format!("Failed to parse release info: {error}")),
-        Some((code, stderr)) => Err(format!("Failed to fetch release info: curl exited {code}: {}", stderr.trim())),
+        Some((code, stderr)) => Err(format!(
+            "Failed to fetch release info: curl exited {code}: {}",
+            stderr.trim()
+        )),
         None => Err("Failed to fetch release info: request failed".to_string()),
     }
 }
@@ -196,9 +220,15 @@ pub fn download_file(
     headers: &BTreeMap<String, String>,
     timeout_secs: u64,
 ) -> Result<(), String> {
-    match (run)(&curl_download_argv(url, dest, headers, timeout_secs), timeout_secs + 5) {
+    match (run)(
+        &curl_download_argv(url, dest, headers, timeout_secs),
+        timeout_secs + 5,
+    ) {
         Some((0, _)) => Ok(()),
-        Some((code, stderr)) => Err(format!("Failed to download {url}: curl exited {code}: {}", stderr.trim())),
+        Some((code, stderr)) => Err(format!(
+            "Failed to download {url}: curl exited {code}: {}",
+            stderr.trim()
+        )),
         None => Err(format!("Failed to download {url}: request failed")),
     }
 }
@@ -252,16 +282,25 @@ pub fn verify_checksum_file(
     let target_meta = match std::fs::symlink_metadata(target_path) {
         Ok(meta) => meta,
         Err(_) => {
-            return Err(format!("Checksum target is not a regular file: {}", target_path.display()));
+            return Err(format!(
+                "Checksum target is not a regular file: {}",
+                target_path.display()
+            ));
         }
     };
     if !target_meta.is_file() {
-        return Err(format!("Checksum target is not a regular file: {}", target_path.display()));
+        return Err(format!(
+            "Checksum target is not a regular file: {}",
+            target_path.display()
+        ));
     }
     let Some((_, expected_length)) = digest_bytes(algorithm, &[]) else {
         return Err(format!("Unsupported checksum algorithm: {algorithm}"));
     };
-    let target_name = target_path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
+    let target_name = target_path
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default();
     let content = std::fs::read_to_string(checksum_path)
         .map_err(|error| format!("Cannot read checksum file: {error}"))?;
     let mut matches = Vec::new();
@@ -284,7 +323,9 @@ pub fn verify_checksum_file(
         if expected_hash.len() != expected_length
             || !expected_hash.bytes().all(|byte| byte.is_ascii_hexdigit())
         {
-            return Err(format!("Malformed {algorithm} digest on line {line_number}"));
+            return Err(format!(
+                "Malformed {algorithm} digest on line {line_number}"
+            ));
         }
         if filename == target_name {
             matches.push(expected_hash.to_ascii_lowercase());
@@ -320,7 +361,10 @@ pub enum ArchiveKind {
 }
 
 pub fn archive_kind(archive: &Path) -> ArchiveKind {
-    let name = archive.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
+    let name = archive
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default();
     if name.ends_with(".tar.xz") || archive.extension().is_some_and(|ext| ext == "xz") {
         ArchiveKind::TarXz
     } else if name.ends_with(".tar.gz") || archive.extension().is_some_and(|ext| ext == "gz") {
@@ -373,7 +417,10 @@ pub fn validate_members(members: &[String]) -> Result<Vec<Vec<String>>, String> 
     Ok(normalized)
 }
 
-fn list_members(run: &dyn for<'x> Fn(&'x [String], u64) -> Option<(i32, String)>, archive: &Path) -> Result<Vec<String>, String> {
+fn list_members(
+    run: &dyn for<'x> Fn(&'x [String], u64) -> Option<(i32, String)>,
+    archive: &Path,
+) -> Result<Vec<String>, String> {
     let arg = archive.to_string_lossy().into_owned();
     let (argv, timeout) = match archive_kind(archive) {
         ArchiveKind::Zip => (vec!["unzip".to_string(), "-Z1".to_string(), arg], 60),
@@ -381,7 +428,10 @@ fn list_members(run: &dyn for<'x> Fn(&'x [String], u64) -> Option<(i32, String)>
     };
     match (run)(&argv, timeout) {
         Some((0, stdout)) => Ok(stdout.lines().map(str::to_string).collect()),
-        Some((code, stderr)) => Err(format!("Cannot list archive: tool exited {code}: {}", stderr.trim())),
+        Some((code, stderr)) => Err(format!(
+            "Cannot list archive: tool exited {code}: {}",
+            stderr.trim()
+        )),
         None => Err("Cannot list archive: listing failed".to_string()),
     }
 }
@@ -390,17 +440,27 @@ fn walk_entries(root: &Path) -> Vec<(PathBuf, bool, bool, u64)> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_path_buf()];
     while let Some(dir) = stack.pop() {
-        let Ok(entries) = std::fs::read_dir(&dir) else { continue };
-        let mut children: Vec<PathBuf> =
-            entries.filter_map(|entry| entry.ok().map(|entry| entry.path())).collect();
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        let mut children: Vec<PathBuf> = entries
+            .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+            .collect();
         children.sort();
         for child in children {
-            let Ok(meta) = std::fs::symlink_metadata(&child) else { continue };
+            let Ok(meta) = std::fs::symlink_metadata(&child) else {
+                continue;
+            };
             let kind = meta.file_type();
             if kind.is_dir() && !kind.is_symlink() {
                 stack.push(child);
             } else {
-                out.push((child, kind.is_symlink(), !kind.is_file() && !kind.is_dir(), meta.len()));
+                out.push((
+                    child,
+                    kind.is_symlink(),
+                    !kind.is_file() && !kind.is_dir(),
+                    meta.len(),
+                ));
             }
         }
     }
@@ -411,7 +471,11 @@ fn walk_entries(root: &Path) -> Vec<(PathBuf, bool, bool, u64)> {
 fn remove_validated(dest: &Path, members: &[Vec<String>]) {
     let mut paths: Vec<PathBuf> = members
         .iter()
-        .map(|parts| parts.iter().fold(dest.to_path_buf(), |base, part| base.join(part)))
+        .map(|parts| {
+            parts
+                .iter()
+                .fold(dest.to_path_buf(), |base, part| base.join(part))
+        })
         .collect();
     paths.sort();
     paths.dedup();
@@ -431,32 +495,60 @@ fn remove_validated(dest: &Path, members: &[Vec<String>]) {
 /// Extract regular files and directories only: links, devices, and
 /// over-cap expansions are refused after unpacking into `dest`, with
 /// best-effort cleanup so nothing unexpected persists.
-pub fn extract_archive(run: &dyn for<'x> Fn(&'x [String], u64) -> Option<(i32, String)>, archive: &Path, dest_dir: &Path) -> Result<(), String> {
+pub fn extract_archive(
+    run: &dyn for<'x> Fn(&'x [String], u64) -> Option<(i32, String)>,
+    archive: &Path,
+    dest_dir: &Path,
+) -> Result<(), String> {
     std::fs::create_dir_all(dest_dir)
         .map_err(|error| format!("Cannot prepare archive destination: {error}"))?;
     let dest_meta = std::fs::symlink_metadata(dest_dir)
         .map_err(|error| format!("Cannot prepare archive destination: {error}"))?;
     if !dest_meta.is_dir() {
-        return Err(format!("Archive destination is not a real directory: {}", dest_dir.display()));
+        return Err(format!(
+            "Archive destination is not a real directory: {}",
+            dest_dir.display()
+        ));
     }
     let members = list_members(run, archive)?;
     let normalized = validate_members(&members)?;
     let arg = archive.to_string_lossy().into_owned();
     let dest_arg = dest_dir.to_string_lossy().into_owned();
     let argv = match archive_kind(archive) {
-        ArchiveKind::Zip => vec!["unzip".to_string(), "-oq".to_string(), arg, "-d".to_string(), dest_arg],
-        _ => vec!["tar".to_string(), "-xf".to_string(), arg, "-C".to_string(), dest_arg, "--no-same-owner".to_string()],
+        ArchiveKind::Zip => vec![
+            "unzip".to_string(),
+            "-oq".to_string(),
+            arg,
+            "-d".to_string(),
+            dest_arg,
+        ],
+        _ => vec![
+            "tar".to_string(),
+            "-xf".to_string(),
+            arg,
+            "-C".to_string(),
+            dest_arg,
+            "--no-same-owner".to_string(),
+        ],
     };
     match (run)(&argv, 600) {
         Some((0, _)) => {}
-        Some((code, stderr)) => return Err(format!("Extraction failed: tool exited {code}: {}", stderr.trim())),
+        Some((code, stderr)) => {
+            return Err(format!(
+                "Extraction failed: tool exited {code}: {}",
+                stderr.trim()
+            ))
+        }
         None => return Err("Extraction failed: unpacking failed".to_string()),
     }
     let mut total: u64 = 0;
     for (path, is_link, is_special, size) in walk_entries(dest_dir) {
         total += size;
         if is_link || is_special {
-            let rel = path.strip_prefix(dest_dir).map(|rel| rel.to_string_lossy().into_owned()).unwrap_or_default();
+            let rel = path
+                .strip_prefix(dest_dir)
+                .map(|rel| rel.to_string_lossy().into_owned())
+                .unwrap_or_default();
             remove_validated(dest_dir, &normalized);
             return Err(format!("Unsupported archive member type: {rel}"));
         }
@@ -496,18 +588,31 @@ mod tests {
         let assets = release_assets(&release);
         assert_eq!(assets.len(), 1);
         assert_eq!(
-            find_release_asset(&assets, |name| name.ends_with(".xz")).map(|asset| asset.name.as_str()),
+            find_release_asset(&assets, |name| name.ends_with(".xz"))
+                .map(|asset| asset.name.as_str()),
             Some("tool.tar.xz")
         );
-        assert_eq!(validate_version("v1.2.3", r"v[0-9]+\.[0-9]+\.[0-9]+", "tool").unwrap(), "v1.2.3");
-        assert!(validate_version("1.2.3", r"v[0-9]+\.[0-9]+\.[0-9]+", "tool").unwrap_err().contains("Unexpected tool"));
+        assert_eq!(
+            validate_version("v1.2.3", r"v[0-9]+\.[0-9]+\.[0-9]+", "tool").unwrap(),
+            "v1.2.3"
+        );
+        assert!(
+            validate_version("1.2.3", r"v[0-9]+\.[0-9]+\.[0-9]+", "tool")
+                .unwrap_err()
+                .contains("Unexpected tool")
+        );
     }
 
     #[test]
     fn prunes_oldest_installations_first() {
         let dir = tempfile::tempdir().unwrap();
         let mut paths = Vec::new();
-        for name in ["proton-cachyos-a", "proton-cachyos-b", "proton-cachyos-c", "other"] {
+        for name in [
+            "proton-cachyos-a",
+            "proton-cachyos-b",
+            "proton-cachyos-c",
+            "other",
+        ] {
             let path = dir.path().join(name);
             std::fs::create_dir_all(&path).unwrap();
             paths.push(path);
@@ -523,12 +628,21 @@ mod tests {
 
     fn set_mtime(path: &Path, secs: i64) {
         let times = [
-            libc::timespec { tv_sec: secs, tv_nsec: 0 },
-            libc::timespec { tv_sec: secs, tv_nsec: 0 },
+            libc::timespec {
+                tv_sec: secs,
+                tv_nsec: 0,
+            },
+            libc::timespec {
+                tv_sec: secs,
+                tv_nsec: 0,
+            },
         ];
         let path = std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();
         unsafe {
-            assert_eq!(libc::utimensat(libc::AT_FDCWD, path.as_ptr(), times.as_ptr(), 0), 0);
+            assert_eq!(
+                libc::utimensat(libc::AT_FDCWD, path.as_ptr(), times.as_ptr(), 0),
+                0
+            );
         }
     }
 
@@ -551,31 +665,75 @@ mod tests {
         let good = sha256_hex(b"payload");
         std::fs::write(dir.path().join("sums"), format!("{good}  tool.tar.xz\n")).unwrap();
         assert!(verify_checksum_file(&dir.path().join("sums"), &target, "sha256").is_ok());
-        std::fs::write(dir.path().join("bad"), format!("{}  tool.tar.xz\n", "0".repeat(64))).unwrap();
-        assert!(verify_checksum_file(&dir.path().join("bad"), &target, "sha256").unwrap_err().contains("Checksum mismatch"));
+        std::fs::write(
+            dir.path().join("bad"),
+            format!("{}  tool.tar.xz\n", "0".repeat(64)),
+        )
+        .unwrap();
+        assert!(
+            verify_checksum_file(&dir.path().join("bad"), &target, "sha256")
+                .unwrap_err()
+                .contains("Checksum mismatch")
+        );
         std::fs::write(dir.path().join("none"), "# nothing\n").unwrap();
-        assert!(verify_checksum_file(&dir.path().join("none"), &target, "sha256").unwrap_err().contains("exactly one"));
-        assert!(verify_checksum_file(&dir.path().join("sums"), &target, "md5").unwrap_err().contains("Unsupported checksum algorithm"));
+        assert!(
+            verify_checksum_file(&dir.path().join("none"), &target, "sha256")
+                .unwrap_err()
+                .contains("exactly one")
+        );
+        assert!(
+            verify_checksum_file(&dir.path().join("sums"), &target, "md5")
+                .unwrap_err()
+                .contains("Unsupported checksum algorithm")
+        );
         std::os::unix::fs::symlink(&target, dir.path().join("link")).unwrap();
-        assert!(verify_checksum_file(&dir.path().join("sums"), &dir.path().join("link"), "sha256").unwrap_err().contains("not a regular file"));
+        assert!(
+            verify_checksum_file(&dir.path().join("sums"), &dir.path().join("link"), "sha256")
+                .unwrap_err()
+                .contains("not a regular file")
+        );
     }
 
     fn sha256_hex(data: &[u8]) -> String {
         use sha2::Digest;
-        sha2::Sha256::digest(data).iter().map(|byte| format!("{byte:02x}")).collect()
+        sha2::Sha256::digest(data)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect()
     }
 
     #[test]
     fn rejects_traversal_duplicates_and_nul_members() {
-        assert!(validate_members(&["../evil".to_string()]).unwrap_err().to_string().contains("traversal"));
-        assert!(validate_members(&["/abs".to_string()]).unwrap_err().to_string().contains("traversal"));
-        assert!(validate_members(&["a", "a"].iter().map(|name| name.to_string()).collect::<Vec<_>>())
+        assert!(validate_members(&["../evil".to_string()])
             .unwrap_err()
             .to_string()
-            .contains("Duplicate"));
-        assert!(validate_members(&["a\0b".to_string()]).unwrap_err().to_string().contains("NUL"));
+            .contains("traversal"));
+        assert!(validate_members(&["/abs".to_string()])
+            .unwrap_err()
+            .to_string()
+            .contains("traversal"));
+        assert!(validate_members(
+            &["a", "a"]
+                .iter()
+                .map(|name| name.to_string())
+                .collect::<Vec<_>>()
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("Duplicate"));
+        assert!(validate_members(&["a\0b".to_string()])
+            .unwrap_err()
+            .to_string()
+            .contains("NUL"));
         assert_eq!(
-            validate_members(&["./x", "y/"].iter().map(|name| name.to_string()).collect::<Vec<_>>()).unwrap().len(),
+            validate_members(
+                &["./x", "y/"]
+                    .iter()
+                    .map(|name| name.to_string())
+                    .collect::<Vec<_>>()
+            )
+            .unwrap()
+            .len(),
             2
         );
     }
@@ -588,10 +746,24 @@ mod tests {
         std::fs::create_dir_all(src.join("pkg")).unwrap();
         std::fs::write(src.join("pkg/tool"), "bits").unwrap();
         let tarball = dir.path().join("pkg.tar.gz");
-        assert!(run(&["tar".to_string(), "-czf".to_string(), tarball.to_string_lossy().into_owned(), "-C".to_string(), src.to_string_lossy().into_owned(), "pkg".to_string()], 30).is_some_and(|(code, _)| code == 0));
+        assert!(run(
+            &[
+                "tar".to_string(),
+                "-czf".to_string(),
+                tarball.to_string_lossy().into_owned(),
+                "-C".to_string(),
+                src.to_string_lossy().into_owned(),
+                "pkg".to_string()
+            ],
+            30
+        )
+        .is_some_and(|(code, _)| code == 0));
         let out = dir.path().join("tar-out");
         extract_archive(&run, &tarball, &out).unwrap();
-        assert_eq!(std::fs::read_to_string(out.join("pkg/tool")).unwrap(), "bits");
+        assert_eq!(
+            std::fs::read_to_string(out.join("pkg/tool")).unwrap(),
+            "bits"
+        );
         let zipfile = dir.path().join("pkg.zip");
         assert!(std::process::Command::new("zip")
             .args(["-qr", &zipfile.to_string_lossy(), "pkg"])
@@ -601,7 +773,10 @@ mod tests {
         let out = dir.path().join("zip-out");
         std::fs::create_dir_all(&out).unwrap();
         extract_archive(&run, &zipfile, &out).unwrap();
-        assert_eq!(std::fs::read_to_string(out.join("pkg/tool")).unwrap(), "bits");
+        assert_eq!(
+            std::fs::read_to_string(out.join("pkg/tool")).unwrap(),
+            "bits"
+        );
     }
 
     #[test]
@@ -613,7 +788,18 @@ mod tests {
         std::fs::write(src.join("real"), "data").unwrap();
         std::os::unix::fs::symlink("real", src.join("link")).unwrap();
         let tarball = dir.path().join("evil.tar.gz");
-        assert!(run(&["tar".to_string(), "-czf".to_string(), tarball.to_string_lossy().into_owned(), "-C".to_string(), src.to_string_lossy().into_owned(), ".".to_string()], 30).is_some());
+        assert!(run(
+            &[
+                "tar".to_string(),
+                "-czf".to_string(),
+                tarball.to_string_lossy().into_owned(),
+                "-C".to_string(),
+                src.to_string_lossy().into_owned(),
+                ".".to_string()
+            ],
+            30
+        )
+        .is_some());
         let error = extract_archive(&run, &tarball, &dir.path().join("out")).unwrap_err();
         assert!(error.contains("Unsupported archive member type"));
     }

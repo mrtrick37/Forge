@@ -48,7 +48,8 @@ pub fn find_gaming_tool(flatpak_id: &str) -> Option<&'static GamingTool> {
 /// Flatpak Discord client the Wayland/portal permissions screen share needs.
 pub fn discord_screenshare_fix_command() -> Vec<String> {
     [
-        "bash", "-c",
+        "bash",
+        "-c",
         "flatpak override --user com.discordapp.Discord \
          --env=ELECTRON_OZONE_PLATFORM_HINT=auto \
          --socket=wayland --socket=fallback-x11 --device=dri \
@@ -64,7 +65,8 @@ pub fn discord_screenshare_fix_command() -> Vec<String> {
 /// Flatpak OBS client the Wayland/PipeWire permissions capture needs.
 pub fn obs_pipewire_fix_command() -> Vec<String> {
     [
-        "bash", "-c",
+        "bash",
+        "-c",
         "flatpak override --user com.obsproject.Studio \
          --socket=wayland --socket=pulseaudio --device=dri \
          --talk-name=org.freedesktop.portal.Desktop",
@@ -114,7 +116,10 @@ mod tests {
 
     #[test]
     fn finds_known_tool_and_rejects_unknown() {
-        assert_eq!(find_gaming_tool("com.valvesoftware.Steam").unwrap().name, "Steam");
+        assert_eq!(
+            find_gaming_tool("com.valvesoftware.Steam").unwrap().name,
+            "Steam"
+        );
         assert!(find_gaming_tool("org.not.Curated").is_none());
     }
 

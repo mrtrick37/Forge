@@ -8,8 +8,14 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn temporary_path(destination: &Path) -> PathBuf {
-    let nonce = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_nanos();
-    let name = destination.file_name().and_then(|name| name.to_str()).unwrap_or("kyth-work");
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let name = destination
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("kyth-work");
     destination.with_file_name(format!(".{name}.{}.{}.tmp", std::process::id(), nonce))
 }
 
@@ -22,7 +28,9 @@ pub fn copy_if_newer(source: impl AsRef<Path>, destination: impl AsRef<Path>) ->
     let source = source.as_ref();
     let destination = destination.as_ref();
     if destination.exists() {
-        if let (Ok(source_meta), Ok(destination_meta)) = (std::fs::metadata(source), std::fs::metadata(destination)) {
+        if let (Ok(source_meta), Ok(destination_meta)) =
+            (std::fs::metadata(source), std::fs::metadata(destination))
+        {
             if destination_meta.modified().ok() >= source_meta.modified().ok() {
                 return false;
             }
@@ -70,6 +78,9 @@ mod tests {
     #[test]
     fn missing_source_is_non_fatal() {
         let directory = tempdir().unwrap();
-        assert!(!copy_if_newer(directory.path().join("missing"), directory.path().join("out")));
+        assert!(!copy_if_newer(
+            directory.path().join("missing"),
+            directory.path().join("out")
+        ));
     }
 }

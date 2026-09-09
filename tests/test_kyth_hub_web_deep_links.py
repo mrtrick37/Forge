@@ -24,10 +24,11 @@ HUB_ROUTES = json.loads(ROUTE_MANIFEST.read_text(encoding="utf-8"))
 GENERATOR_RS = ROOT / "src" / "kyth-shared-rs" / "src" / "hub_desktop_entries_bin.rs"
 CARGO = (ROOT / "src" / "kyth-shared-rs" / "Cargo.toml").read_text(encoding="utf-8")
 DEEP_LINK_TS = (HUB_WEB / "deepLink.ts").read_text(encoding="utf-8")
+ACCEPTANCE_TS = (HUB_WEB / "services" / "acceptance.ts").read_text(encoding="utf-8")
 DESTINATIONS_TS = (HUB_WEB / "data" / "destinations.ts").read_text(encoding="utf-8")
 SIDEBAR_TSX = (HUB_WEB / "components" / "Sidebar.tsx").read_text(encoding="utf-8")
 HUB_PAGE_TSX = (HUB_WEB / "pages" / "HubPage.tsx").read_text(encoding="utf-8")
-LAUNCHER_SH = (ROOT / "src" / "kyth-welcome" / "kyth-welcome-launch").read_text(encoding="utf-8")
+LAUNCHER_RS = (ROOT / "src" / "kyth-shared-rs" / "src" / "hub_launcher_bin.rs").read_text(encoding="utf-8")
 CTX_INSTALLS_SH = (
     ROOT / "build_files" / "scripts" / "branding" / "23-kyth-helper-ctx-installs.sh"
 ).read_text(encoding="utf-8")
@@ -77,11 +78,11 @@ def _resolvable_keys() -> set[str]:
 
 
 class HubWebDeepLinkTests(unittest.TestCase):
-    def test_tauri_hub_is_the_default_without_a_slint_recovery_path(self):
-        self.assertIn('target_bin="/usr/bin/kyth-hub-shell"', LAUNCHER_SH)
-        self.assertNotIn('/usr/bin/kyth-welcome', LAUNCHER_SH)
-        self.assertNotIn("KYTH_USE_NATIVE_UI", LAUNCHER_SH)
-        self.assertNotIn("kyth-hub-native", LAUNCHER_SH)
+    def test_native_rust_launcher_is_the_default_without_a_python_fallback(self):
+        self.assertIn('name = "kyth-welcome-launch"', CARGO)
+        self.assertIn('const TARGET: &str = "/usr/bin/kyth-hub-shell";', LAUNCHER_RS)
+        self.assertNotIn("python", _code_only(LAUNCHER_RS).lower())
+        self.assertNotIn("kyth-welcome/kyth_welcome", LAUNCHER_RS)
 
     def test_every_krunner_page_key_resolves(self):
         self.assertIn('name = "kyth-hub-desktop-entries"', CARGO)
@@ -141,6 +142,12 @@ class HubWebDeepLinkTests(unittest.TestCase):
         listener = DEEP_LINK_TS.index('await listen<string>("navigate"')
         pending = DEEP_LINK_TS.index('const pending = await invoke<string | null>("take_pending_page")')
         self.assertLess(listener, pending)
+
+    def test_acceptance_events_cross_the_tauri_command_boundary(self):
+        # The installed-image Hub acceptance harness observes this file to
+        # qualify deep links and page probes. A silent no-op here makes every
+        # valid Hub launch look like a deep-link failure in the VM.
+        self.assertIn('invoke("acceptance_record", { event, detail })', ACCEPTANCE_TS)
 
 if __name__ == "__main__":
     unittest.main()

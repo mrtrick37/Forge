@@ -102,7 +102,7 @@ class ShippedCommandContracts(unittest.TestCase):
                     self.assertIn(f"{icon}.svg", icon_installer)
 
     def test_hub_launcher_desktop_name(self):
-        desktop = ROOT / "src/kyth-welcome/kyth-welcome.desktop"
+        desktop = ROOT / "src/kyth-hub-web/src/data/kyth-welcome.desktop"
         parser = configparser.ConfigParser(interpolation=None, strict=False)
         parser.read(desktop, encoding="utf-8")
         self.assertEqual(parser["Desktop Entry"]["Name"], "Kyth Hub")
@@ -152,7 +152,10 @@ class BuildAssemblyContracts(unittest.TestCase):
         dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
         builder = dockerfile[:dockerfile.index("# Base Image")]
         self.assertIn("COPY build_files/exe-handler-apps.json /build_files/exe-handler-apps.json", builder)
-        self.assertIn("COPY src/kyth-welcome /build/kyth-welcome", builder)
+        self.assertIn("COPY src/kyth-hub-web /build/kyth-hub-web", builder)
+        self.assertNotIn("COPY src/kyth-welcome", builder)
+        self.assertNotIn("source=src/kyth-welcome", builder)
+        self.assertIn("src/data/compat_games.json", builder)
 
     def test_fedora_nvidia_devel_tracks_coordinated_latest_kernel(self):
         script = (BUILD_FILES / "scripts/lib/fedora-kernel.sh").read_text(encoding="utf-8")

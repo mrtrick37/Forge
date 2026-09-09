@@ -22,7 +22,9 @@ pub fn safe_id(name: &str) -> String {
     let mut pending_separator = false;
     for character in name.to_lowercase().chars() {
         if character.is_ascii_alphanumeric() || matches!(character, '.' | '_' | '-') {
-            if pending_separator && !result.is_empty() { result.push('-'); }
+            if pending_separator && !result.is_empty() {
+                result.push('-');
+            }
             pending_separator = false;
             result.push(character);
         } else {
@@ -37,10 +39,18 @@ pub fn rewrite_steam_exec(exec_line: &str) -> Option<String> {
     let target = exec_line.split_once('=')?.1.trim();
     let uri = Regex::new(r"steam://rungameid/([0-9]+)").ok()?;
     if let Some(capture) = uri.captures(target) {
-        return Some(format!("Exec=flatpak run com.valvesoftware.Steam steam://rungameid/{}", &capture[1]));
+        return Some(format!(
+            "Exec=flatpak run com.valvesoftware.Steam steam://rungameid/{}",
+            &capture[1]
+        ));
     }
     let applaunch = Regex::new(r"-applaunch\s+([0-9]+)").ok()?;
-    applaunch.captures(target).map(|capture| format!("Exec=flatpak run com.valvesoftware.Steam steam://rungameid/{}", &capture[1]))
+    applaunch.captures(target).map(|capture| {
+        format!(
+            "Exec=flatpak run com.valvesoftware.Steam steam://rungameid/{}",
+            &capture[1]
+        )
+    })
 }
 
 /// Transform a Steam desktop file and return its stable app id and content.
@@ -54,11 +64,18 @@ pub fn rewrite_steam_desktop(content: &str) -> Option<SteamDesktopRewrite> {
 
     for line in content.lines() {
         let trimmed = line.trim();
-        if let Some(value) = line.strip_prefix("Name=") { name = value.trim().to_string(); }
-        if let Some(value) = line.strip_prefix("Icon=") { icon = Some(value.trim().to_string()); }
+        if let Some(value) = line.strip_prefix("Name=") {
+            name = value.trim().to_string();
+        }
+        if let Some(value) = line.strip_prefix("Icon=") {
+            icon = Some(value.trim().to_string());
+        }
         if trimmed.starts_with("Exec=") {
             if let Some(rewritten) = rewrite_steam_exec(trimmed) {
-                let appid = Regex::new(r"rungameid/([0-9]+)").ok()?.captures(&rewritten)?[1].to_string();
+                let appid = Regex::new(r"rungameid/([0-9]+)")
+                    .ok()?
+                    .captures(&rewritten)?[1]
+                    .to_string();
                 rewritten_exec = Some((appid, rewritten.clone()));
                 lines.push(rewritten);
                 continue;
@@ -75,12 +92,25 @@ pub fn rewrite_steam_desktop(content: &str) -> Option<SteamDesktopRewrite> {
     }
 
     let (appid, exec) = rewritten_exec?;
-    let exec_index = lines.iter().position(|line| line.trim().starts_with("Exec="));
-    if let Some(index) = exec_index { lines[index] = exec; } else { return None; }
-    if !saw_categories { lines.push("Categories=Game;".to_string()); }
+    let exec_index = lines
+        .iter()
+        .position(|line| line.trim().starts_with("Exec="));
+    if let Some(index) = exec_index {
+        lines[index] = exec;
+    } else {
+        return None;
+    }
+    if !saw_categories {
+        lines.push("Categories=Game;".to_string());
+    }
     lines.push("X-KythExportedSteamGame=true".to_string());
     lines.push("X-Flatpak=com.valvesoftware.Steam".to_string());
-    Some(SteamDesktopRewrite { appid, name, icon, content: format!("{}\n", lines.join("\n")) })
+    Some(SteamDesktopRewrite {
+        appid,
+        name,
+        icon,
+        content: format!("{}\n", lines.join("\n")),
+    })
 }
 
 /// Filename globs the launcher scans, mirroring `categorize_web_apps`.
@@ -102,17 +132,23 @@ pub fn matches_web_app_name(name: &str, pattern: &str) -> bool {
         return name == pattern;
     }
     let segments: Vec<&str> = pattern.split('*').collect();
-    let Some((first, tail)) = segments.split_first() else { return true };
+    let Some((first, tail)) = segments.split_first() else {
+        return true;
+    };
     if !name.starts_with(first) {
         return false;
     }
     let mut rest = &name[first.len()..];
-    let Some((last, middle)) = tail.split_last() else { return true };
+    let Some((last, middle)) = tail.split_last() else {
+        return true;
+    };
     for part in middle {
         if part.is_empty() {
             continue;
         }
-        let Some(index) = rest.find(part) else { return false };
+        let Some(index) = rest.find(part) else {
+            return false;
+        };
         rest = &rest[index + part.len()..];
     }
     last.is_empty() || rest.ends_with(last)
@@ -121,9 +157,17 @@ pub fn matches_web_app_name(name: &str, pattern: &str) -> bool {
 /// Insert the Kyth web-app category when a desktop file is an app launcher.
 /// `None` means no change is needed.
 pub fn categorize_web_app(content: &str) -> Option<String> {
-    let app = RegexBuilder::new(r"--app(-id)?=").multi_line(true).build().ok()?;
-    let categories = RegexBuilder::new(r"^Categories=").multi_line(true).build().ok()?;
-    if !app.is_match(content) || categories.is_match(content) { return None; }
+    let app = RegexBuilder::new(r"--app(-id)?=")
+        .multi_line(true)
+        .build()
+        .ok()?;
+    let categories = RegexBuilder::new(r"^Categories=")
+        .multi_line(true)
+        .build()
+        .ok()?;
+    if !app.is_match(content) || categories.is_match(content) {
+        return None;
+    }
     let mut lines = Vec::new();
     let mut inserted = false;
     for line in content.lines() {
@@ -141,23 +185,45 @@ pub fn categorize_web_app(content: &str) -> Option<String> {
 /// the caller writes the result (and marks changed) whenever the Kali gate
 /// passes, even when neither line matched.
 pub fn rewrite_zenmap_desktop(content: &str) -> Option<String> {
-    if !content.contains("--name kali") && !content.contains("-n kali") { return None; }
+    if !content.contains("--name kali") && !content.contains("-n kali") {
+        return None;
+    }
     let exec = Regex::new(r"(?m)^Exec=.*$").ok()?;
     let try_exec = Regex::new(r"(?m)^TryExec=.*$").ok()?;
-    let content = exec.replace_all(content, "Exec=kyth-distrobox-root-launch --root kali /usr/bin/zenmap").into_owned();
-    Some(try_exec.replace_all(&content, "TryExec=kyth-distrobox-root-launch").into_owned())
+    let content = exec
+        .replace_all(
+            content,
+            "Exec=kyth-distrobox-root-launch --root kali /usr/bin/zenmap",
+        )
+        .into_owned();
+    Some(
+        try_exec
+            .replace_all(&content, "TryExec=kyth-distrobox-root-launch")
+            .into_owned(),
+    )
 }
 
 /// Apply the safe text-only Kali launcher fixups.  The caller decides which
 /// files are in the Kali export directory and persists the returned text.
 pub fn rewrite_kali_desktop(content: &str) -> Option<String> {
-    if !content.contains("--name kali") && !content.contains("-n kali") { return None; }
+    if !content.contains("--name kali") && !content.contains("-n kali") {
+        return None;
+    }
     let privilege = Regex::new(r"\b(pkexec|kdesu|gksu|gksudo)\s+").ok()?;
-    let hidden = RegexBuilder::new(r"^NoDisplay\s*=\s*true").case_insensitive(true).multi_line(false).build().ok()?;
+    let hidden = RegexBuilder::new(r"^NoDisplay\s*=\s*true")
+        .case_insensitive(true)
+        .multi_line(false)
+        .build()
+        .ok()?;
     let mut lines = Vec::new();
     let mut has_categories = false;
     for line in content.lines() {
-        if hidden.is_match(line) || line.starts_with("OnlyShowIn=") || line.starts_with("NotShowIn=") { continue; }
+        if hidden.is_match(line)
+            || line.starts_with("OnlyShowIn=")
+            || line.starts_with("NotShowIn=")
+        {
+            continue;
+        }
         if line.starts_with("Categories=") {
             lines.push("Categories=X-KythSecurity;".to_string());
             has_categories = true;
@@ -165,7 +231,9 @@ pub fn rewrite_kali_desktop(content: &str) -> Option<String> {
         }
         lines.push(privilege.replace_all(line, "sudo -E ").into_owned());
     }
-    if !has_categories { lines.push("Categories=X-KythSecurity;".to_string()); }
+    if !has_categories {
+        lines.push("Categories=X-KythSecurity;".to_string());
+    }
     Some(format!("{}\n", lines.join("\n")))
 }
 
@@ -181,14 +249,23 @@ mod tests {
 
     #[test]
     fn rewrites_uri_and_applaunch_forms() {
-        assert_eq!(rewrite_steam_exec("Exec=steam -silent steam://rungameid/123"), Some("Exec=flatpak run com.valvesoftware.Steam steam://rungameid/123".into()));
-        assert_eq!(rewrite_steam_exec("Exec=steam -applaunch 456"), Some("Exec=flatpak run com.valvesoftware.Steam steam://rungameid/456".into()));
+        assert_eq!(
+            rewrite_steam_exec("Exec=steam -silent steam://rungameid/123"),
+            Some("Exec=flatpak run com.valvesoftware.Steam steam://rungameid/123".into())
+        );
+        assert_eq!(
+            rewrite_steam_exec("Exec=steam -applaunch 456"),
+            Some("Exec=flatpak run com.valvesoftware.Steam steam://rungameid/456".into())
+        );
         assert!(rewrite_steam_exec("Exec=steam --help").is_none());
     }
 
     #[test]
     fn rewrites_desktop_metadata_and_drops_hidden_flags() {
-        let result = rewrite_steam_desktop("[Desktop Entry]\nName=Test Game\nIcon=123\nExec=steam -applaunch 123\nHidden=true\n").unwrap();
+        let result = rewrite_steam_desktop(
+            "[Desktop Entry]\nName=Test Game\nIcon=123\nExec=steam -applaunch 123\nHidden=true\n",
+        )
+        .unwrap();
         assert_eq!(result.appid, "123");
         assert!(result.content.contains("Categories=Game;"));
         assert!(!result.content.contains("Hidden=true"));
@@ -197,7 +274,10 @@ mod tests {
 
     #[test]
     fn zenmap_exec_lines_route_through_kali_box() {
-        let fixed = rewrite_zenmap_desktop("Exec=/usr/bin/zenmap %F\nTryExec=/usr/bin/zenmap\nName=x --name kali\n").unwrap();
+        let fixed = rewrite_zenmap_desktop(
+            "Exec=/usr/bin/zenmap %F\nTryExec=/usr/bin/zenmap\nName=x --name kali\n",
+        )
+        .unwrap();
         assert!(fixed.contains("Exec=kyth-distrobox-root-launch --root kali /usr/bin/zenmap"));
         assert!(fixed.contains("TryExec=kyth-distrobox-root-launch"));
         assert!(rewrite_zenmap_desktop("Exec=/usr/bin/other\n").is_none());
@@ -208,22 +288,32 @@ mod tests {
         for pattern in WEB_APP_GLOBS {
             assert!(pattern.ends_with(".desktop"), "{pattern}");
         }
-        assert!(matches_web_app_name("brave-example.desktop", "brave-*.desktop"));
+        assert!(matches_web_app_name(
+            "brave-example.desktop",
+            "brave-*.desktop"
+        ));
         assert!(matches_web_app_name(
             "com.brave.Browser.flextop.abc123.desktop",
             "com.brave.Browser.flextop.*.desktop"
         ));
-        assert!(!matches_web_app_name("brave-example.desktop", "chrome-*.desktop"));
+        assert!(!matches_web_app_name(
+            "brave-example.desktop",
+            "chrome-*.desktop"
+        ));
         assert!(!matches_web_app_name("chrome-note.txt", "chrome-*.desktop"));
         assert!(!matches_web_app_name("xbrave-y.desktop", "brave-*.desktop"));
     }
 
     #[test]
     fn web_and_kali_rewrites_are_opt_in() {
-        let web = categorize_web_app("[Desktop Entry]\nExec=brave --app=https://example.test\n").unwrap();
+        let web =
+            categorize_web_app("[Desktop Entry]\nExec=brave --app=https://example.test\n").unwrap();
         assert!(web.contains("Categories=X-KythWebApp;"));
         assert!(categorize_web_app("[Desktop Entry]\nExec=brave --new-window\n").is_none());
-        let kali = rewrite_kali_desktop("[Desktop Entry]\nName=Kali\nExec=pkexec tool --name kali\nNoDisplay=true\n").unwrap();
+        let kali = rewrite_kali_desktop(
+            "[Desktop Entry]\nName=Kali\nExec=pkexec tool --name kali\nNoDisplay=true\n",
+        )
+        .unwrap();
         assert!(kali.contains("Exec=sudo -E tool --name kali"));
         assert!(!kali.contains("NoDisplay"));
     }

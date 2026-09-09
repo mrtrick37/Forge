@@ -14,9 +14,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use kyth_shared::system::process::{run_bounded, run_bounded_command};
 use kyth_shared::system::sched_daemon::{
-    GamingCache, SchedEffect, SchedState, current_scheduler, gamescope_active,
-    load_sched_config, poll_step, proc_gaming_active, session_uids, set_scheduler,
-    write_status,
+    current_scheduler, gamescope_active, load_sched_config, poll_step, proc_gaming_active,
+    session_uids, set_scheduler, write_status, GamingCache, SchedEffect, SchedState,
 };
 
 static RUNNING: AtomicBool = AtomicBool::new(true);
@@ -55,12 +54,14 @@ fn on_path(name: &str) -> bool {
 }
 
 fn run(argv: &[String], timeout_secs: u64) -> Option<(i32, String)> {
-    run_bounded(argv, Duration::from_secs(timeout_secs)).ok().map(|output| {
-        (
-            output.status.code().unwrap_or(1),
-            String::from_utf8_lossy(&output.stdout).into_owned(),
-        )
-    })
+    run_bounded(argv, Duration::from_secs(timeout_secs))
+        .ok()
+        .map(|output| {
+            (
+                output.status.code().unwrap_or(1),
+                String::from_utf8_lossy(&output.stdout).into_owned(),
+            )
+        })
 }
 
 fn query_gamemode(uid: u32) -> bool {
@@ -86,7 +87,10 @@ fn query_gamemode(uid: u32) -> bool {
     match run_bounded_command(command, Duration::from_secs(3)) {
         Ok(output) if output.status.success() => {
             let text = String::from_utf8_lossy(&output.stdout);
-            text.split_whitespace().last().and_then(|value| value.parse::<i64>().ok()).is_some_and(|value| value > 0)
+            text.split_whitespace()
+                .last()
+                .and_then(|value| value.parse::<i64>().ok())
+                .is_some_and(|value| value > 0)
         }
         _ => false,
     }
@@ -148,10 +152,29 @@ fn gaming_detected(cache: &mut GamingCache, now: f64) -> bool {
     if !uids.contains(&uid) {
         uids.push(uid);
     }
-    let gamescope: Vec<u32> = uids.iter().copied().filter(|id| gamescope_active(*id)).collect();
-    let gamemode: Vec<u32> = uids.iter().copied().filter(|id| query_gamemode(*id)).collect();
+    let gamescope: Vec<u32> = uids
+        .iter()
+        .copied()
+        .filter(|id| gamescope_active(*id))
+        .collect();
+    let gamemode: Vec<u32> = uids
+        .iter()
+        .copied()
+        .filter(|id| query_gamemode(*id))
+        .collect();
     let proc_active = proc_gaming_active();
-    cache.check(now, Some(uid), false, &uids, &gamescope, &gamemode, proc_active, uid).is_some()
+    cache
+        .check(
+            now,
+            Some(uid),
+            false,
+            &uids,
+            &gamescope,
+            &gamemode,
+            proc_active,
+            uid,
+        )
+        .is_some()
 }
 
 fn main() -> std::process::ExitCode {
@@ -169,9 +192,7 @@ fn main() -> std::process::ExitCode {
     let poll = config.poll_interval;
     log(&format!(
         "Started — desktop={}  gaming={}  poll={}s",
-        config.desktop_scheduler,
-        config.gaming_scheduler,
-        poll as i64
+        config.desktop_scheduler, config.gaming_scheduler, poll as i64
     ));
     let runtime = runtime_dir();
     let mut state = SchedState::new();
@@ -202,7 +223,9 @@ fn main() -> std::process::ExitCode {
                     if set_scheduler(&run, &name) {
                         log(&format!("Scheduler → {name}"));
                     } else {
-                        log(&format!("kyth-scx set {name} failed — scx_loader may not be running"));
+                        log(&format!(
+                            "kyth-scx set {name} failed — scx_loader may not be running"
+                        ));
                     }
                     if gaming_now {
                         log(&format!("→ gaming profile ({})", config.gaming_scheduler));
@@ -222,8 +245,18 @@ fn main() -> std::process::ExitCode {
             },
             &run,
         );
-        let now_secs = SystemTime::now().duration_since(UNIX_EPOCH).map(|span| span.as_secs()).unwrap_or(0);
-        write_status(&runtime, &state.profile, &scheduler, gaming_now, state.manual_override.is_some(), now_secs);
+        let now_secs = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|span| span.as_secs())
+            .unwrap_or(0);
+        write_status(
+            &runtime,
+            &state.profile,
+            &scheduler,
+            gaming_now,
+            state.manual_override.is_some(),
+            now_secs,
+        );
         let steps = (config.poll_interval * 2.0) as i64;
         for _ in 0..steps.max(1) {
             if !RUNNING.load(Ordering::SeqCst) || WAKE.load(Ordering::SeqCst) {

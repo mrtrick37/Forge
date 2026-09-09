@@ -23,7 +23,9 @@ fn on_path(name: &str) -> bool {
 }
 
 fn is_wayland() -> bool {
-    env::var("XDG_SESSION_TYPE").map(|value| value.to_ascii_lowercase() == "wayland").unwrap_or(false)
+    env::var("XDG_SESSION_TYPE")
+        .map(|value| value.to_ascii_lowercase() == "wayland")
+        .unwrap_or(false)
 }
 
 fn main() {
@@ -39,7 +41,10 @@ fn apply() -> Vec<String> {
     if !on_path("kscreen-doctor") {
         return vec!["kscreen-doctor unavailable".to_string()];
     }
-    let listed = match run_bounded(&["kscreen-doctor".to_string(), "-o".to_string()], Duration::from_secs(8)) {
+    let listed = match run_bounded(
+        &["kscreen-doctor".to_string(), "-o".to_string()],
+        Duration::from_secs(8),
+    ) {
         Ok(output) if output.status.success() => output,
         _ => return vec!["kscreen-doctor -o failed".to_string()],
     };

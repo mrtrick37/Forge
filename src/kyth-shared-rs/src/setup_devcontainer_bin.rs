@@ -12,8 +12,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use kyth_shared::system::devcontainers::{
-    CREATE_TIMEOUT_SECS, NO_CONTAINERS_MESSAGE, create_argv, describe, devcontainers_path,
-    load_devcontainers,
+    create_argv, describe, devcontainers_path, load_devcontainers, CREATE_TIMEOUT_SECS,
+    NO_CONTAINERS_MESSAGE,
 };
 use kyth_shared::system::process::run_bounded;
 
@@ -27,7 +27,10 @@ fn main() -> std::process::ExitCode {
     }
     for (name, entry) in &boxes {
         println!("{}", describe(name, &entry.image));
-        let _ = run_bounded(&create_argv(name, &entry.image), Duration::from_secs(CREATE_TIMEOUT_SECS));
+        let _ = run_bounded(
+            &create_argv(name, &entry.image),
+            Duration::from_secs(CREATE_TIMEOUT_SECS),
+        );
     }
     std::process::ExitCode::SUCCESS
 }

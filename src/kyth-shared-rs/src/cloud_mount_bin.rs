@@ -22,7 +22,10 @@ fn main() -> std::process::ExitCode {
         let _ = std::process::Command::new("systemctl")
             .args(["--user", "start", &format!("rclone@{name}.service")])
             .output();
-        println!("kyth-cloud-mount: {name} \u{2192} {remote} \u{2192} {}", mount.display());
+        println!(
+            "kyth-cloud-mount: {name} \u{2192} {remote} \u{2192} {}",
+            mount.display()
+        );
     }
     std::process::ExitCode::SUCCESS
 }

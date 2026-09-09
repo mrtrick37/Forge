@@ -5,11 +5,14 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 fn argument(args: &[String], name: &str) -> Option<String> {
-    args.windows(2).find_map(|pair| (pair[0] == name).then(|| pair[1].clone()))
+    args.windows(2)
+        .find_map(|pair| (pair[0] == name).then(|| pair[1].clone()))
 }
 
 fn required(args: &[String], name: &str) -> Result<String, String> {
-    argument(args, name).filter(|value| !value.is_empty()).ok_or_else(|| format!("missing required argument {name}"))
+    argument(args, name)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| format!("missing required argument {name}"))
 }
 
 fn main() -> Result<(), String> {
@@ -42,7 +45,8 @@ fn main() -> Result<(), String> {
             .append(true)
             .open(PathBuf::from(path))
             .map_err(|error| error.to_string())?;
-        file.write_all(output.as_bytes()).map_err(|error| error.to_string())?;
+        file.write_all(output.as_bytes())
+            .map_err(|error| error.to_string())?;
     } else {
         print!("{output}");
     }

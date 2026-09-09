@@ -8,17 +8,24 @@
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use kyth_shared::system::network_preset::{TTL_PATH, TTL_SECS, apply_preset, config_path, load};
+use kyth_shared::system::network_preset::{apply_preset, config_path, load, TTL_PATH, TTL_SECS};
 
 fn py_bool(value: bool) -> &'static str {
-    if value { "True" } else { "False" }
+    if value {
+        "True"
+    } else {
+        "False"
+    }
 }
 
 fn main() -> std::process::ExitCode {
     let preset = load(config_path(None::<&Path>));
     match apply_preset(&preset, Path::new("/")) {
         Ok(written) => {
-            let dest = written.first().map(PathBuf::as_path).unwrap_or_else(|| Path::new(""));
+            let dest = written
+                .first()
+                .map(PathBuf::as_path)
+                .unwrap_or_else(|| Path::new(""));
             println!(
                 "kyth-apply-network: wrote {} doh={} dns={}",
                 dest.display(),

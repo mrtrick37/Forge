@@ -14,26 +14,51 @@ pub struct KwinLatencyConfig {
 }
 
 impl Default for KwinLatencyConfig {
-    fn default() -> Self { Self { profile: "balanced".into(), tearing: false } }
+    fn default() -> Self {
+        Self {
+            profile: "balanced".into(),
+            tearing: false,
+        }
+    }
 }
 
 impl KwinLatencyConfig {
     pub fn normalized(profile: impl AsRef<str>, tearing: bool) -> Self {
         let profile = profile.as_ref().to_ascii_lowercase();
-        let profile = if matches!(profile.as_str(), "balanced" | "gaming") { profile } else { "balanced".into() };
+        let profile = if matches!(profile.as_str(), "balanced" | "gaming") {
+            profile
+        } else {
+            "balanced".into()
+        };
         Self { profile, tearing }
     }
 
     pub fn load(path: impl AsRef<Path>) -> Self {
-        let Ok(raw) = std::fs::read_to_string(path) else { return Self::default(); };
-        let Ok(value) = raw.parse::<toml::Value>() else { return Self::default(); };
-        let profile = value.get("profile").and_then(toml::Value::as_str).unwrap_or("balanced");
+        let Ok(raw) = std::fs::read_to_string(path) else {
+            return Self::default();
+        };
+        let Ok(value) = raw.parse::<toml::Value>() else {
+            return Self::default();
+        };
+        let profile = value
+            .get("profile")
+            .and_then(toml::Value::as_str)
+            .unwrap_or("balanced");
         let default_tearing = profile.eq_ignore_ascii_case("gaming");
-        Self::normalized(profile, value.get("tearing").and_then(toml::Value::as_bool).unwrap_or(default_tearing))
+        Self::normalized(
+            profile,
+            value
+                .get("tearing")
+                .and_then(toml::Value::as_bool)
+                .unwrap_or(default_tearing),
+        )
     }
 
     pub fn to_toml(&self) -> String {
-        format!("# Kyth KWin latency — offline\nprofile = {:?}\ntearing = {}\n", self.profile, self.tearing)
+        format!(
+            "# Kyth KWin latency — offline\nprofile = {:?}\ntearing = {}\n",
+            self.profile, self.tearing
+        )
     }
 
     pub fn render_dropin(&self) -> Option<String> {
@@ -51,12 +76,17 @@ impl KwinLatencyConfig {
     }
 
     pub fn render_environment(&self) -> Option<&'static str> {
-        (self.profile == "gaming").then_some("# Kyth KWin — generated\nKWIN_DRM_PREFER_COLOR_DEPTH=24\n")
+        (self.profile == "gaming")
+            .then_some("# Kyth KWin — generated\nKWIN_DRM_PREFER_COLOR_DEPTH=24\n")
     }
 }
 
 pub fn status(dropin_exists: bool) -> &'static str {
-    if dropin_exists { "gaming" } else { "balanced" }
+    if dropin_exists {
+        "gaming"
+    } else {
+        "balanced"
+    }
 }
 
 #[cfg(test)]
@@ -71,7 +101,10 @@ mod tests {
         std::fs::write(&path, "profile = \"gaming\"\n").unwrap();
         let config = KwinLatencyConfig::load(&path);
         assert_eq!(config, KwinLatencyConfig::normalized("gaming", true));
-        assert!(config.render_dropin().unwrap().contains("AllowTearing=true"));
+        assert!(config
+            .render_dropin()
+            .unwrap()
+            .contains("AllowTearing=true"));
     }
 
     #[test]

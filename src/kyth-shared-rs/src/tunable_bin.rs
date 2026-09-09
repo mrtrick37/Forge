@@ -31,9 +31,9 @@ fn invoked_name() -> String {
 }
 
 fn resolve_name(argv0: &str, args: &[String]) -> Result<(String, Vec<String>), String> {
-    if argv0 == "kyth-tunable-rs" {
+    if argv0 == "kyth-tunable-rs" || argv0 == "kyth-tunable" {
         let Some(name) = args.first() else {
-            return Err("Usage: kyth-tunable-rs <tunable> [status|gaming|balanced|apply]".into());
+            return Err("Usage: kyth-tunable <tunable> [status|gaming|balanced|apply]".into());
         };
         return Ok((name.clone(), args[1..].to_vec()));
     }
@@ -3425,6 +3425,10 @@ mod tests {
         );
         assert_eq!(
             resolve_name("kyth-tunable-rs", &["swappiness".into(), "status".into()]).unwrap(),
+            ("swappiness".into(), vec!["status".into()])
+        );
+        assert_eq!(
+            resolve_name("kyth-tunable", &["swappiness".into(), "status".into()]).unwrap(),
             ("swappiness".into(), vec!["status".into()])
         );
     }

@@ -23,9 +23,14 @@ fn main() -> std::process::ExitCode {
     // exit aborts (check=True upstream).
     let raw = match run_bounded(&argv, Duration::from_secs(30)) {
         Err(_) => String::new(),
-        Ok(output) if output.status.success() => String::from_utf8_lossy(&output.stdout).into_owned(),
+        Ok(output) if output.status.success() => {
+            String::from_utf8_lossy(&output.stdout).into_owned()
+        }
         Ok(output) => {
-            eprintln!("kyth-ntfs-repair: lsblk failed with status {}", output.status);
+            eprintln!(
+                "kyth-ntfs-repair: lsblk failed with status {}",
+                output.status
+            );
             return std::process::ExitCode::FAILURE;
         }
     };

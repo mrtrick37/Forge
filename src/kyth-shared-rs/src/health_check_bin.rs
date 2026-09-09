@@ -35,7 +35,11 @@ fn pipewire_running() -> bool {
     std::fs::read_dir("/proc")
         .map(|entries| {
             entries.flatten().any(|entry| {
-                entry.file_name().to_string_lossy().chars().all(|c| c.is_ascii_digit())
+                entry
+                    .file_name()
+                    .to_string_lossy()
+                    .chars()
+                    .all(|c| c.is_ascii_digit())
                     && std::fs::read_to_string(entry.path().join("comm"))
                         .map(|comm| comm.trim() == "pipewire")
                         .unwrap_or(false)
@@ -58,34 +62,74 @@ fn run_checks() -> Vec<Check> {
 
     vec![
         if scx_active {
-            Check { level: "PASS", name: "Kernel Scheduler", detail: "sched-ext (scx) low-latency scheduler active" }
+            Check {
+                level: "PASS",
+                name: "Kernel Scheduler",
+                detail: "sched-ext (scx) low-latency scheduler active",
+            }
         } else {
-            Check { level: "WARN", name: "Kernel Scheduler", detail: "CFS/EEVDF fallback (scx not active)" }
+            Check {
+                level: "WARN",
+                name: "Kernel Scheduler",
+                detail: "CFS/EEVDF fallback (scx not active)",
+            }
         },
         Check {
             level: "PASS",
             name: "Wine Synchronization",
-            detail: if ntsync_loaded { "NTSYNC fast kernel driver loaded" } else { "FUTEX2 / esync fallback active" },
+            detail: if ntsync_loaded {
+                "NTSYNC fast kernel driver loaded"
+            } else {
+                "FUTEX2 / esync fallback active"
+            },
         },
         if pipewire_running() {
-            Check { level: "PASS", name: "Audio Stack", detail: "PipeWire low-latency daemon running" }
+            Check {
+                level: "PASS",
+                name: "Audio Stack",
+                detail: "PipeWire low-latency daemon running",
+            }
         } else {
-            Check { level: "WARN", name: "Audio Stack", detail: "PipeWire daemon not detected" }
+            Check {
+                level: "WARN",
+                name: "Audio Stack",
+                detail: "PipeWire daemon not detected",
+            }
         },
         if vulkan_ok {
-            Check { level: "PASS", name: "Vulkan 3D Driver", detail: "Vulkan device initialized and responsive" }
+            Check {
+                level: "PASS",
+                name: "Vulkan 3D Driver",
+                detail: "Vulkan device initialized and responsive",
+            }
         } else {
-            Check { level: "WARN", name: "Vulkan 3D Driver", detail: "Vulkan device query returned warning or fallback" }
+            Check {
+                level: "WARN",
+                name: "Vulkan 3D Driver",
+                detail: "Vulkan device query returned warning or fallback",
+            }
         },
         Check {
             level: "PASS",
             name: "Video Codecs",
-            detail: if vaapi_ok { "VA-API hardware video decode/encode active" } else { "Software codec fallback active" },
+            detail: if vaapi_ok {
+                "VA-API hardware video decode/encode active"
+            } else {
+                "Software codec fallback active"
+            },
         },
         if input_available {
-            Check { level: "PASS", name: "Input & Gamepads", detail: "Event subsystem and controller udev rules active" }
+            Check {
+                level: "PASS",
+                name: "Input & Gamepads",
+                detail: "Event subsystem and controller udev rules active",
+            }
         } else {
-            Check { level: "WARN", name: "Input & Gamepads", detail: "/dev/input device node inaccessible" }
+            Check {
+                level: "WARN",
+                name: "Input & Gamepads",
+                detail: "/dev/input device node inaccessible",
+            }
         },
     ]
 }

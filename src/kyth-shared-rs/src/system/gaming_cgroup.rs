@@ -19,7 +19,12 @@ pub struct GamingCgroupConfig {
 
 impl Default for GamingCgroupConfig {
     fn default() -> Self {
-        Self { cpu_weight: 300, memory_max: "80%".into(), io_weight: 200, allowed_cpus: String::new() }
+        Self {
+            cpu_weight: 300,
+            memory_max: "80%".into(),
+            io_weight: 200,
+            allowed_cpus: String::new(),
+        }
     }
 }
 
@@ -31,14 +36,33 @@ impl GamingCgroupConfig {
     }
 
     pub fn load(path: impl AsRef<Path>) -> Self {
-        let Ok(raw) = std::fs::read_to_string(path) else { return Self::default(); };
-        let Ok(value) = raw.parse::<toml::Value>() else { return Self::default(); };
+        let Ok(raw) = std::fs::read_to_string(path) else {
+            return Self::default();
+        };
+        let Ok(value) = raw.parse::<toml::Value>() else {
+            return Self::default();
+        };
         Self {
-            cpu_weight: value.get("cpu_weight").and_then(toml::Value::as_integer).unwrap_or(300),
-            memory_max: value.get("memory_max").and_then(toml::Value::as_str).unwrap_or("80%").into(),
-            io_weight: value.get("io_weight").and_then(toml::Value::as_integer).unwrap_or(200),
-            allowed_cpus: value.get("allowed_cpus").and_then(toml::Value::as_str).unwrap_or("").into(),
-        }.normalized()
+            cpu_weight: value
+                .get("cpu_weight")
+                .and_then(toml::Value::as_integer)
+                .unwrap_or(300),
+            memory_max: value
+                .get("memory_max")
+                .and_then(toml::Value::as_str)
+                .unwrap_or("80%")
+                .into(),
+            io_weight: value
+                .get("io_weight")
+                .and_then(toml::Value::as_integer)
+                .unwrap_or(200),
+            allowed_cpus: value
+                .get("allowed_cpus")
+                .and_then(toml::Value::as_str)
+                .unwrap_or("")
+                .into(),
+        }
+        .normalized()
     }
 
     pub fn to_toml(&self) -> String {
@@ -71,7 +95,10 @@ impl GamingCgroupConfig {
 }
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    path.map_or_else(|| PathBuf::from(DEFAULT_CONFIG_PATH), |path| path.as_ref().to_path_buf())
+    path.map_or_else(
+        || PathBuf::from(DEFAULT_CONFIG_PATH),
+        |path| path.as_ref().to_path_buf(),
+    )
 }
 
 #[cfg(test)]
@@ -86,7 +113,8 @@ mod tests {
             memory_max: "75%".into(),
             io_weight: 0,
             allowed_cpus: "0-7".into(),
-        }.normalized();
+        }
+        .normalized();
         assert_eq!(config.cpu_weight, 1000);
         assert_eq!(config.io_weight, 1);
         assert_eq!(config.memory_max, "75%");
@@ -96,7 +124,11 @@ mod tests {
     fn loads_and_renders_slice_drop_in() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("gaming-slice.toml");
-        std::fs::write(&path, "cpu_weight = 400\nmemory_max = \"80%\"\nio_weight = 250\nallowed_cpus = \"2-5\"\n").unwrap();
+        std::fs::write(
+            &path,
+            "cpu_weight = 400\nmemory_max = \"80%\"\nio_weight = 250\nallowed_cpus = \"2-5\"\n",
+        )
+        .unwrap();
         let config = GamingCgroupConfig::load(&path);
         let drop_in = config.render_drop_in();
         assert!(drop_in.contains("CPUWeight=400"));

@@ -31,23 +31,37 @@ fn find_binary(name: &str) -> Option<String> {
 
 fn kread(file: &str, group: &str, key: &str) -> Option<String> {
     let binary = find_binary("kreadconfig6").or_else(|| find_binary("kreadconfig"))?;
-    run_bounded(&kreadconfig_argv(&binary, file, group, key), Duration::from_secs(5))
-        .ok()
-        .and_then(|output| {
-            output.status.success().then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
-        })
+    run_bounded(
+        &kreadconfig_argv(&binary, file, group, key),
+        Duration::from_secs(5),
+    )
+    .ok()
+    .and_then(|output| {
+        output
+            .status
+            .success()
+            .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
+    })
 }
 
 fn kwrite(file: &str, group: &str, key: &str, value: &str) {
     if let Some(binary) = find_binary("kwriteconfig6").or_else(|| find_binary("kwriteconfig")) {
-        let _ = run_bounded(&kwriteconfig_argv(&binary, file, &[group], key, value, None), Duration::from_secs(5));
+        let _ = run_bounded(
+            &kwriteconfig_argv(&binary, file, &[group], key, value, None),
+            Duration::from_secs(5),
+        );
     }
 }
 
 fn reconfigure_kwin() {
     if let Some(qdbus) = qdbus_candidates().iter().find_map(|name| find_binary(name)) {
         let _ = run_bounded(
-            &[qdbus, "org.kde.KWin".to_string(), "/KWin".to_string(), "reconfigure".to_string()],
+            &[
+                qdbus,
+                "org.kde.KWin".to_string(),
+                "/KWin".to_string(),
+                "reconfigure".to_string(),
+            ],
             Duration::from_secs(5),
         );
     }
@@ -69,7 +83,10 @@ fn save_state_inner() -> std::io::Result<()> {
     let anim_factor = kread("kdeglobals", "KDE", "AnimationDurationFactor").unwrap_or_default();
     let blur_enabled = kread("kwinrc", "Plugins", "blurEnabled").unwrap_or_default();
     let epp = get_current_epp();
-    std::fs::write(&path, render_state(&power_profile, &anim_factor, &blur_enabled, &epp))
+    std::fs::write(
+        &path,
+        render_state(&power_profile, &anim_factor, &blur_enabled, &epp),
+    )
 }
 
 fn restore_state() {
@@ -122,7 +139,8 @@ fn status_mode() {
     println!("CPU EPP: {}", get_current_epp());
     println!(
         "KDE animation factor: {}",
-        kread("kdeglobals", "KDE", "AnimationDurationFactor").unwrap_or_else(|| "default".to_string())
+        kread("kdeglobals", "KDE", "AnimationDurationFactor")
+            .unwrap_or_else(|| "default".to_string())
     );
     println!(
         "KWin blur enabled: {}",

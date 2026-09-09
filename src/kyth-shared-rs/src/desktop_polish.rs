@@ -8,12 +8,27 @@ pub const PLACES_VERSION: &str = "v1";
 pub const AUTOSTART_VERSION: &str = "v1";
 
 pub const USER_FOLDERS: [&str; 10] = [
-    "Desktop", "Documents", "Downloads", "Games", "Music", "Pictures", "Public", "Screenshots", "Templates", "Videos",
+    "Desktop",
+    "Documents",
+    "Downloads",
+    "Games",
+    "Music",
+    "Pictures",
+    "Public",
+    "Screenshots",
+    "Templates",
+    "Videos",
 ];
 
 pub const FOLDER_METADATA: [(&str, &str); 3] = [
-    ("Games/.directory", "[Desktop Entry]\nIcon=applications-games\nName=Games\n"),
-    ("Screenshots/.directory", "[Desktop Entry]\nIcon=folder-pictures\nName=Screenshots\n"),
+    (
+        "Games/.directory",
+        "[Desktop Entry]\nIcon=applications-games\nName=Games\n",
+    ),
+    (
+        "Screenshots/.directory",
+        "[Desktop Entry]\nIcon=folder-pictures\nName=Screenshots\n",
+    ),
     ("Templates/Plain Text.txt", ""),
 ];
 
@@ -35,23 +50,37 @@ pub const MIME_DEFAULTS: [(&str, &str); 29] = [
     ("org.kde.ark.desktop", "application/x-7z-compressed"),
     ("org.kde.ark.desktop", "application/x-rar"),
     ("org.kde.ark.desktop", "application/x-tar"),
-    ("kyth-exe-handler.desktop", "application/x-ms-dos-executable"),
+    (
+        "kyth-exe-handler.desktop",
+        "application/x-ms-dos-executable",
+    ),
     ("kyth-exe-handler.desktop", "application/x-msdos-program"),
     ("kyth-exe-handler.desktop", "application/x-dosexec"),
     ("kyth-exe-handler.desktop", "application/x-msi"),
     ("kyth-exe-handler.desktop", "application/x-msdownload"),
-    ("kyth-exe-handler.desktop", "application/vnd.microsoft.portable-executable"),
+    (
+        "kyth-exe-handler.desktop",
+        "application/vnd.microsoft.portable-executable",
+    ),
     ("kyth-exe-handler.desktop", "application/x-rpm"),
-    ("kyth-exe-handler.desktop", "application/x-redhat-package-manager"),
+    (
+        "kyth-exe-handler.desktop",
+        "application/x-redhat-package-manager",
+    ),
     ("com.brave.Browser.desktop", "x-scheme-handler/http"),
     ("com.brave.Browser.desktop", "x-scheme-handler/https"),
-    ("com.getmailspring.Mailspring.desktop", "x-scheme-handler/mailto"),
+    (
+        "com.getmailspring.Mailspring.desktop",
+        "x-scheme-handler/mailto",
+    ),
     ("org.kde.dolphin.desktop", "inode/directory"),
 ];
 
 fn desktop_entry_field<'a>(text: &'a str, key: &str) -> &'a str {
     let prefix = format!("{key}=");
-    text.lines().find_map(|line| line.strip_prefix(&prefix).map(str::trim)).unwrap_or_default()
+    text.lines()
+        .find_map(|line| line.strip_prefix(&prefix).map(str::trim))
+        .unwrap_or_default()
 }
 
 /// True when an existing Kyth desktop shortcut has drifted from the shipped
@@ -60,7 +89,9 @@ pub fn should_refresh_pulse_desktop_shortcut(existing: &str, shipped: &str) -> b
     !existing.is_empty()
         && !shipped.is_empty()
         && existing.contains("kyth-welcome")
-        && ["Name", "Comment", "GenericName"].into_iter().any(|key| desktop_entry_field(existing, key) != desktop_entry_field(shipped, key))
+        && ["Name", "Comment", "GenericName"]
+            .into_iter()
+            .any(|key| desktop_entry_field(existing, key) != desktop_entry_field(shipped, key))
 }
 
 #[cfg(test)]
@@ -81,6 +112,9 @@ mod tests {
         let stale = "[Desktop Entry]\nName=KythOS\nComment=Old\nGenericName=System Hub\nExec=kyth-welcome\n";
         assert!(should_refresh_pulse_desktop_shortcut(stale, shipped));
         assert!(!should_refresh_pulse_desktop_shortcut(shipped, shipped));
-        assert!(!should_refresh_pulse_desktop_shortcut("Exec=other-app\n", shipped));
+        assert!(!should_refresh_pulse_desktop_shortcut(
+            "Exec=other-app\n",
+            shipped
+        ));
     }
 }

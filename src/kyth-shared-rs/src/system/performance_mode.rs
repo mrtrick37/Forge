@@ -12,7 +12,9 @@ pub const STATE_FILE_NAME: &str = "kyth-performance-mode.state";
 
 /// (power profile, EPP, animation factor, blur) per mode, exactly as the
 /// Python launcher ordered them.
-pub fn mode_settings(mode: &str) -> Option<(&'static str, &'static str, &'static str, &'static str)> {
+pub fn mode_settings(
+    mode: &str,
+) -> Option<(&'static str, &'static str, &'static str, &'static str)> {
     match mode {
         "max" => Some(("performance", "performance", "0", "false")),
         "gaming" => Some(("performance", "performance", "0.5", "false")),
@@ -51,23 +53,39 @@ pub fn read_state_key(text: &str, key: &str) -> String {
     String::new()
 }
 
-pub fn render_state(power_profile: &str, anim_factor: &str, blur_enabled: &str, epp: &str) -> String {
+pub fn render_state(
+    power_profile: &str,
+    anim_factor: &str,
+    blur_enabled: &str,
+    epp: &str,
+) -> String {
     format!(
         "POWER_PROFILE={power_profile}\nANIMATION_DURATION_FACTOR={anim_factor}\nBLUR_ENABLED={blur_enabled}\nEPP={epp}\n"
     )
 }
 
 pub fn power_profile_argv(profile: &str) -> Vec<String> {
-    vec!["powerprofilesctl".to_string(), "set".to_string(), profile.to_string()]
+    vec![
+        "powerprofilesctl".to_string(),
+        "set".to_string(),
+        profile.to_string(),
+    ]
 }
 
 pub fn epp_helper_argv(value: &str) -> Vec<String> {
-    vec!["sudo".to_string(), "-n".to_string(), "/usr/bin/kyth-set-epp".to_string(), value.to_string()]
+    vec![
+        "sudo".to_string(),
+        "-n".to_string(),
+        "/usr/bin/kyth-set-epp".to_string(),
+        value.to_string(),
+    ]
 }
 
 pub fn epp_sysfs_paths() -> Vec<PathBuf> {
     let mut paths = Vec::new();
-    let Ok(entries) = std::fs::read_dir("/sys/devices/system/cpu") else { return paths };
+    let Ok(entries) = std::fs::read_dir("/sys/devices/system/cpu") else {
+        return paths;
+    };
     for entry in entries.filter_map(|entry| entry.ok()) {
         let name = entry.file_name().to_string_lossy().into_owned();
         if name.starts_with("cpu") && name[3..].chars().all(|c| c.is_ascii_digit()) {
@@ -84,9 +102,10 @@ pub fn epp_sysfs_paths() -> Vec<PathBuf> {
 /// Mirrors `set_epp`: the sudo helper first (rc 0 wins), then best-effort
 /// sysfs writes; true if any path succeeded.
 pub fn set_epp(value: &str) -> bool {
-    let helper_ok = crate::system::process::run_bounded(&epp_helper_argv(value), Duration::from_secs(30))
-        .map(|output| output.status.success())
-        .unwrap_or(false);
+    let helper_ok =
+        crate::system::process::run_bounded(&epp_helper_argv(value), Duration::from_secs(30))
+            .map(|output| output.status.success())
+            .unwrap_or(false);
     if helper_ok {
         return true;
     }
@@ -138,8 +157,14 @@ mod tests {
 
     #[test]
     fn mode_table_matches_python_launcher() {
-        assert_eq!(mode_settings("max"), Some(("performance", "performance", "0", "false")));
-        assert_eq!(mode_settings("powersave"), Some(("power-saver", "power", "1.25", "true")));
+        assert_eq!(
+            mode_settings("max"),
+            Some(("performance", "performance", "0", "false"))
+        );
+        assert_eq!(
+            mode_settings("powersave"),
+            Some(("power-saver", "power", "1.25", "true"))
+        );
         assert_eq!(mode_settings("nope"), None);
     }
 
@@ -154,7 +179,10 @@ mod tests {
 
     #[test]
     fn projects_power_argv() {
-        assert_eq!(power_profile_argv("performance"), vec!["powerprofilesctl", "set", "performance"]);
+        assert_eq!(
+            power_profile_argv("performance"),
+            vec!["powerprofilesctl", "set", "performance"]
+        );
         assert_eq!(
             epp_helper_argv("performance"),
             vec!["sudo", "-n", "/usr/bin/kyth-set-epp", "performance"]

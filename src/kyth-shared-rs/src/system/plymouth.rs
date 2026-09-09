@@ -37,9 +37,9 @@ pub const THEMES_SOURCE: &str = "/usr/share/plymouth/themes/kyth";
 pub const WATERMARK_SOURCE: &str = "/usr/share/kyth/branding/transparent-watermark.png";
 /// Transparent 1x1 PNG fallback, byte-identical to the Python base64 blob.
 pub const TRANSPARENT_PNG: &[u8] = &[
-    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4,
-    0, 0, 0, 181, 28, 12, 2, 0, 0, 0, 11, 73, 68, 65, 84, 120, 218, 99, 96, 96, 0, 0, 0, 3, 0,
-    1, 43, 9, 77, 132, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 0,
+    0, 0, 181, 28, 12, 2, 0, 0, 0, 11, 73, 68, 65, 84, 120, 218, 99, 96, 96, 0, 0, 0, 3, 0, 1, 43,
+    9, 77, 132, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
 ];
 
 /// Return the stable Plymouth fingerprint used to decide whether a refresh is
@@ -59,7 +59,10 @@ pub fn fingerprint(paths: &[&Path]) -> String {
 }
 
 fn kernel_name(path: &Path) -> Option<&str> {
-    path.file_name()?.to_str()?.strip_prefix("initramfs-")?.strip_suffix(".img")
+    path.file_name()?
+        .to_str()?
+        .strip_prefix("initramfs-")?
+        .strip_suffix(".img")
 }
 
 /// Find initramfs images that have a matching kernel module directory.
@@ -80,7 +83,9 @@ pub fn collect_images(boot: &Path, modules: &Path) -> Vec<PathBuf> {
     candidates.dedup();
     candidates
         .into_iter()
-        .filter(|path| path.is_file() && kernel_name(path).is_some_and(|kernel| modules.join(kernel).is_dir()))
+        .filter(|path| {
+            path.is_file() && kernel_name(path).is_some_and(|kernel| modules.join(kernel).is_dir())
+        })
         .collect()
 }
 
@@ -97,7 +102,10 @@ pub fn inspect_listing(
     let mut errors = Vec::new();
     for entry in REQUIRED_ENTRIES {
         if !listing.contains(entry) {
-            errors.push(format!("refreshed initramfs is missing {entry}: {}", image.display()));
+            errors.push(format!(
+                "refreshed initramfs is missing {entry}: {}",
+                image.display()
+            ));
         }
     }
     if FALLBACK_THEMES
@@ -145,11 +153,16 @@ pub fn inspect_listing(
 
 /// Pure dracut-conf reconciliation, mirroring `ensure_dracut_config`.
 pub fn reconcile_dracut_config(current: Option<&str>) -> String {
-    let mut text = current.unwrap_or("add_dracutmodules+=\" ostree drm plymouth kyth-plymouth \"\n").to_string();
+    let mut text = current
+        .unwrap_or("add_dracutmodules+=\" ostree drm plymouth kyth-plymouth \"\n")
+        .to_string();
     if !text.contains("add_dracutmodules") || !text.contains("kyth-plymouth") {
         text += "\nadd_dracutmodules+=\" kyth-plymouth \"\n";
     }
-    let after_force = text.find("force_add_dracutmodules").map(|index| &text[index..]).unwrap_or("");
+    let after_force = text
+        .find("force_add_dracutmodules")
+        .map(|index| &text[index..])
+        .unwrap_or("");
     if !text.contains("force_add_dracutmodules") || !after_force.contains("kyth-plymouth") {
         text += "force_add_dracutmodules+=\" kyth-plymouth \"\n";
     }
@@ -209,7 +222,11 @@ pub fn prepare_include(root: &Path) -> std::io::Result<()> {
 }
 
 pub fn dracut_image_argv(image: &Path, include: &Path) -> (Vec<String>, String) {
-    let base = image.file_name().and_then(|name| name.to_str()).unwrap_or_default().to_string();
+    let base = image
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or_default()
+        .to_string();
     let kernel = base.strip_prefix("initramfs-").unwrap_or(&base);
     let kernel = kernel.strip_suffix(".img").unwrap_or(kernel).to_string();
     let include_str = include.to_string_lossy().into_owned();
@@ -310,21 +327,33 @@ mod tests {
 
     #[test]
     fn dracut_image_argv_orders_flags_like_python() {
-        let (argv, kernel) = dracut_image_argv(Path::new("/boot/initramfs-6.1.img"), Path::new("/tmp/inc"));
+        let (argv, kernel) =
+            dracut_image_argv(Path::new("/boot/initramfs-6.1.img"), Path::new("/tmp/inc"));
         assert_eq!(kernel, "6.1");
         assert_eq!(argv[0], "dracut");
         assert!(argv.contains(&"--kver".to_string()));
         assert_eq!(argv[argv.len() - 2], "/boot/initramfs-6.1.img");
         assert_eq!(argv[argv.len() - 1], "6.1");
-        assert_eq!(dracut_regenerate_all_argv(Path::new("/tmp/inc"))[3], "--regenerate-all");
+        assert_eq!(
+            dracut_regenerate_all_argv(Path::new("/tmp/inc"))[3],
+            "--regenerate-all"
+        );
     }
 
     #[test]
     fn listing_inspection_reports_missing_entries_and_fallbacks() {
         let image = Path::new("/boot/initramfs-6.1.img");
-        let errors = inspect_listing(image, "usr/share/plymouth/themes/spinner/", None, None, None);
+        let errors = inspect_listing(
+            image,
+            "usr/share/plymouth/themes/spinner/",
+            None,
+            None,
+            None,
+        );
         assert!(errors.iter().any(|error| error.contains("fallback theme")));
-        assert!(errors.iter().any(|error| error.contains("Plymouth defaults")));
+        assert!(errors
+            .iter()
+            .any(|error| error.contains("Plymouth defaults")));
         assert!(errors.iter().any(|error| error.contains("system logo")));
     }
 }

@@ -11,7 +11,9 @@ use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use kyth_shared::atomic_io::atomic_write_text;
-use kyth_shared::system::input_preset::{TTL_PATH, TTL_SECS, XORG_CONF_DEST, config_path, load, render_xorg_conf};
+use kyth_shared::system::input_preset::{
+    config_path, load, render_xorg_conf, TTL_PATH, TTL_SECS, XORG_CONF_DEST,
+};
 
 fn main() -> std::process::ExitCode {
     let devices = load(config_path(None::<&Path>));
@@ -29,6 +31,9 @@ fn main() -> std::process::ExitCode {
     if let Ok(now) = SystemTime::now().duration_since(UNIX_EPOCH) {
         let _ = std::fs::write(TTL_PATH, (now.as_secs() + TTL_SECS).to_string());
     }
-    println!("kyth-apply-input: {} devices → {XORG_CONF_DEST}", devices.len());
+    println!(
+        "kyth-apply-input: {} devices → {XORG_CONF_DEST}",
+        devices.len()
+    );
     std::process::ExitCode::SUCCESS
 }

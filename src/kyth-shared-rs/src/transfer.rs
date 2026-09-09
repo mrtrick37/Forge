@@ -13,7 +13,12 @@ pub fn parse_size_bytes(size: &str) -> u64 {
     let Some(value) = parts.next().and_then(|value| value.parse::<f64>().ok()) else {
         return 0;
     };
-    let unit = parts.next().unwrap_or_default().to_ascii_uppercase().trim_end_matches('B').replace('I', "");
+    let unit = parts
+        .next()
+        .unwrap_or_default()
+        .to_ascii_uppercase()
+        .trim_end_matches('B')
+        .replace('I', "");
     let multiplier = match unit.as_str() {
         "" => 1_u64,
         "K" => 1024,
@@ -51,9 +56,16 @@ fn format_number(value: f64, decimals: usize, unit: &str) -> String {
 }
 
 pub fn human_bytes_pair(downloaded: u64, total: u64) -> (String, String) {
-    for (unit, threshold) in [("GB", 1024_u64.pow(3)), ("MB", 1024_u64.pow(2)), ("KB", 1024)] {
+    for (unit, threshold) in [
+        ("GB", 1024_u64.pow(3)),
+        ("MB", 1024_u64.pow(2)),
+        ("KB", 1024),
+    ] {
         if total >= threshold {
-            return (format!("{:.1}", downloaded as f64 / threshold as f64), format!("{:.1} {unit}", total as f64 / threshold as f64));
+            return (
+                format!("{:.1}", downloaded as f64 / threshold as f64),
+                format!("{:.1} {unit}", total as f64 / threshold as f64),
+            );
         }
     }
     (downloaded.to_string(), format!("{total} B"))
@@ -67,8 +79,12 @@ pub fn human_bytes_pair(downloaded: u64, total: u64) -> (String, String) {
 pub fn rx_bytes_from_proc_net_dev(text: &str) -> Option<u64> {
     let mut total = 0_u64;
     for line in text.lines() {
-        let Some((interface, data)) = line.split_once(':') else { continue; };
-        if interface.trim() == "lo" { continue; }
+        let Some((interface, data)) = line.split_once(':') else {
+            continue;
+        };
+        if interface.trim() == "lo" {
+            continue;
+        }
         let value = data.split_whitespace().next()?.parse::<u64>().ok()?;
         total = total.checked_add(value)?;
     }
@@ -115,7 +131,14 @@ impl NetStatsTracker {
     }
 
     pub fn new_at(total: u64, rx_start: u64, now: Instant) -> Self {
-        Self { total, rx_start, rx_prev: 0, t_prev: now, t_prev_seconds: 0.0, samples: VecDeque::with_capacity(5) }
+        Self {
+            total,
+            rx_start,
+            rx_prev: 0,
+            t_prev: now,
+            t_prev_seconds: 0.0,
+            samples: VecDeque::with_capacity(5),
+        }
     }
 
     pub fn tick(&mut self, rx_now: u64) -> NetworkStats {
@@ -128,7 +151,9 @@ impl NetStatsTracker {
         if elapsed > 0.0 && self.rx_prev > 0 {
             let delta = rx_now.saturating_sub(self.rx_prev);
             if delta > 0 {
-                if self.samples.len() == 5 { self.samples.pop_front(); }
+                if self.samples.len() == 5 {
+                    self.samples.pop_front();
+                }
                 self.samples.push_back(delta as f64 / elapsed);
             }
         }
@@ -141,7 +166,12 @@ impl NetStatsTracker {
         };
         let remaining = self.total.saturating_sub(downloaded);
         let eta_sec = if speed > 0 { remaining / speed } else { 0 };
-        NetworkStats { downloaded, total: self.total, speed, eta_sec }
+        NetworkStats {
+            downloaded,
+            total: self.total,
+            speed,
+            eta_sec,
+        }
     }
 
     /// Test-friendly variant that accepts a monotonic timestamp in seconds.
@@ -151,14 +181,29 @@ impl NetStatsTracker {
         if elapsed > 0.0 && self.rx_prev > 0 {
             let delta = rx_now.saturating_sub(self.rx_prev);
             if delta > 0 {
-                if self.samples.len() == 5 { self.samples.pop_front(); }
+                if self.samples.len() == 5 {
+                    self.samples.pop_front();
+                }
                 self.samples.push_back(delta as f64 / elapsed);
             }
         }
         self.rx_prev = rx_now;
         self.t_prev_seconds = time_now;
-        let speed = if self.samples.is_empty() { 0 } else { (self.samples.iter().sum::<f64>() / self.samples.len() as f64) as u64 };
-        NetworkStats { downloaded, total: self.total, speed, eta_sec: if speed > 0 { self.total.saturating_sub(downloaded) / speed } else { 0 } }
+        let speed = if self.samples.is_empty() {
+            0
+        } else {
+            (self.samples.iter().sum::<f64>() / self.samples.len() as f64) as u64
+        };
+        NetworkStats {
+            downloaded,
+            total: self.total,
+            speed,
+            eta_sec: if speed > 0 {
+                self.total.saturating_sub(downloaded) / speed
+            } else {
+                0
+            },
+        }
     }
 }
 
@@ -169,7 +214,10 @@ mod tests {
 
     #[test]
     fn parses_iec_and_rejects_invalid_sizes() {
-        assert_eq!(parse_size_bytes("8.3 GB"), (8.3_f64 * 1024_u64.pow(3) as f64) as u64);
+        assert_eq!(
+            parse_size_bytes("8.3 GB"),
+            (8.3_f64 * 1024_u64.pow(3) as f64) as u64
+        );
         assert_eq!(parse_size_bytes("2 GiB"), 2 * 1024_u64.pow(3));
         assert_eq!(parse_size_bytes("not a size"), 0);
         assert_eq!(parse_size_bytes("-1 GB"), 0);
@@ -179,7 +227,10 @@ mod tests {
     fn formats_bytes_and_download_pairs() {
         assert_eq!(human_bytes(1024.0), "1.0 KB");
         assert_eq!(human_bytes(1.0), "1 B");
-        assert_eq!(human_bytes_pair(1_400_000, 1_500_000), ("1.3".into(), "1.4 MB".into()));
+        assert_eq!(
+            human_bytes_pair(1_400_000, 1_500_000),
+            ("1.3".into(), "1.4 MB".into())
+        );
         assert_eq!(human_bytes_pair(10, 12), ("10".into(), "12 B".into()));
     }
 
@@ -204,11 +255,24 @@ mod tests {
     fn tracks_download_window_and_eta_with_an_injected_clock() {
         let start = Instant::now();
         let mut tracker = NetStatsTracker::new_at(1_000, 100, start);
-        assert_eq!(tracker.tick_with_now(100, start + Duration::from_secs(1)), NetworkStats { downloaded: 0, total: 1_000, speed: 0, eta_sec: 0 });
+        assert_eq!(
+            tracker.tick_with_now(100, start + Duration::from_secs(1)),
+            NetworkStats {
+                downloaded: 0,
+                total: 1_000,
+                speed: 0,
+                eta_sec: 0
+            }
+        );
         let stats = tracker.tick_with_now(600, start + Duration::from_secs(2));
         assert_eq!(stats.downloaded, 500);
         assert_eq!(stats.speed, 500);
         assert_eq!(stats.eta_sec, 1);
-        assert_eq!(tracker.tick_with_now(1_500, start + Duration::from_secs(3)).downloaded, 1_000);
+        assert_eq!(
+            tracker
+                .tick_with_now(1_500, start + Duration::from_secs(3))
+                .downloaded,
+            1_000
+        );
     }
 }

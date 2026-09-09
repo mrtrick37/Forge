@@ -8,9 +8,9 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use kyth_shared::system::issue_draft::local_timestamp;
 use kyth_shared::system::process::run_bounded;
 use kyth_shared::system::session_snapshot::{current_host, current_user, now_iso, snapshot};
-use kyth_shared::system::issue_draft::local_timestamp;
 
 fn main() -> std::process::ExitCode {
     let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
@@ -23,12 +23,14 @@ fn main() -> std::process::ExitCode {
         &current_user(),
         &current_host(),
         &|argv| {
-            run_bounded(argv, Duration::from_secs(60)).map_err(|error| error.to_string()).map(|output| {
-                (
-                    String::from_utf8_lossy(&output.stdout).into_owned(),
-                    String::from_utf8_lossy(&output.stderr).into_owned(),
-                )
-            })
+            run_bounded(argv, Duration::from_secs(60))
+                .map_err(|error| error.to_string())
+                .map(|output| {
+                    (
+                        String::from_utf8_lossy(&output.stdout).into_owned(),
+                        String::from_utf8_lossy(&output.stderr).into_owned(),
+                    )
+                })
         },
         &|name| {
             env::var_os("PATH")

@@ -66,7 +66,11 @@ pub struct SetupManifest {
 
 pub fn is_allowed_restore_path(relative: &str) -> bool {
     let path = Path::new(relative);
-    if path.is_absolute() || path.components().any(|component| matches!(component, Component::ParentDir)) {
+    if path.is_absolute()
+        || path
+            .components()
+            .any(|component| matches!(component, Component::ParentDir))
+    {
         return false;
     }
     if CONFIG_PATHS.contains(&relative) {
@@ -77,23 +81,41 @@ pub fn is_allowed_restore_path(relative: &str) -> bool {
         && components[0].as_os_str() == ".local"
         && components[1].as_os_str() == "share"
         && components[2].as_os_str() == "applications"
-        && components[3].as_os_str().to_string_lossy().starts_with("kyth-")
-        && components[3].as_os_str().to_string_lossy().ends_with(".desktop")
+        && components[3]
+            .as_os_str()
+            .to_string_lossy()
+            .starts_with("kyth-")
+        && components[3]
+            .as_os_str()
+            .to_string_lossy()
+            .ends_with(".desktop")
 }
 
 pub fn validate_manifest(value: &Value) -> Result<SetupManifest, String> {
-    let object = value.as_object().ok_or_else(|| "The setup archive manifest is invalid.".to_string())?;
+    let object = value
+        .as_object()
+        .ok_or_else(|| "The setup archive manifest is invalid.".to_string())?;
     if object.get("format").and_then(Value::as_str) != Some("KythOS setup transfer") {
         return Err("This is not a KythOS setup archive.".to_string());
     }
     if object.get("version").and_then(Value::as_u64) != Some(ARCHIVE_VERSION) {
-        return Err(format!("Unsupported setup archive version: {}", object.get("version").unwrap_or(&Value::Null)));
+        return Err(format!(
+            "Unsupported setup archive version: {}",
+            object.get("version").unwrap_or(&Value::Null)
+        ));
     }
-    let copied = object.get("copied_paths").and_then(Value::as_array).ok_or_else(|| "The setup archive contains an unsupported settings path.".to_string())?;
-    if !copied.iter().all(|path| path.as_str().is_some_and(is_allowed_restore_path)) {
+    let copied = object
+        .get("copied_paths")
+        .and_then(Value::as_array)
+        .ok_or_else(|| "The setup archive contains an unsupported settings path.".to_string())?;
+    if !copied
+        .iter()
+        .all(|path| path.as_str().is_some_and(is_allowed_restore_path))
+    {
         return Err("The setup archive contains an unsupported settings path.".to_string());
     }
-    serde_json::from_value(value.clone()).map_err(|_| "The setup archive manifest is malformed.".to_string())
+    serde_json::from_value(value.clone())
+        .map_err(|_| "The setup archive manifest is malformed.".to_string())
 }
 
 pub fn preview_summary(manifest: &SetupManifest) -> String {
@@ -186,9 +208,13 @@ pub fn parse_flatpak_list(output: &str) -> Vec<SetupFlatpak> {
 }
 
 pub fn installed_flatpaks(ctx: &SetupCtx) -> Vec<SetupFlatpak> {
-    run_ok(ctx, &["flatpak", "list", "--app", "--columns=application,origin"], 30)
-        .map(|stdout| parse_flatpak_list(&stdout))
-        .unwrap_or_default()
+    run_ok(
+        ctx,
+        &["flatpak", "list", "--app", "--columns=application,origin"],
+        30,
+    )
+    .map(|stdout| parse_flatpak_list(&stdout))
+    .unwrap_or_default()
 }
 
 /// Query the default handler for every known MIME type via `xdg-mime`.
@@ -281,12 +307,17 @@ pub fn copy_into_payload(home: &Path, payload: &Path, rel: &str) -> bool {
         return false;
     }
     let target = payload.join("files").join(rel);
-    if target.parent().is_some_and(|parent| std::fs::create_dir_all(parent).is_err()) {
+    if target
+        .parent()
+        .is_some_and(|parent| std::fs::create_dir_all(parent).is_err())
+    {
         return false;
     }
     let kind = std::fs::symlink_metadata(&source).map(|meta| meta.file_type());
     let result = match kind {
-        Ok(kind) if kind.is_dir() && !kind.is_symlink() => copy_dir_recursive(&source, &target, false),
+        Ok(kind) if kind.is_dir() && !kind.is_symlink() => {
+            copy_dir_recursive(&source, &target, false)
+        }
         Ok(_) => copy_file_nofollow(&source, &target),
         Err(_) => return false,
     };
@@ -297,7 +328,9 @@ pub fn copy_into_payload(home: &Path, payload: &Path, rel: &str) -> bool {
 /// `~/.local/share/applications`.
 pub fn desktop_entry_rels(home: &Path) -> Vec<String> {
     let dir = home.join(".local/share/applications");
-    let Ok(entries) = std::fs::read_dir(&dir) else { return Vec::new() };
+    let Ok(entries) = std::fs::read_dir(&dir) else {
+        return Vec::new();
+    };
     let mut rels = Vec::new();
     for entry in entries.flatten() {
         let name = entry.file_name().to_string_lossy().into_owned();
@@ -319,8 +352,7 @@ impl TempDir {
     fn create(prefix: &str) -> Result<Self, String> {
         for _ in 0..100 {
             let id = TEMP_COUNTER.fetch_add(1, Ordering::Relaxed);
-            let path =
-                std::env::temp_dir().join(format!("{prefix}-{}-{id}", std::process::id()));
+            let path = std::env::temp_dir().join(format!("{prefix}-{}-{id}", std::process::id()));
             match std::fs::create_dir(&path) {
                 Ok(()) => return Ok(Self { path }),
                 Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
@@ -340,9 +372,7 @@ impl Drop for TempDir {
 fn tar(ctx: &SetupCtx, args: &[&str], timeout_secs: u64) -> Result<String, String> {
     let full = argv(&[&["tar"], args].concat());
     (ctx.run_text)(&full, timeout_secs)
-        .and_then(|(code, stdout)| {
-            if code == 0 { Some(stdout) } else { None }
-        })
+        .and_then(|(code, stdout)| if code == 0 { Some(stdout) } else { None })
         .ok_or_else(|| "Setup archive I/O failed: tar reported an error.".to_string())
 }
 
@@ -378,11 +408,18 @@ pub fn export_setup(ctx: &SetupCtx, dest: &Path) -> Result<PathBuf, String> {
         "copied_paths": copied,
         "secrets_excluded": SECRETS_EXCLUDED,
     });
-    std::fs::write(payload.join("manifest.json"), serde_json::to_string_pretty(&manifest).unwrap_or_default() + "\n")
-        .map_err(|error| format!("Cannot stage setup archive: {error}"))?;
+    std::fs::write(
+        payload.join("manifest.json"),
+        serde_json::to_string_pretty(&manifest).unwrap_or_default() + "\n",
+    )
+    .map_err(|error| format!("Cannot stage setup archive: {error}"))?;
     let archive_arg = archive.to_string_lossy().into_owned();
     let work_arg = work.path.to_string_lossy().into_owned();
-    tar(ctx, &["-czf", &archive_arg, "-C", &work_arg, ARCHIVE_PREFIX], 120)?;
+    tar(
+        ctx,
+        &["-czf", &archive_arg, "-C", &work_arg, ARCHIVE_PREFIX],
+        120,
+    )?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -404,12 +441,23 @@ pub fn safe_extract(ctx: &SetupCtx, archive: &Path, dest: &Path) -> Result<PathB
     for name in tar_members(ctx, archive)? {
         let path = Path::new(&name);
         if path.is_absolute()
-            || path.components().any(|component| matches!(component, Component::ParentDir))
+            || path
+                .components()
+                .any(|component| matches!(component, Component::ParentDir))
         {
             return Err(format!("Unsafe archive path: {name}"));
         }
     }
-    tar(ctx, &["-xzf", &archive.to_string_lossy(), "-C", &dest.to_string_lossy()], 120)?;
+    tar(
+        ctx,
+        &[
+            "-xzf",
+            &archive.to_string_lossy(),
+            "-C",
+            &dest.to_string_lossy(),
+        ],
+        120,
+    )?;
     let payload = dest.join(ARCHIVE_PREFIX);
     if !payload.is_dir() {
         return Err("This is not a KythOS setup archive.".to_string());
@@ -420,9 +468,8 @@ pub fn safe_extract(ctx: &SetupCtx, archive: &Path, dest: &Path) -> Result<PathB
 /// Read and validate the payload manifest, preserving the Python error
 /// contract for missing versus malformed manifests.
 pub fn load_manifest_from_payload(payload: &Path) -> Result<SetupManifest, String> {
-    let text = std::fs::read_to_string(payload.join("manifest.json")).map_err(|_| {
-        "The setup archive manifest is missing or invalid.".to_string()
-    })?;
+    let text = std::fs::read_to_string(payload.join("manifest.json"))
+        .map_err(|_| "The setup archive manifest is missing or invalid.".to_string())?;
     let value: Value = serde_json::from_str(&text)
         .map_err(|_| "The setup archive manifest is missing or invalid.".to_string())?;
     validate_manifest(&value)
@@ -457,7 +504,10 @@ pub fn restore_files(payload: &Path, home: &Path, paths: &[String]) -> usize {
             continue;
         }
         let target = home.join(rel);
-        if target.parent().is_some_and(|parent| std::fs::create_dir_all(parent).is_err()) {
+        if target
+            .parent()
+            .is_some_and(|parent| std::fs::create_dir_all(parent).is_err())
+        {
             continue;
         }
         let kind = std::fs::symlink_metadata(&source).map(|meta| meta.file_type());
@@ -498,18 +548,21 @@ pub fn restore_dynamic_lock(ctx: &SetupCtx) -> bool {
     if !enabled {
         return false;
     }
-    run_ok(ctx, &["systemctl", "--user", "enable", "--now", DYNAMIC_LOCK_UNIT], 30).is_some()
+    run_ok(
+        ctx,
+        &["systemctl", "--user", "enable", "--now", DYNAMIC_LOCK_UNIT],
+        30,
+    )
+    .is_some()
 }
 
 /// Stream one fixed argv, printing each stdout line as it arrives and
 /// merging trailing stderr lines after exit. Returns the exit code, or `1`
 /// when the process cannot start or outlives its bound.
-pub fn stream_command(
-    args: &[String],
-    timeout_secs: u64,
-    on_line: &dyn Fn(&str),
-) -> i32 {
-    let Some((program, rest)) = args.split_first() else { return 1 };
+pub fn stream_command(args: &[String], timeout_secs: u64, on_line: &dyn Fn(&str)) -> i32 {
+    let Some((program, rest)) = args.split_first() else {
+        return 1;
+    };
     let mut child = match Command::new(program)
         .args(rest)
         .stdout(Stdio::piped())
@@ -541,7 +594,12 @@ pub fn stream_command(
             }
         }
     };
-    if let Some(mut child) = child.stderr.take().map(BufReader::new).map(BufReader::lines) {
+    if let Some(mut child) = child
+        .stderr
+        .take()
+        .map(BufReader::new)
+        .map(BufReader::lines)
+    {
         for line in child.by_ref().flatten() {
             let trimmed = line.trim().to_string();
             if !trimmed.is_empty() {
@@ -576,7 +634,17 @@ pub fn restore_flatpaks(
     if !ctx.flatpak_present {
         return (0, apps.len());
     }
-    let _ = run_ok(ctx, &["flatpak", "remote-add", "--if-not-exists", "flathub", FLATHUB_REPO], 60);
+    let _ = run_ok(
+        ctx,
+        &[
+            "flatpak",
+            "remote-add",
+            "--if-not-exists",
+            "flathub",
+            FLATHUB_REPO,
+        ],
+        60,
+    );
     let mut remotes = std::collections::HashSet::from(["flathub".to_string()]);
     if let Some(stdout) = run_ok(ctx, &["flatpak", "remotes", "--columns=name"], 10) {
         remotes = stdout.split_whitespace().map(str::to_string).collect();
@@ -589,9 +657,16 @@ pub fn restore_flatpaks(
             continue;
         }
         let origin = app.origin.trim();
-        let origin = if remotes.contains(origin) { origin } else { "flathub" };
+        let origin = if remotes.contains(origin) {
+            origin
+        } else {
+            "flathub"
+        };
         on_line(&format!("Restoring app: {id}"));
-        let code = stream(&argv(&["flatpak", "install", "-y", "--or-update", origin, id]), on_line);
+        let code = stream(
+            &argv(&["flatpak", "install", "-y", "--or-update", origin, id]),
+            on_line,
+        );
         if code == 0 {
             installed += 1;
         } else {
@@ -628,12 +703,22 @@ pub fn restore_setup(
         .cloud_remotes
         .iter()
         .filter_map(|remote| {
-            remote.get("name").and_then(Value::as_str).map(str::to_string)
+            remote
+                .get("name")
+                .and_then(Value::as_str)
+                .map(str::to_string)
         })
         .collect::<Vec<_>>();
     let (apps_ok, apps_failed) = restore_flatpaks(ctx, stream, on_line, &manifest.flatpaks);
     let _ = run_ok(ctx, &["kbuildsycoca6", "--noincremental"], 30);
-    Ok(RestoreReport { paths, defaults, apps_ok, apps_failed, cloud_names: remotes, dynamic_lock })
+    Ok(RestoreReport {
+        paths,
+        defaults,
+        apps_ok,
+        apps_failed,
+        cloud_names: remotes,
+        dynamic_lock,
+    })
 }
 
 #[cfg(test)]
@@ -653,7 +738,10 @@ mod tests {
 
     #[test]
     fn validates_manifest_and_renders_preview() {
-        let value = manifest(&[".config/kdeglobals", ".local/share/applications/kyth-demo.desktop"]);
+        let value = manifest(&[
+            ".config/kdeglobals",
+            ".local/share/applications/kyth-demo.desktop",
+        ]);
         let parsed = validate_manifest(&value).unwrap();
         assert_eq!(parsed.flatpaks[0].id, "org.example.App");
         assert!(preview_summary(&parsed).contains("1 Flatpak apps, 2 settings paths"));
@@ -662,10 +750,16 @@ mod tests {
     #[test]
     fn rejects_traversal_and_unowned_desktop_files() {
         assert!(is_allowed_restore_path(".config/kdeglobals"));
-        assert!(is_allowed_restore_path(".local/share/applications/kyth-demo.desktop"));
+        assert!(is_allowed_restore_path(
+            ".local/share/applications/kyth-demo.desktop"
+        ));
         assert!(!is_allowed_restore_path("../.config/kdeglobals"));
-        assert!(!is_allowed_restore_path(".local/share/applications/other.desktop"));
-        assert!(!is_allowed_restore_path(".local/share/applications/kyth-demo.desktop/extra"));
+        assert!(!is_allowed_restore_path(
+            ".local/share/applications/other.desktop"
+        ));
+        assert!(!is_allowed_restore_path(
+            ".local/share/applications/kyth-demo.desktop/extra"
+        ));
         assert!(validate_manifest(&manifest(&[".config/unknown"])).is_err());
     }
 
@@ -673,17 +767,17 @@ mod tests {
     fn rejects_wrong_format_and_version() {
         let mut wrong_format = manifest(&[]);
         wrong_format["format"] = "other".into();
-        assert!(validate_manifest(&wrong_format).unwrap_err().contains("not a KythOS"));
+        assert!(validate_manifest(&wrong_format)
+            .unwrap_err()
+            .contains("not a KythOS"));
         let mut wrong_version = manifest(&[]);
         wrong_version["version"] = 2.into();
-        assert!(validate_manifest(&wrong_version).unwrap_err().contains("Unsupported"));
+        assert!(validate_manifest(&wrong_version)
+            .unwrap_err()
+            .contains("Unsupported"));
     }
 
-    fn stub_ctx<'a>(
-        home: &'a Path,
-        run: &'a RunText<'a>,
-        flatpak_present: bool,
-    ) -> SetupCtx<'a> {
+    fn stub_ctx<'a>(home: &'a Path, run: &'a RunText<'a>, flatpak_present: bool) -> SetupCtx<'a> {
         SetupCtx {
             home,
             run_text: run,
@@ -711,7 +805,10 @@ mod tests {
         let remotes = parse_cloud_remotes("drive: webdav\nphotos:\n");
         assert_eq!(remotes[0]["name"], "drive");
         assert_eq!(remotes[0]["type"], "webdav");
-        assert_eq!(remotes[1], serde_json::json!({"name": "photos", "type": "unknown"}));
+        assert_eq!(
+            remotes[1],
+            serde_json::json!({"name": "photos", "type": "unknown"})
+        );
     }
 
     #[test]
@@ -753,7 +850,8 @@ mod tests {
             Some((0, "kyth-setup/manifest.json\n../evil\n".to_string()))
         };
         let ctx = stub_ctx(home, &run, true);
-        let error = safe_extract(&ctx, Path::new("archive.tar.gz"), Path::new("/tmp/out")).unwrap_err();
+        let error =
+            safe_extract(&ctx, Path::new("archive.tar.gz"), Path::new("/tmp/out")).unwrap_err();
         assert!(error.contains("Unsafe archive path: ../evil"));
         assert_eq!(calls.borrow().len(), 1);
     }
@@ -772,15 +870,28 @@ mod tests {
         let ctx = stub_ctx(home, &run, true);
         let seen = RefCell::new(Vec::new());
         let apps = vec![
-            SetupFlatpak { id: "org.example.App".into(), origin: "missing-remote".into() },
-            SetupFlatpak { id: "  ".into(), origin: "flathub".into() },
-            SetupFlatpak { id: "org.example.Other".into(), origin: "flathub".into() },
+            SetupFlatpak {
+                id: "org.example.App".into(),
+                origin: "missing-remote".into(),
+            },
+            SetupFlatpak {
+                id: "  ".into(),
+                origin: "flathub".into(),
+            },
+            SetupFlatpak {
+                id: "org.example.Other".into(),
+                origin: "flathub".into(),
+            },
         ];
         let (ok, failed) = restore_flatpaks(
             &ctx,
             &|args, _| {
                 seen.borrow_mut().push(args.join(" "));
-                if args.iter().any(|arg| arg == "org.example.Other") { 1 } else { 0 }
+                if args.iter().any(|arg| arg == "org.example.Other") {
+                    1
+                } else {
+                    0
+                }
             },
             &|_| {},
             &apps,
@@ -794,7 +905,10 @@ mod tests {
         let home = Path::new("/nonexistent-home");
         let run = |_: &[String], _: u64| Some((0, String::new()));
         let ctx = stub_ctx(home, &run, false);
-        let apps = vec![SetupFlatpak { id: "org.example.App".into(), origin: "flathub".into() }];
+        let apps = vec![SetupFlatpak {
+            id: "org.example.App".into(),
+            origin: "flathub".into(),
+        }];
         assert_eq!(restore_flatpaks(&ctx, &|_, _| 0, &|_| {}, &apps), (0, 1));
     }
 
@@ -815,12 +929,30 @@ mod tests {
         let payload = tempfile::tempdir().unwrap();
         std::fs::create_dir_all(home.path().join(".config")).unwrap();
         std::fs::write(home.path().join(".config/kdeglobals"), "theme=Breeze\n").unwrap();
-        assert!(!copy_into_payload(home.path(), payload.path(), ".config/missing"));
-        assert!(copy_into_payload(home.path(), payload.path(), ".config/kdeglobals"));
+        assert!(!copy_into_payload(
+            home.path(),
+            payload.path(),
+            ".config/missing"
+        ));
+        assert!(copy_into_payload(
+            home.path(),
+            payload.path(),
+            ".config/kdeglobals"
+        ));
         let staged = payload.path().join("files/.config/kdeglobals");
         assert_eq!(std::fs::read_to_string(&staged).unwrap(), "theme=Breeze\n");
         let restore_home = tempfile::tempdir().unwrap();
-        assert_eq!(restore_files(payload.path(), restore_home.path(), &[".config/kdeglobals".to_string(), ".config/missing".to_string()]), 1);
+        assert_eq!(
+            restore_files(
+                payload.path(),
+                restore_home.path(),
+                &[
+                    ".config/kdeglobals".to_string(),
+                    ".config/missing".to_string()
+                ]
+            ),
+            1
+        );
         assert!(restore_home.path().join(".config/kdeglobals").is_file());
     }
 }

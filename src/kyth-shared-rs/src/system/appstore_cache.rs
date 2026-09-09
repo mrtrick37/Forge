@@ -3,17 +3,24 @@
 use std::path::{Path, PathBuf};
 
 pub fn cache_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    if let Some(path) = path { return path.as_ref().to_path_buf(); }
+    if let Some(path) = path {
+        return path.as_ref().to_path_buf();
+    }
     if let Some(cache) = std::env::var_os("XDG_CACHE_HOME") {
         return PathBuf::from(cache).join("kyth-appstream.json");
     }
-    PathBuf::from(std::env::var_os("HOME").unwrap_or_else(|| ".".into())).join(".cache/kyth-appstream.json")
+    PathBuf::from(std::env::var_os("HOME").unwrap_or_else(|| ".".into()))
+        .join(".cache/kyth-appstream.json")
 }
 
 pub fn warm_status(path: impl AsRef<Path>) -> &'static str {
     let path = path.as_ref();
     if path.is_file() {
-        if std::fs::read_to_string(path).ok().and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok()).is_some_and(|value| json_truthy(&value)) {
+        if std::fs::read_to_string(path)
+            .ok()
+            .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+            .is_some_and(|value| json_truthy(&value))
+        {
             return "cached";
         }
     }
@@ -23,7 +30,11 @@ pub fn warm_status(path: impl AsRef<Path>) -> &'static str {
 fn json_truthy(value: &serde_json::Value) -> bool {
     match value {
         serde_json::Value::Null | serde_json::Value::Bool(false) => false,
-        serde_json::Value::Number(number) => number.as_i64().is_some_and(|n| n != 0) || number.as_u64().is_some_and(|n| n != 0) || number.as_f64().is_some_and(|n| n != 0.0),
+        serde_json::Value::Number(number) => {
+            number.as_i64().is_some_and(|n| n != 0)
+                || number.as_u64().is_some_and(|n| n != 0)
+                || number.as_f64().is_some_and(|n| n != 0.0)
+        }
         serde_json::Value::String(text) => !text.is_empty(),
         serde_json::Value::Array(items) => !items.is_empty(),
         serde_json::Value::Object(items) => !items.is_empty(),
@@ -32,7 +43,11 @@ fn json_truthy(value: &serde_json::Value) -> bool {
 }
 
 pub fn appstore_status(path: impl AsRef<Path>) -> &'static str {
-    if path.as_ref().is_file() { "UNAVAILABLE (cached)" } else { "empty" }
+    if path.as_ref().is_file() {
+        "UNAVAILABLE (cached)"
+    } else {
+        "empty"
+    }
 }
 
 #[cfg(test)]

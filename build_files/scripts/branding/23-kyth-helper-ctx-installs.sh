@@ -1,40 +1,9 @@
 # shellcheck shell=bash
 # ── KythOS Hub launcher and native installer packaging ───────────────────────
-# /ctx/kyth-welcome is a symlink to ../src/... inside
-# build_files. When build_files is bind-mounted as /ctx, those symlinks dangle
-# and BuildKit overlay mounts do not reliably hide them. Use /src fallback.
-_resolve_ctx_src() {
-    local name="$1"
-    # Check /src first (explicit mount of repo src), then /ctx if it is a real dir
-    if [[ -d "/src/${name}" ]]; then
-        echo "/src/${name}"
-        return
-    fi
-    if [[ -d "/ctx/src/${name}" ]]; then
-        echo "/ctx/src/${name}"
-        return
-    fi
-    # /ctx/${name} may be a dangling symlink; check if it is a real directory with content
-    if [[ -d "/ctx/${name}" ]] && [[ ! -L "/ctx/${name}" || -e "/ctx/${name}/pyproject.toml" ]]; then
-        # If it's a symlink, verify it resolves
-        if [[ -L "/ctx/${name}" ]]; then
-            if [[ -f "/ctx/${name}/pyproject.toml" ]]; then
-                echo "/ctx/${name}"
-                return
-            fi
-        else
-            echo "/ctx/${name}"
-            return
-        fi
-    fi
-    # Fallback to /ctx even if dangling - will fail with clear error
-    echo "/ctx/${name}"
-}
-_welcome_src="$(_resolve_ctx_src kyth-welcome)"
-echo "branding: welcome_src=${_welcome_src} (ctx_welcome_exists=$(test -d /ctx/kyth-welcome && echo yes || echo no) src_exists=$(test -d /src/kyth-welcome && echo yes || echo no) ctx_islink=$(test -L /ctx/kyth-welcome && echo yes || echo no))" >&2
-ls -ld "/ctx/kyth-welcome" "/src/kyth-welcome" 2>&1 | head -n 5 >&2 || true
-install -m 0755 "${_welcome_src}/kyth-welcome-launch" /usr/bin/kyth-welcome-launch
-install -m 0644 "${_welcome_src}/kyth-welcome.desktop" \
+# The supported Hub launcher is compiled Rust. The desktop metadata is kept
+# next to the React/Tauri source so packaging has no Python Hub dependency.
+_hub_data_src="/src/kyth-hub-web/src/data"
+install -m 0644 "${_hub_data_src}/kyth-welcome.desktop" \
 	/usr/share/applications/kyth-welcome.desktop
 
 # Hub search in KRunner — generated from the same route manifest imported by
@@ -49,7 +18,7 @@ install -m 0644 "${_welcome_src}/kyth-welcome.desktop" \
 install -Dm0644 /src/kyth-hub-web/src/data/hubRoutes.json \
 	/usr/share/kyth/hubRoutes.json
 
-unset _welcome_src
+unset _hub_data_src
 write_config /usr/share/applications/kyth-app-store.desktop <<'APPSTOREEOF'
 [Desktop Entry]
 Type=Application
@@ -74,17 +43,8 @@ install -m 0755 /ctx/kyth-retry-hardware-setup /usr/libexec/kyth-retry-hardware-
 # Place Kyth Hub on the desktop for all new users. The executable bit is
 # required so KDE Plasma 6 treats it as trusted without prompting the user.
 mkdir -p /etc/skel/Desktop
-# _welcome_src was unset above; re-resolve for desktop seeding
-if [[ -d "/ctx/kyth-welcome" && -f "/ctx/kyth-welcome/pyproject.toml" ]]; then
-    _welcome_src="/ctx/kyth-welcome"
-elif [[ -d "/src/kyth-welcome" ]]; then
-    _welcome_src="/src/kyth-welcome"
-else
-    _welcome_src="/ctx/kyth-welcome"
-fi
-install -m 0755 "${_welcome_src}/kyth-welcome.desktop" \
+install -m 0755 "/src/kyth-hub-web/src/data/kyth-welcome.desktop" \
 	/etc/skel/Desktop/kyth-welcome.desktop
-unset _welcome_src
 
 # Recycle Bin on the desktop keeps deletion recovery visible. Type=Link entries
 # open in Dolphin and need no executable/trust bit. Kept in /usr/share/kyth so

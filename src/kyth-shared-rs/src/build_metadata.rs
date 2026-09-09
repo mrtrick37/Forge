@@ -86,12 +86,30 @@ pub fn release_metadata(input: &ReleaseMetadataInput) -> (Value, Value) {
     let mut channel = immutable.clone();
     if let Some(object) = channel.as_object_mut() {
         object.insert("iso".into(), input.channel_basename.clone().into());
-        object.insert("signature".into(), format!("{}.sig", input.channel_basename).into());
-        object.insert("bundle".into(), format!("{}.bundle", input.channel_basename).into());
-        object.insert("provenance".into(), format!("{}.intoto.jsonl", input.channel_basename).into());
-        object.insert("checksum".into(), format!("{}-CHECKSUM", input.channel_basename).into());
-        object.insert("download_url".into(), format!("{}/{}", RELEASE_ASSET_BASE_URL, input.channel_basename).into());
-        object.insert("immutable_download_url".into(), format!("{}/{}", RELEASE_ASSET_BASE_URL, input.iso_basename).into());
+        object.insert(
+            "signature".into(),
+            format!("{}.sig", input.channel_basename).into(),
+        );
+        object.insert(
+            "bundle".into(),
+            format!("{}.bundle", input.channel_basename).into(),
+        );
+        object.insert(
+            "provenance".into(),
+            format!("{}.intoto.jsonl", input.channel_basename).into(),
+        );
+        object.insert(
+            "checksum".into(),
+            format!("{}-CHECKSUM", input.channel_basename).into(),
+        );
+        object.insert(
+            "download_url".into(),
+            format!("{}/{}", RELEASE_ASSET_BASE_URL, input.channel_basename).into(),
+        );
+        object.insert(
+            "immutable_download_url".into(),
+            format!("{}/{}", RELEASE_ASSET_BASE_URL, input.iso_basename).into(),
+        );
     }
     (immutable, channel)
 }

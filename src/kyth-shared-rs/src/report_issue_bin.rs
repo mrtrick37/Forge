@@ -9,10 +9,11 @@ use std::env;
 
 use kyth_shared::atomic_io::atomic_write_text;
 use kyth_shared::system::issue_draft::{
-    DEFAULT_REPO_URL, draft_dir, draft_path, issue_url, local_timestamp, render_draft, resolve_body,
+    draft_dir, draft_path, issue_url, local_timestamp, render_draft, resolve_body, DEFAULT_REPO_URL,
 };
 
-const DESCRIPTION: &str = "Creates a prefilled GitHub issue URL for KythOS and writes a local draft.";
+const DESCRIPTION: &str =
+    "Creates a prefilled GitHub issue URL for KythOS and writes a local draft.";
 
 fn usage() -> String {
     "Usage: kyth-report-issue [--title TITLE] [--body BODY] [--body-file PATH] [--label LABEL] [--no-open]".to_string()
@@ -30,8 +31,7 @@ fn main() -> std::process::ExitCode {
     let mut body_file: Option<String> = None;
     let mut label = env::var("KYTH_ISSUE_LABEL").unwrap_or_else(|_| "bug".to_string());
     let mut no_open = false;
-    let repo_url =
-        env::var("KYTH_ISSUE_REPO_URL").unwrap_or_else(|_| DEFAULT_REPO_URL.to_string());
+    let repo_url = env::var("KYTH_ISSUE_REPO_URL").unwrap_or_else(|_| DEFAULT_REPO_URL.to_string());
 
     let mut args = env::args().skip(1).peekable();
     while let Some(arg) = args.next() {
@@ -58,22 +58,30 @@ fn main() -> std::process::ExitCode {
                 println!("{DESCRIPTION}\n\n{}", usage());
                 return std::process::ExitCode::SUCCESS;
             }
-            "--title" => title = match take_next(&mut args) {
-                Ok(value) => value,
-                Err(code) => return code,
-            },
-            "--body" => body = match take_next(&mut args) {
-                Ok(value) => value,
-                Err(code) => return code,
-            },
-            "--body-file" => body_file = Some(match take_next(&mut args) {
-                Ok(value) => value,
-                Err(code) => return code,
-            }),
-            "--label" => label = match take_next(&mut args) {
-                Ok(value) => value,
-                Err(code) => return code,
-            },
+            "--title" => {
+                title = match take_next(&mut args) {
+                    Ok(value) => value,
+                    Err(code) => return code,
+                }
+            }
+            "--body" => {
+                body = match take_next(&mut args) {
+                    Ok(value) => value,
+                    Err(code) => return code,
+                }
+            }
+            "--body-file" => {
+                body_file = Some(match take_next(&mut args) {
+                    Ok(value) => value,
+                    Err(code) => return code,
+                })
+            }
+            "--label" => {
+                label = match take_next(&mut args) {
+                    Ok(value) => value,
+                    Err(code) => return code,
+                }
+            }
             "--no-open" => no_open = true,
             _ => {
                 eprintln!("{}", usage());

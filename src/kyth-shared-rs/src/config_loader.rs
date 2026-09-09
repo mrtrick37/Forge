@@ -18,9 +18,15 @@ pub fn load_toml_config(
     candidates.push(home.join(".config/kyth").join(filename));
     candidates.push(Path::new("/etc/kyth").join(filename));
     for path in candidates {
-        let Ok(raw) = std::fs::read_to_string(path) else { continue; };
-        let Ok(value) = raw.parse::<toml::Value>() else { continue; };
-        let Some(table) = value.as_table() else { continue; };
+        let Ok(raw) = std::fs::read_to_string(path) else {
+            continue;
+        };
+        let Ok(value) = raw.parse::<toml::Value>() else {
+            continue;
+        };
+        let Some(table) = value.as_table() else {
+            continue;
+        };
         let selected = match section_name {
             Some(section) => match table.get(section) {
                 Some(value) => value.as_table(),
@@ -28,10 +34,14 @@ pub fn load_toml_config(
             },
             None => Some(table),
         };
-        let Some(selected) = selected else { return defaults.clone(); };
+        let Some(selected) = selected else {
+            return defaults.clone();
+        };
         let mut merged = defaults.clone();
         for (key, value) in selected {
-            if let Ok(json) = serde_json::to_value(value) { merged.insert(key.clone(), json); }
+            if let Ok(json) = serde_json::to_value(value) {
+                merged.insert(key.clone(), json);
+            }
         }
         return merged;
     }
@@ -48,8 +58,15 @@ mod tests {
     fn merges_selected_section_over_defaults() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("settings.toml");
-        std::fs::write(&path, "[settings]\nname = \"native\"\ncount = 3\nignored = true\n").unwrap();
-        let defaults = BTreeMap::from([("name".into(), json!("default")), ("enabled".into(), json!(true))]);
+        std::fs::write(
+            &path,
+            "[settings]\nname = \"native\"\ncount = 3\nignored = true\n",
+        )
+        .unwrap();
+        let defaults = BTreeMap::from([
+            ("name".into(), json!("default")),
+            ("enabled".into(), json!(true)),
+        ]);
         let loaded = load_toml_config("settings.toml", &defaults, Some("settings"), &[path]);
         assert_eq!(loaded.get("name"), Some(&json!("native")));
         assert_eq!(loaded.get("enabled"), Some(&json!(true)));

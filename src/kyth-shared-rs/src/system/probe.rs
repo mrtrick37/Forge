@@ -11,7 +11,9 @@ use serde_json::Value;
 
 struct ProbeCacheLock(PathBuf);
 impl Drop for ProbeCacheLock {
-    fn drop(&mut self) { let _ = std::fs::remove_file(&self.0); }
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
 }
 
 /// Cache contract shared with the legacy Python compatibility module — how
@@ -43,7 +45,9 @@ fn user_runtime_cache_path() -> PathBuf {
         return PathBuf::from(runtime).join("kyth").join("probe-cache.json");
     }
     let uid = rustix::process::getuid().as_raw();
-    PathBuf::from(format!("/run/user/{uid}")).join("kyth").join("probe-cache.json")
+    PathBuf::from(format!("/run/user/{uid}"))
+        .join("kyth")
+        .join("probe-cache.json")
 }
 
 fn user_home_cache_path() -> PathBuf {
@@ -51,7 +55,10 @@ fn user_home_cache_path() -> PathBuf {
         return PathBuf::from(xdg).join("kyth").join("probe-cache.json");
     }
     let home = std::env::var("HOME").unwrap_or_default();
-    PathBuf::from(home).join(".cache").join("kyth").join("probe-cache.json")
+    PathBuf::from(home)
+        .join(".cache")
+        .join("kyth")
+        .join("probe-cache.json")
 }
 
 fn system_cache_path() -> PathBuf {
@@ -81,10 +88,15 @@ pub fn default_write_path(system: bool) -> PathBuf {
 /// observe a partially serialized probe result, even when a service timeout
 /// overlaps a Hub refresh.
 pub fn write_cache_file(path: &Path, document: &Value) -> std::io::Result<()> {
-    let parent = path
-        .parent()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "cache path has no parent"))?;
-    if !document.is_object() || document.get("sections").and_then(Value::as_object).is_none() {
+    let parent = path.parent().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "cache path has no parent")
+    })?;
+    if !document.is_object()
+        || document
+            .get("sections")
+            .and_then(Value::as_object)
+            .is_none()
+    {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
             "probe cache document must contain an object sections field",
@@ -93,11 +105,17 @@ pub fn write_cache_file(path: &Path, document: &Value) -> std::io::Result<()> {
     std::fs::create_dir_all(parent)?;
     let lock = path.with_extension(format!(
         "{}.lock",
-        path.extension().and_then(|extension| extension.to_str()).unwrap_or("cache")
+        path.extension()
+            .and_then(|extension| extension.to_str())
+            .unwrap_or("cache")
     ));
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
     let _guard = loop {
-        match std::fs::OpenOptions::new().write(true).create_new(true).open(&lock) {
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&lock)
+        {
             Ok(_) => break ProbeCacheLock(lock.clone()),
             Err(error)
                 if error.kind() == std::io::ErrorKind::AlreadyExists
@@ -138,23 +156,27 @@ pub fn update_sections(
     let target = path
         .map(Path::to_path_buf)
         .unwrap_or_else(|| default_write_path(system));
-    let mut document = load_cache_file(&target).unwrap_or_else(|| {
-        serde_json::json!({"version": 2, "generated_at": 0.0, "sections": {}})
-    });
-    let object = document
-        .as_object_mut()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidData, "probe cache is not an object"))?;
+    let mut document = load_cache_file(&target)
+        .unwrap_or_else(|| serde_json::json!({"version": 2, "generated_at": 0.0, "sections": {}}));
+    let object = document.as_object_mut().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "probe cache is not an object",
+        )
+    })?;
     let cache_sections = object
         .entry("sections")
         .or_insert_with(|| Value::Object(serde_json::Map::new()))
         .as_object_mut()
-        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidData, "probe sections are not an object"))?;
+        .ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "probe sections are not an object",
+            )
+        })?;
     let now = now_unix();
     for (key, data) in sections {
-        cache_sections.insert(
-            key.clone(),
-            serde_json::json!({"ts": now, "data": data}),
-        );
+        cache_sections.insert(key.clone(), serde_json::json!({"ts": now, "data": data}));
     }
     object.insert("version".into(), Value::from(2));
     object.insert("generated_at".into(), Value::from(now));
@@ -165,12 +187,18 @@ pub fn update_sections(
 fn command_output(program: &str, args: &[&str], timeout_secs: u64) -> Option<String> {
     let mut argv = vec![program.to_string()];
     argv.extend(args.iter().map(|arg| (*arg).to_string()));
-    let output = crate::system::process::run_bounded(&argv, std::time::Duration::from_secs(timeout_secs)).ok()?;
-    output.status.success().then(|| String::from_utf8_lossy(&output.stdout).to_string())
+    let output =
+        crate::system::process::run_bounded(&argv, std::time::Duration::from_secs(timeout_secs))
+            .ok()?;
+    output
+        .status
+        .success()
+        .then(|| String::from_utf8_lossy(&output.stdout).to_string())
 }
 
 fn collect_flatpak_apps() -> Value {
-    let Some(output) = command_output("flatpak", &["list", "--app", "--columns=application"], 15) else {
+    let Some(output) = command_output("flatpak", &["list", "--app", "--columns=application"], 15)
+    else {
         return Value::Null;
     };
     let mut apps = output
@@ -194,10 +222,15 @@ fn collect_flatpak_updates() -> Value {
             30,
         ) {
             succeeded = true;
-            total += output.lines().filter(|line| !line.trim().is_empty()).count() as i64;
+            total += output
+                .lines()
+                .filter(|line| !line.trim().is_empty())
+                .count() as i64;
         }
     }
-    succeeded.then_some(Value::from(total)).unwrap_or(Value::Null)
+    succeeded
+        .then_some(Value::from(total))
+        .unwrap_or(Value::Null)
 }
 
 fn collect_hardware() -> Option<(Value, Value)> {
@@ -211,7 +244,12 @@ fn collect_hardware() -> Option<(Value, Value)> {
         .capabilities
         .iter()
         .any(|capability| capability == "gpu.hybrid" || capability == "gpu.offload");
-    let capabilities = evaluation.capabilities.iter().take(8).cloned().collect::<Vec<_>>();
+    let capabilities = evaluation
+        .capabilities
+        .iter()
+        .take(8)
+        .cloned()
+        .collect::<Vec<_>>();
     let profiles = evaluation
         .profiles
         .iter()
@@ -245,7 +283,10 @@ pub fn collect_snapshot() -> serde_json::Map<String, Value> {
                 &status_text,
             )
         });
-    sections.insert("bootc-status-data".into(), status_data.unwrap_or(Value::Null));
+    sections.insert(
+        "bootc-status-data".into(),
+        status_data.unwrap_or(Value::Null),
+    );
     sections.insert("bootc-status-text".into(), Value::String(status_text));
     sections.insert(
         "bootc-branch".into(),
@@ -270,7 +311,8 @@ pub fn collect_snapshot() -> serde_json::Map<String, Value> {
     }
     sections.insert(
         "controllers-detect".into(),
-        serde_json::to_value(crate::system::controllers::detect_controllers()).unwrap_or(Value::Null),
+        serde_json::to_value(crate::system::controllers::detect_controllers())
+            .unwrap_or(Value::Null),
     );
     sections.insert(
         "network-summary".into(),
@@ -284,7 +326,11 @@ pub fn collect_snapshot() -> serde_json::Map<String, Value> {
 /// logged-in desktop user. The system service writes the shared system path;
 /// readers always accept it as the final fallback.
 pub fn cache_read_paths() -> Vec<PathBuf> {
-    vec![user_runtime_cache_path(), user_home_cache_path(), system_cache_path()]
+    vec![
+        user_runtime_cache_path(),
+        user_home_cache_path(),
+        system_cache_path(),
+    ]
 }
 
 fn load_cache_file(path: &Path) -> Option<Value> {
@@ -298,7 +344,10 @@ fn load_cache_file(path: &Path) -> Option<Value> {
 }
 
 fn now_unix() -> f64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs_f64()).unwrap_or(0.0)
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs_f64())
+        .unwrap_or(0.0)
 }
 
 /// Port of `probe.py`'s `read_section(key, max_age=None, paths=None)` —
@@ -312,16 +361,30 @@ pub fn read_section_in(key: &str, paths: &[PathBuf]) -> Option<Value> {
     let now = now_unix();
     let mut best: Option<(f64, Value)> = None;
     for path in paths {
-        let Some(doc) = load_cache_file(path) else { continue };
-        let Some(entry) = doc.get("sections").and_then(|s| s.get(key)) else { continue };
-        let Some(entry_obj) = entry.as_object() else { continue };
-        let Some(ts) = entry_obj.get("ts").and_then(Value::as_f64) else { continue };
-        let Some(data) = entry_obj.get("data") else { continue };
+        let Some(doc) = load_cache_file(path) else {
+            continue;
+        };
+        let Some(entry) = doc.get("sections").and_then(|s| s.get(key)) else {
+            continue;
+        };
+        let Some(entry_obj) = entry.as_object() else {
+            continue;
+        };
+        let Some(ts) = entry_obj.get("ts").and_then(Value::as_f64) else {
+            continue;
+        };
+        let Some(data) = entry_obj.get("data") else {
+            continue;
+        };
         let age = now - ts;
         if age < 0.0 || age > ttl {
             continue;
         }
-        if best.as_ref().map(|(best_ts, _)| ts > *best_ts).unwrap_or(true) {
+        if best
+            .as_ref()
+            .map(|(best_ts, _)| ts > *best_ts)
+            .unwrap_or(true)
+        {
             best = Some((ts, data.clone()));
         }
     }
@@ -340,16 +403,32 @@ pub fn read_section(key: &str) -> Option<Value> {
 /// invalidation. The caller owns serialization, locking, and persistence.
 /// With `keys == None`, only known disk-backed sections are removed; unrelated
 /// metadata is preserved just like the Python probe service.
-pub fn invalidate_sections(document: &Value, keys: Option<&[&str]>, updated_at: f64) -> Option<Value> {
+pub fn invalidate_sections(
+    document: &Value,
+    keys: Option<&[&str]>,
+    updated_at: f64,
+) -> Option<Value> {
     let mut document = document.as_object()?.clone();
     let sections = document.get_mut("sections")?.as_object_mut()?;
     let remove_all = keys.is_none();
-    let requested = keys.map(|keys| keys.iter().copied().collect::<std::collections::HashSet<_>>());
+    let requested = keys.map(|keys| {
+        keys.iter()
+            .copied()
+            .collect::<std::collections::HashSet<_>>()
+    });
     let before = sections.len();
     sections.retain(|key, _| {
-        if remove_all { !disk_ttl().contains_key(key.as_str()) } else { !requested.as_ref().is_some_and(|keys| keys.contains(key.as_str())) }
+        if remove_all {
+            !disk_ttl().contains_key(key.as_str())
+        } else {
+            !requested
+                .as_ref()
+                .is_some_and(|keys| keys.contains(key.as_str()))
+        }
     });
-    if sections.len() == before { return None; }
+    if sections.len() == before {
+        return None;
+    }
     document.insert("generated_at".into(), Value::from(updated_at));
     Some(Value::Object(document))
 }
@@ -382,7 +461,10 @@ mod tests {
             "sections": { "bootc-branch": { "ts": now, "data": "testing" } },
         });
         fs::write(&path, serde_json::to_string(&doc).unwrap()).unwrap();
-        assert_eq!(read_section_in("bootc-branch", &[path]), Some(json!("testing")));
+        assert_eq!(
+            read_section_in("bootc-branch", &[path]),
+            Some(json!("testing"))
+        );
     }
 
     #[test]
@@ -486,6 +568,9 @@ mod tests {
         let written: Value = serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap();
         assert_eq!(written["version"], 2);
         assert!(written["generated_at"].as_f64().unwrap() > 0.0);
-        assert_eq!(written["sections"]["network-summary"]["data"]["vpn_connected"], false);
+        assert_eq!(
+            written["sections"]["network-summary"]["data"]["vpn_connected"],
+            false
+        );
     }
 }

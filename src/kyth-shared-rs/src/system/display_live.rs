@@ -37,8 +37,16 @@ mod tests {
 
     #[test]
     fn readback_requires_success_and_requested_mode() {
-        assert!(readback_matches(Some(0), "Output: HDMI mode 1920x1080@60", "1920x1080@60"));
+        assert!(readback_matches(
+            Some(0),
+            "Output: HDMI mode 1920x1080@60",
+            "1920x1080@60"
+        ));
         assert!(!readback_matches(Some(1), "1920x1080@60", "1920x1080@60"));
-        assert!(!readback_matches(Some(0), "Output: HDMI mode 1280x720@60", "1920x1080@60"));
+        assert!(!readback_matches(
+            Some(0),
+            "Output: HDMI mode 1280x720@60",
+            "1920x1080@60"
+        ));
     }
 }

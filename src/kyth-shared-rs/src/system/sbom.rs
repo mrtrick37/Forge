@@ -39,12 +39,17 @@ pub fn load_json(path: impl AsRef<Path>, fallback_key: &str) -> Value {
         })
 }
 
-pub fn load_sbom() -> Value { load_json(DEFAULT_SBOM_PATH, "artifacts") }
+pub fn load_sbom() -> Value {
+    load_json(DEFAULT_SBOM_PATH, "artifacts")
+}
 
-pub fn load_cve() -> Value { load_json(DEFAULT_CVE_PATH, "results") }
+pub fn load_cve() -> Value {
+    load_json(DEFAULT_CVE_PATH, "results")
+}
 
 fn artifacts(value: &Value) -> Vec<(String, Value)> {
-    value.get("artifacts")
+    value
+        .get("artifacts")
         .and_then(Value::as_array)
         .into_iter()
         .flatten()
@@ -61,24 +66,62 @@ pub fn sbom_diff(current: &Value, previous: &Value) -> SbomDiff {
     let previous = artifacts(previous);
     let current_map: std::collections::HashMap<_, _> = current.iter().cloned().collect();
     let previous_map: std::collections::HashMap<_, _> = previous.iter().cloned().collect();
-    let added = current.iter().filter(|(name, _)| !previous_map.contains_key(name)).map(|(_, value)| value.clone()).collect();
-    let removed = previous.iter().filter(|(name, _)| !current_map.contains_key(name)).map(|(_, value)| value.clone()).collect();
-    let changed = current.iter().filter_map(|(name, value)| {
-        let old = previous_map.get(name)?;
-        let new_version = value.get("version");
-        let old_version = old.get("version");
-        (new_version != old_version).then(|| ChangedArtifact { name: name.clone(), from: old_version.cloned(), to: new_version.cloned() })
-    }).collect();
-    SbomDiff { added, removed, changed }
+    let added = current
+        .iter()
+        .filter(|(name, _)| !previous_map.contains_key(name))
+        .map(|(_, value)| value.clone())
+        .collect();
+    let removed = previous
+        .iter()
+        .filter(|(name, _)| !current_map.contains_key(name))
+        .map(|(_, value)| value.clone())
+        .collect();
+    let changed = current
+        .iter()
+        .filter_map(|(name, value)| {
+            let old = previous_map.get(name)?;
+            let new_version = value.get("version");
+            let old_version = old.get("version");
+            (new_version != old_version).then(|| ChangedArtifact {
+                name: name.clone(),
+                from: old_version.cloned(),
+                to: new_version.cloned(),
+            })
+        })
+        .collect();
+    SbomDiff {
+        added,
+        removed,
+        changed,
+    }
 }
 
 pub fn cve_summary(value: &Value) -> CveSummary {
-    let results = value.get("results").and_then(Value::as_array).cloned().unwrap_or_default();
-    let mut summary = CveSummary { results: results.len(), ..Default::default() };
+    let results = value
+        .get("results")
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let mut summary = CveSummary {
+        results: results.len(),
+        ..Default::default()
+    };
     for result in results {
-        for vulnerability in result.get("vulnerabilities").and_then(Value::as_array).into_iter().flatten() {
+        for vulnerability in result
+            .get("vulnerabilities")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+        {
             summary.total += 1;
-            if matches!(vulnerability.get("severity").and_then(Value::as_str).map(|severity| severity.to_ascii_uppercase()).as_deref(), Some("HIGH" | "CRITICAL")) {
+            if matches!(
+                vulnerability
+                    .get("severity")
+                    .and_then(Value::as_str)
+                    .map(|severity| severity.to_ascii_uppercase())
+                    .as_deref(),
+                Some("HIGH" | "CRITICAL")
+            ) {
                 summary.high += 1;
             }
         }
@@ -103,6 +146,13 @@ mod tests {
     #[test]
     fn counts_high_cves() {
         let value = serde_json::json!({"results":[{"vulnerabilities":[{"severity":"HIGH"},{"severity":"low"}]},{"vulnerabilities":[{"severity":"CRITICAL"}]}]});
-        assert_eq!(cve_summary(&value), CveSummary { total: 3, high: 2, results: 2 });
+        assert_eq!(
+            cve_summary(&value),
+            CveSummary {
+                total: 3,
+                high: 2,
+                results: 2
+            }
+        );
     }
 }

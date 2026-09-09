@@ -1,0 +1,366 @@
+{
+  "updated": "2026-05-18",
+  "schema": 1,
+  "games": [
+    {
+      "name": "Counter-Strike 2",
+      "anticheat": "VAC",
+      "status": "native",
+      "note": "Native Linux client; full competitive matchmaking.",
+      "checked": "2026-05-18",
+      "source": "Steam store / KythOS validation target",
+      "source_url": "https://store.steampowered.com/app/730/CounterStrike_2/"
+    },
+    {
+      "name": "Dota 2",
+      "anticheat": "VAC",
+      "status": "native",
+      "note": "Native Linux client.",
+      "checked": "2026-05-18",
+      "source": "Steam store",
+      "source_url": "https://store.steampowered.com/app/570/Dota_2/"
+    },
+    {
+      "name": "Team Fortress 2",
+      "anticheat": "VAC",
+      "status": "native",
+      "note": "Native Linux client.",
+      "checked": "2026-05-18",
+      "source": "Steam store",
+      "source_url": "https://store.steampowered.com/app/440/Team_Fortress_2/"
+    },
+    {
+      "name": "Baldur's Gate 3",
+      "anticheat": "None",
+      "status": "native",
+      "note": "Native Linux client. Proton is also worth testing for regressions.",
+      "checked": "2026-05-18",
+      "source": "Steam store / validation matrix",
+      "source_url": "https://store.steampowered.com/app/1086940/Baldurs_Gate_3/"
+    },
+    {
+      "name": "The Witcher 3",
+      "anticheat": "None",
+      "status": "native",
+      "note": "Native Linux client included.",
+      "checked": "2026-05-18",
+      "source": "Steam store",
+      "source_url": "https://store.steampowered.com/app/292030/The_Witcher_3_Wild_Hunt/"
+    },
+    {
+      "name": "Hollow Knight",
+      "anticheat": "None",
+      "status": "native",
+      "note": "Native Linux client.",
+      "checked": "2026-05-18",
+      "source": "Steam store",
+      "source_url": "https://store.steampowered.com/app/367520/Hollow_Knight/"
+    },
+    {
+      "name": "Stardew Valley",
+      "anticheat": "None",
+      "status": "native",
+      "note": "Native Linux client.",
+      "checked": "2026-05-18",
+      "source": "Steam store",
+      "source_url": "https://store.steampowered.com/app/413150/Stardew_Valley/"
+    },
+    {
+      "name": "Terraria",
+      "anticheat": "None",
+      "status": "native",
+      "note": "Native Linux client.",
+      "checked": "2026-05-18",
+      "source": "Steam store",
+      "source_url": "https://store.steampowered.com/app/105600/Terraria/"
+    },
+    {
+      "name": "Elden Ring",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Platinum-rated community reports; online path is part of KythOS validation.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB / KythOS validation target",
+      "source_url": "https://www.protondb.com/app/1245620"
+    },
+    {
+      "name": "Cyberpunk 2077",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Excellent Proton support. Test HDR, FSR, and frame pacing on each release.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB / KythOS validation target",
+      "source_url": "https://www.protondb.com/app/1091500"
+    },
+    {
+      "name": "Red Dead Redemption 2",
+      "anticheat": "Rockstar",
+      "status": "proton",
+      "note": "Gold community reports; Rockstar Launcher remains the risk surface.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB / KythOS validation target",
+      "source_url": "https://www.protondb.com/app/1174180"
+    },
+    {
+      "name": "GTA V",
+      "anticheat": "Rockstar",
+      "status": "proton",
+      "note": "Story mode and launcher path need periodic revalidation.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/271590"
+    },
+    {
+      "name": "God of War",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Platinum-rated community reports.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/1593500"
+    },
+    {
+      "name": "Hogwarts Legacy",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Gold-rated community reports.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/990080"
+    },
+    {
+      "name": "Spider-Man Remastered",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Gold/Platinum community reports.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/1817070"
+    },
+    {
+      "name": "Resident Evil 4 (2023)",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Works via Proton.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/2050650"
+    },
+    {
+      "name": "Sekiro",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Platinum community reports.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/814380"
+    },
+    {
+      "name": "Dark Souls III",
+      "anticheat": "VAC",
+      "status": "proton",
+      "note": "Works via Proton; VAC does not restrict Linux for this title.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/374320"
+    },
+    {
+      "name": "Monster Hunter: World",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Gold community reports.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/582010"
+    },
+    {
+      "name": "Hades",
+      "anticheat": "None",
+      "status": "proton",
+      "note": "Platinum community reports.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/1145360"
+    },
+    {
+      "name": "Deep Rock Galactic",
+      "anticheat": "EAC",
+      "status": "proton",
+      "note": "EAC Linux support is enabled; retest after major anti-cheat updates.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/548430"
+    },
+    {
+      "name": "Dead by Daylight",
+      "anticheat": "EAC",
+      "status": "proton",
+      "note": "EAC Linux support is enabled; retest after major game updates.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/381210"
+    },
+    {
+      "name": "The Finals",
+      "anticheat": "EAC",
+      "status": "proton",
+      "note": "EAC Linux path has community support; validate matchmaking on release images.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/2073850"
+    },
+    {
+      "name": "Halo Infinite",
+      "anticheat": "EAC",
+      "status": "proton",
+      "note": "EAC Linux support is enabled.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/1240440"
+    },
+    {
+      "name": "Overwatch 2",
+      "anticheat": "Warden",
+      "status": "proton",
+      "note": "Runs via Proton + Battle.net through Lutris/umu. Launcher flow is the main risk.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB / KythOS validation target",
+      "source_url": "https://www.protondb.com/app/2357570"
+    },
+    {
+      "name": "Paladins",
+      "anticheat": "EAC",
+      "status": "proton",
+      "note": "EAC Linux support is enabled by the publisher.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/444090"
+    },
+    {
+      "name": "Rainbow Six Siege",
+      "anticheat": "BattlEye",
+      "status": "tweaks",
+      "note": "Mostly works; occasional BattlEye launch failures. Try PROTON_NO_ESYNC=1 if it fails to start.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/359550"
+    },
+    {
+      "name": "Hunt: Showdown",
+      "anticheat": "BattlEye",
+      "status": "tweaks",
+      "note": "BattlEye enabled but reports are mixed. Check ProtonDB before promising support.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB",
+      "source_url": "https://www.protondb.com/app/594650"
+    },
+    {
+      "name": "Warframe",
+      "anticheat": "EAC",
+      "status": "tweaks",
+      "note": "EAC Linux support enabled; occasionally needs a specific Proton version.",
+      "checked": "2026-05-18",
+      "source": "ProtonDB / KythOS validation target",
+      "source_url": "https://www.protondb.com/app/230410"
+    },
+    {
+      "name": "Apex Legends",
+      "anticheat": "EAC",
+      "status": "blocked",
+      "note": "EA removed Steam Deck/Linux support in 2024. Retest only if EA announces a policy reversal.",
+      "checked": "2026-05-18",
+      "source": "EA / ProtonDB",
+      "source_url": "https://www.protondb.com/app/1172470"
+    },
+    {
+      "name": "Destiny 2",
+      "anticheat": "BattlEye",
+      "status": "blocked",
+      "note": "Bungie states SteamOS/Proton is unsupported and warns against bypass attempts.",
+      "checked": "2026-05-18",
+      "source": "Bungie Help",
+      "source_url": "https://help.bungie.net/hc/en-us/articles/360049517431-Destiny-Account-Restrictions-and-Banning-Policies"
+    },
+    {
+      "name": "Rust",
+      "anticheat": "EAC",
+      "status": "blocked",
+      "note": "Facepunch has publicly said there are no current Proton/Linux support plans.",
+      "checked": "2026-05-18",
+      "source": "Facepunch statement coverage",
+      "source_url": "https://www.pcgamer.com/games/survival-crafting/rust-developer-has-no-plans-for-linux-or-proton-support-says-games-that-support-them-are-not-serious-about-anti-cheat/"
+    },
+    {
+      "name": "PUBG",
+      "anticheat": "BattlEye",
+      "status": "blocked",
+      "note": "Treat as blocked until KythOS validation confirms current official Proton support.",
+      "checked": "2026-05-18",
+      "source": "KythOS conservative policy",
+      "source_url": "https://areweanticheatyet.com"
+    },
+    {
+      "name": "Valorant",
+      "anticheat": "Vanguard",
+      "status": "blocked",
+      "note": "Riot Vanguard requires ring-0 kernel access: Windows-only driver. No Linux support from Riot.",
+      "checked": "2026-05-18",
+      "source": "Riot Vanguard architecture",
+      "source_url": "https://support-valorant.riotgames.com/hc/en-us/articles/360046160933-VALORANT-anti-cheat-FAQ"
+    },
+    {
+      "name": "Fortnite",
+      "anticheat": "EAC",
+      "status": "blocked",
+      "note": "Epic has not enabled Linux support for Fortnite, despite EAC supporting Linux for other games.",
+      "checked": "2026-05-18",
+      "source": "Are We Anti-Cheat Yet",
+      "source_url": "https://areweanticheatyet.com"
+    },
+    {
+      "name": "Call of Duty (MP/WZ)",
+      "anticheat": "RICOCHET",
+      "status": "blocked",
+      "note": "RICOCHET anti-cheat runs at kernel level on Windows and has no Linux support.",
+      "checked": "2026-05-18",
+      "source": "Are We Anti-Cheat Yet",
+      "source_url": "https://areweanticheatyet.com"
+    },
+    {
+      "name": "Roblox",
+      "anticheat": "Hyperion",
+      "status": "blocked",
+      "note": "Roblox's Byfron/Hyperion anti-cheat blocks Wine/Proton paths.",
+      "checked": "2026-05-18",
+      "source": "Are We Anti-Cheat Yet",
+      "source_url": "https://areweanticheatyet.com"
+    },
+    {
+      "name": "League of Legends",
+      "anticheat": "Vanguard",
+      "status": "blocked",
+      "note": "Riot migrated LoL to Vanguard in 2024. Same Linux blocker as Valorant.",
+      "checked": "2026-05-18",
+      "source": "Riot Vanguard architecture",
+      "source_url": "https://www.leagueoflegends.com/en-us/news/dev/dev-vanguard-x-lol/"
+    },
+    {
+      "name": "Escape from Tarkov",
+      "anticheat": "BattlEye",
+      "status": "blocked",
+      "note": "BattlEye can support Linux, but this title has not enabled a supported Proton path.",
+      "checked": "2026-05-18",
+      "source": "Are We Anti-Cheat Yet",
+      "source_url": "https://areweanticheatyet.com"
+    },
+    {
+      "name": "Lost Ark",
+      "anticheat": "GameGuard",
+      "status": "blocked",
+      "note": "nProtect GameGuard is kernel-level and blocks Linux.",
+      "checked": "2026-05-18",
+      "source": "Are We Anti-Cheat Yet",
+      "source_url": "https://areweanticheatyet.com"
+    }
+  ]
+}

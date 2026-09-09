@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=Kyth Hub
+GenericName=System Hub
+Comment=Health, games, apps, and this PC
+Exec=/usr/bin/kyth-welcome-launch
+Icon=kyth
+Terminal=false
+Type=Application
+Categories=System;Settings;
+Keywords=kyth;hub;helper;games;apps;update;settings;system hub;
+StartupNotify=true
+StartupWMClass=kyth-welcome

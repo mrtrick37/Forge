@@ -66,11 +66,18 @@ const SPECS: &[Spec] = &[
 ];
 
 fn spec(config: &str) -> &'static Spec {
-    SPECS.iter().find(|candidate| candidate.config == config).expect("sysctl profile spec exists")
+    SPECS
+        .iter()
+        .find(|candidate| candidate.config == config)
+        .expect("sysctl profile spec exists")
 }
 
 fn paths(spec: &Spec, path: Option<&Path>) -> (PathBuf, PathBuf) {
-    let config = config_path(path, PathBuf::from("/etc/kyth").join(spec.config), spec.config);
+    let config = config_path(
+        path,
+        PathBuf::from("/etc/kyth").join(spec.config),
+        spec.config,
+    );
     (config, default_drop_in(spec.drop_in))
 }
 
@@ -100,10 +107,17 @@ pub fn save(config: &str, path: Option<&Path>, profile: Profile) -> std::io::Res
 
 /// Render the gaming drop-in, or remove this module's drop-in for balanced.
 /// The destination is explicit and never interpreted as a command.
-pub fn generate(config: &str, path: Option<&Path>, destination: Option<&Path>, profile: Option<Profile>) -> std::io::Result<Option<PathBuf>> {
+pub fn generate(
+    config: &str,
+    path: Option<&Path>,
+    destination: Option<&Path>,
+    profile: Option<Profile>,
+) -> std::io::Result<Option<PathBuf>> {
     let item = spec(config);
     let (_, default_drop_in) = paths(item, path);
-    let default_drop_in = destination.map(Path::to_path_buf).unwrap_or(default_drop_in);
+    let default_drop_in = destination
+        .map(Path::to_path_buf)
+        .unwrap_or(default_drop_in);
     let profile = profile.unwrap_or_else(|| load(config, path));
     if profile != Profile::Gaming {
         match std::fs::remove_file(&default_drop_in) {
@@ -132,7 +146,10 @@ pub fn known_profiles() -> impl Iterator<Item = (&'static str, &'static str)> {
 /// Resolve a tunable registry name to a profile-backed sysctl model.
 pub fn profile_config_for_tunable(name: &str) -> Option<&'static str> {
     let config = format!("{name}.toml");
-    SPECS.iter().find(|item| item.config == config).map(|item| item.config)
+    SPECS
+        .iter()
+        .find(|item| item.config == config)
+        .map(|item| item.config)
 }
 
 pub fn load_tunable(name: &str, path: Option<&Path>) -> Option<Profile> {
@@ -143,67 +160,356 @@ pub fn status_tunable(name: &str, drop_in: Option<&Path>) -> Option<Profile> {
     profile_config_for_tunable(name).map(|config| status(config, drop_in))
 }
 
-pub fn generate_tunable(name: &str, path: Option<&Path>, destination: Option<&Path>, profile: Option<Profile>) -> Option<std::io::Result<Option<PathBuf>>> {
+pub fn generate_tunable(
+    name: &str,
+    path: Option<&Path>,
+    destination: Option<&Path>,
+    profile: Option<Profile>,
+) -> Option<std::io::Result<Option<PathBuf>>> {
     profile_config_for_tunable(name).map(|config| generate(config, path, destination, profile))
 }
 
 macro_rules! profile_module {
     ($load:ident, $save:ident, $generate:ident, $status:ident, $config:literal) => {
-        pub fn $load(path: Option<&Path>) -> Profile { load($config, path) }
-        pub fn $save(path: Option<&Path>, profile: Profile) -> std::io::Result<PathBuf> { save($config, path, profile) }
-        pub fn $generate(path: Option<&Path>, destination: Option<&Path>, profile: Option<Profile>) -> std::io::Result<Option<PathBuf>> { generate($config, path, destination, profile) }
-        pub fn $status(drop_in: Option<&Path>) -> Profile { status($config, drop_in) }
+        pub fn $load(path: Option<&Path>) -> Profile {
+            load($config, path)
+        }
+        pub fn $save(path: Option<&Path>, profile: Profile) -> std::io::Result<PathBuf> {
+            save($config, path, profile)
+        }
+        pub fn $generate(
+            path: Option<&Path>,
+            destination: Option<&Path>,
+            profile: Option<Profile>,
+        ) -> std::io::Result<Option<PathBuf>> {
+            generate($config, path, destination, profile)
+        }
+        pub fn $status(drop_in: Option<&Path>) -> Profile {
+            status($config, drop_in)
+        }
     };
 }
 
-profile_module!(load_aio_max, save_aio_max, generate_aio_max, aio_max_status, "aio-max.toml");
-profile_module!(load_inotify_watches, save_inotify_watches, generate_inotify_watches, inotify_watches_status, "inotify-watches.toml");
-profile_module!(load_rmem_default, save_rmem_default, generate_rmem_default, rmem_default_status, "rmem-default.toml");
-profile_module!(load_rmem_max, save_rmem_max, generate_rmem_max, rmem_max_status, "rmem-max.toml");
-profile_module!(load_vfs_cache, save_vfs_cache, generate_vfs_cache, vfs_cache_status, "vfs-cache.toml");
-profile_module!(load_overcommit_memory, save_overcommit_memory, generate_overcommit_memory, overcommit_memory_status, "overcommit-memory.toml");
-profile_module!(load_page_cluster, save_page_cluster, generate_page_cluster, page_cluster_status, "page-cluster.toml");
-profile_module!(load_dirty_ratio, save_dirty_ratio, generate_dirty_ratio, dirty_ratio_status, "dirty-ratio.toml");
-profile_module!(load_dirty_expire, save_dirty_expire, generate_dirty_expire, dirty_expire_status, "dirty-expire.toml");
-profile_module!(load_netdev_budget, save_netdev_budget, generate_netdev_budget, netdev_budget_status, "netdev-budget.toml");
-profile_module!(load_backlog, save_backlog, generate_backlog, backlog_status, "net-backlog.toml");
-profile_module!(load_swappiness, save_swappiness, generate_swappiness, swappiness_status, "swappiness.toml");
-profile_module!(load_busy_poll, save_busy_poll, generate_busy_poll, busy_poll_status, "busy-poll.toml");
-profile_module!(load_busy_read, save_busy_read, generate_busy_read, busy_read_status, "busy-read.toml");
-profile_module!(load_compaction, save_compaction, generate_compaction, compaction_status, "compaction.toml");
-profile_module!(load_thp_collapse, save_thp_collapse, generate_thp_collapse, thp_collapse_status, "thp-collapse.toml");
-profile_module!(load_numa_balancing, save_numa_balancing, generate_numa_balancing, numa_balancing_status, "numa-balancing.toml");
-profile_module!(load_psi_poll, save_psi_poll, generate_psi_poll, psi_poll_status, "psi-poll.toml");
-profile_module!(load_tcp_ecn, save_tcp_ecn, generate_tcp_ecn, tcp_ecn_status, "tcp-ecn.toml");
-profile_module!(load_tcp_fastopen, save_tcp_fastopen, generate_tcp_fastopen, tcp_fastopen_status, "tcp-fastopen.toml");
-profile_module!(load_tcp_fin_timeout, save_tcp_fin_timeout, generate_tcp_fin_timeout, tcp_fin_timeout_status, "tcp-fin-timeout.toml");
-profile_module!(load_tcp_keepalive, save_tcp_keepalive, generate_tcp_keepalive, tcp_keepalive_status, "tcp-keepalive.toml");
-profile_module!(load_tcp_no_metrics_save, save_tcp_no_metrics_save, generate_tcp_no_metrics_save, tcp_no_metrics_save_status, "tcp-no-metrics-save.toml");
-profile_module!(load_tcp_notsent, save_tcp_notsent, generate_tcp_notsent, tcp_notsent_status, "tcp-notsent.toml");
-profile_module!(load_tcp_orphan_retries, save_tcp_orphan_retries, generate_tcp_orphan_retries, tcp_orphan_retries_status, "tcp-orphan-retries.toml");
-profile_module!(load_tcp_retries1, save_tcp_retries1, generate_tcp_retries1, tcp_retries1_status, "tcp-retries1.toml");
-profile_module!(load_tcp_retries2, save_tcp_retries2, generate_tcp_retries2, tcp_retries2_status, "tcp-retries2.toml");
-profile_module!(load_tcp_sack, save_tcp_sack, generate_tcp_sack, tcp_sack_status, "tcp-sack.toml");
-profile_module!(load_tcp_slow_start, save_tcp_slow_start, generate_tcp_slow_start, tcp_slow_start_status, "tcp-slow-start.toml");
-profile_module!(load_tcp_timestamps, save_tcp_timestamps, generate_tcp_timestamps, tcp_timestamps_status, "tcp-timestamps.toml");
-profile_module!(load_tcp_window_scaling, save_tcp_window_scaling, generate_tcp_window_scaling, tcp_window_scaling_status, "tcp-window-scaling.toml");
-profile_module!(load_vm_stat, save_vm_stat, generate_vm_stat, vm_stat_status, "vm-stat.toml");
-profile_module!(load_wmem_default, save_wmem_default, generate_wmem_default, wmem_default_status, "wmem-default.toml");
-profile_module!(load_wmem_max, save_wmem_max, generate_wmem_max, wmem_max_status, "wmem-max.toml");
-profile_module!(load_max_map_count, save_max_map_count, generate_max_map_count, max_map_count_status, "max-map-count.toml");
-profile_module!(load_min_free_kbytes, save_min_free_kbytes, generate_min_free_kbytes, min_free_kbytes_status, "min-free-kbytes.toml");
-profile_module!(load_somaxconn, save_somaxconn, generate_somaxconn, somaxconn_status, "somaxconn.toml");
-profile_module!(load_autogroup, save_autogroup, generate_autogroup, autogroup_status, "sched-autogroup.toml");
-profile_module!(load_sched_child, save_sched_child, generate_sched_child, sched_child_status, "sched-child.toml");
-profile_module!(load_nr_migrate, save_nr_migrate, generate_nr_migrate, nr_migrate_status, "sched-nr-migrate.toml");
-profile_module!(load_sched_latency, save_sched_latency, generate_sched_latency, sched_latency_status, "sched-latency.toml");
-profile_module!(load_file_max, save_file_max, generate_file_max, file_max_status, "file-max.toml");
-profile_module!(load_tcp_mtu_probing, save_tcp_mtu_probing, generate_tcp_mtu_probing, tcp_mtu_probing_status, "tcp-mtu-probing.toml");
-profile_module!(load_watermark, save_watermark, generate_watermark, watermark_status, "vm-watermark.toml");
-profile_module!(load_perf_cpu, save_perf_cpu, generate_perf_cpu, perf_cpu_status, "perf-cpu.toml");
+profile_module!(
+    load_aio_max,
+    save_aio_max,
+    generate_aio_max,
+    aio_max_status,
+    "aio-max.toml"
+);
+profile_module!(
+    load_inotify_watches,
+    save_inotify_watches,
+    generate_inotify_watches,
+    inotify_watches_status,
+    "inotify-watches.toml"
+);
+profile_module!(
+    load_rmem_default,
+    save_rmem_default,
+    generate_rmem_default,
+    rmem_default_status,
+    "rmem-default.toml"
+);
+profile_module!(
+    load_rmem_max,
+    save_rmem_max,
+    generate_rmem_max,
+    rmem_max_status,
+    "rmem-max.toml"
+);
+profile_module!(
+    load_vfs_cache,
+    save_vfs_cache,
+    generate_vfs_cache,
+    vfs_cache_status,
+    "vfs-cache.toml"
+);
+profile_module!(
+    load_overcommit_memory,
+    save_overcommit_memory,
+    generate_overcommit_memory,
+    overcommit_memory_status,
+    "overcommit-memory.toml"
+);
+profile_module!(
+    load_page_cluster,
+    save_page_cluster,
+    generate_page_cluster,
+    page_cluster_status,
+    "page-cluster.toml"
+);
+profile_module!(
+    load_dirty_ratio,
+    save_dirty_ratio,
+    generate_dirty_ratio,
+    dirty_ratio_status,
+    "dirty-ratio.toml"
+);
+profile_module!(
+    load_dirty_expire,
+    save_dirty_expire,
+    generate_dirty_expire,
+    dirty_expire_status,
+    "dirty-expire.toml"
+);
+profile_module!(
+    load_netdev_budget,
+    save_netdev_budget,
+    generate_netdev_budget,
+    netdev_budget_status,
+    "netdev-budget.toml"
+);
+profile_module!(
+    load_backlog,
+    save_backlog,
+    generate_backlog,
+    backlog_status,
+    "net-backlog.toml"
+);
+profile_module!(
+    load_swappiness,
+    save_swappiness,
+    generate_swappiness,
+    swappiness_status,
+    "swappiness.toml"
+);
+profile_module!(
+    load_busy_poll,
+    save_busy_poll,
+    generate_busy_poll,
+    busy_poll_status,
+    "busy-poll.toml"
+);
+profile_module!(
+    load_busy_read,
+    save_busy_read,
+    generate_busy_read,
+    busy_read_status,
+    "busy-read.toml"
+);
+profile_module!(
+    load_compaction,
+    save_compaction,
+    generate_compaction,
+    compaction_status,
+    "compaction.toml"
+);
+profile_module!(
+    load_thp_collapse,
+    save_thp_collapse,
+    generate_thp_collapse,
+    thp_collapse_status,
+    "thp-collapse.toml"
+);
+profile_module!(
+    load_numa_balancing,
+    save_numa_balancing,
+    generate_numa_balancing,
+    numa_balancing_status,
+    "numa-balancing.toml"
+);
+profile_module!(
+    load_psi_poll,
+    save_psi_poll,
+    generate_psi_poll,
+    psi_poll_status,
+    "psi-poll.toml"
+);
+profile_module!(
+    load_tcp_ecn,
+    save_tcp_ecn,
+    generate_tcp_ecn,
+    tcp_ecn_status,
+    "tcp-ecn.toml"
+);
+profile_module!(
+    load_tcp_fastopen,
+    save_tcp_fastopen,
+    generate_tcp_fastopen,
+    tcp_fastopen_status,
+    "tcp-fastopen.toml"
+);
+profile_module!(
+    load_tcp_fin_timeout,
+    save_tcp_fin_timeout,
+    generate_tcp_fin_timeout,
+    tcp_fin_timeout_status,
+    "tcp-fin-timeout.toml"
+);
+profile_module!(
+    load_tcp_keepalive,
+    save_tcp_keepalive,
+    generate_tcp_keepalive,
+    tcp_keepalive_status,
+    "tcp-keepalive.toml"
+);
+profile_module!(
+    load_tcp_no_metrics_save,
+    save_tcp_no_metrics_save,
+    generate_tcp_no_metrics_save,
+    tcp_no_metrics_save_status,
+    "tcp-no-metrics-save.toml"
+);
+profile_module!(
+    load_tcp_notsent,
+    save_tcp_notsent,
+    generate_tcp_notsent,
+    tcp_notsent_status,
+    "tcp-notsent.toml"
+);
+profile_module!(
+    load_tcp_orphan_retries,
+    save_tcp_orphan_retries,
+    generate_tcp_orphan_retries,
+    tcp_orphan_retries_status,
+    "tcp-orphan-retries.toml"
+);
+profile_module!(
+    load_tcp_retries1,
+    save_tcp_retries1,
+    generate_tcp_retries1,
+    tcp_retries1_status,
+    "tcp-retries1.toml"
+);
+profile_module!(
+    load_tcp_retries2,
+    save_tcp_retries2,
+    generate_tcp_retries2,
+    tcp_retries2_status,
+    "tcp-retries2.toml"
+);
+profile_module!(
+    load_tcp_sack,
+    save_tcp_sack,
+    generate_tcp_sack,
+    tcp_sack_status,
+    "tcp-sack.toml"
+);
+profile_module!(
+    load_tcp_slow_start,
+    save_tcp_slow_start,
+    generate_tcp_slow_start,
+    tcp_slow_start_status,
+    "tcp-slow-start.toml"
+);
+profile_module!(
+    load_tcp_timestamps,
+    save_tcp_timestamps,
+    generate_tcp_timestamps,
+    tcp_timestamps_status,
+    "tcp-timestamps.toml"
+);
+profile_module!(
+    load_tcp_window_scaling,
+    save_tcp_window_scaling,
+    generate_tcp_window_scaling,
+    tcp_window_scaling_status,
+    "tcp-window-scaling.toml"
+);
+profile_module!(
+    load_vm_stat,
+    save_vm_stat,
+    generate_vm_stat,
+    vm_stat_status,
+    "vm-stat.toml"
+);
+profile_module!(
+    load_wmem_default,
+    save_wmem_default,
+    generate_wmem_default,
+    wmem_default_status,
+    "wmem-default.toml"
+);
+profile_module!(
+    load_wmem_max,
+    save_wmem_max,
+    generate_wmem_max,
+    wmem_max_status,
+    "wmem-max.toml"
+);
+profile_module!(
+    load_max_map_count,
+    save_max_map_count,
+    generate_max_map_count,
+    max_map_count_status,
+    "max-map-count.toml"
+);
+profile_module!(
+    load_min_free_kbytes,
+    save_min_free_kbytes,
+    generate_min_free_kbytes,
+    min_free_kbytes_status,
+    "min-free-kbytes.toml"
+);
+profile_module!(
+    load_somaxconn,
+    save_somaxconn,
+    generate_somaxconn,
+    somaxconn_status,
+    "somaxconn.toml"
+);
+profile_module!(
+    load_autogroup,
+    save_autogroup,
+    generate_autogroup,
+    autogroup_status,
+    "sched-autogroup.toml"
+);
+profile_module!(
+    load_sched_child,
+    save_sched_child,
+    generate_sched_child,
+    sched_child_status,
+    "sched-child.toml"
+);
+profile_module!(
+    load_nr_migrate,
+    save_nr_migrate,
+    generate_nr_migrate,
+    nr_migrate_status,
+    "sched-nr-migrate.toml"
+);
+profile_module!(
+    load_sched_latency,
+    save_sched_latency,
+    generate_sched_latency,
+    sched_latency_status,
+    "sched-latency.toml"
+);
+profile_module!(
+    load_file_max,
+    save_file_max,
+    generate_file_max,
+    file_max_status,
+    "file-max.toml"
+);
+profile_module!(
+    load_tcp_mtu_probing,
+    save_tcp_mtu_probing,
+    generate_tcp_mtu_probing,
+    tcp_mtu_probing_status,
+    "tcp-mtu-probing.toml"
+);
+profile_module!(
+    load_watermark,
+    save_watermark,
+    generate_watermark,
+    watermark_status,
+    "vm-watermark.toml"
+);
+profile_module!(
+    load_perf_cpu,
+    save_perf_cpu,
+    generate_perf_cpu,
+    perf_cpu_status,
+    "perf-cpu.toml"
+);
 
 /// Keep profile parsing available to callers that already have a TOML value.
-pub fn normalize_profile(value: Option<&str>) -> Profile { profile_from_str(value) }
+pub fn normalize_profile(value: Option<&str>) -> Profile {
+    profile_from_str(value)
+}
 
 #[cfg(test)]
 mod tests {
@@ -229,7 +535,10 @@ mod tests {
         save("swappiness.toml", Some(&config), Profile::Gaming).unwrap();
         let generated = generate_swappiness(Some(&config), Some(&drop_in), None).unwrap();
         assert_eq!(generated.as_deref(), Some(drop_in.as_path()));
-        assert_eq!(fs::read_to_string(&drop_in).unwrap(), "# Kyth swappiness gaming — generated\nvm.swappiness=10\n");
+        assert_eq!(
+            fs::read_to_string(&drop_in).unwrap(),
+            "# Kyth swappiness gaming — generated\nvm.swappiness=10\n"
+        );
         generate_swappiness(Some(&config), Some(&drop_in), Some(Profile::Balanced)).unwrap();
         assert!(!drop_in.exists());
         assert_eq!(load_swappiness(Some(&config)), Profile::Gaming);

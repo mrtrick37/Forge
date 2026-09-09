@@ -16,15 +16,23 @@ fn main() {
         }
         index += 1;
     }
-    if args.iter().any(|arg| arg.starts_with('-') && arg != "--json" && arg != "--limit") {
+    if args
+        .iter()
+        .any(|arg| arg.starts_with('-') && arg != "--json" && arg != "--limit")
+    {
         eprintln!("Usage: kyth-snapshot-timeline [--json] [--limit N]");
         std::process::exit(2);
     }
     let rows = kyth_shared::system::snapshot::snapshot_timeline(limit);
     if json {
-        println!("{}", kyth_shared::system::snapshot::snapshot_rows_json(&rows));
+        println!(
+            "{}",
+            kyth_shared::system::snapshot::snapshot_rows_json(&rows)
+        );
     } else {
-        for row in rows { println!("{:<12} {:<12} {}", row.row_type, row.id, row.description); }
+        for row in rows {
+            println!("{:<12} {:<12} {}", row.row_type, row.id, row.description);
+        }
     }
 }
 

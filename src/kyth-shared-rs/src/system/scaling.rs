@@ -29,7 +29,11 @@ pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
 
 fn parse_scale(value: Option<&toml::Value>) -> f64 {
     value
-        .and_then(|value| value.as_float().or_else(|| value.as_integer().map(|value| value as f64)))
+        .and_then(|value| {
+            value
+                .as_float()
+                .or_else(|| value.as_integer().map(|value| value as f64))
+        })
         .unwrap_or(1.0)
         .clamp(1.0, 3.0)
 }
@@ -53,7 +57,11 @@ pub fn load(path: impl AsRef<Path>) -> ScalingConfig {
                         name.clone(),
                         ScalingOutput {
                             scale: parse_scale(table.get("scale")),
-                            icc: table.get("icc").and_then(toml::Value::as_str).unwrap_or_default().to_string(),
+                            icc: table
+                                .get("icc")
+                                .and_then(toml::Value::as_str)
+                                .unwrap_or_default()
+                                .to_string(),
                         },
                     ))
                 })
@@ -88,17 +96,25 @@ pub fn scale_arg(scale: f64) -> String {
 
 /// Mirrors the output-name gate shared with the HDR launcher.
 pub fn is_output_name_valid(name: &str) -> bool {
-    !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
 }
 
 pub fn scale_argv(conn: &str, scale: &str) -> Vec<String> {
-    vec!["kscreen-doctor".to_string(), format!("output.{conn}.scale.{scale}")]
+    vec![
+        "kscreen-doctor".to_string(),
+        format!("output.{conn}.scale.{scale}"),
+    ]
 }
 
 /// Mirrors `os.access(dir, os.W_OK)`: root can write anywhere; otherwise a
 /// write bit must be set.
 pub fn dir_writable(path: &Path) -> bool {
-    let Ok(metadata) = std::fs::metadata(path) else { return false };
+    let Ok(metadata) = std::fs::metadata(path) else {
+        return false;
+    };
     if !metadata.is_dir() {
         return false;
     }
@@ -124,9 +140,14 @@ pub fn icc_outcome(conn: &str, icc: &str, dest_dir: &Path) -> IccOutcome {
         return IccOutcome::Skipped;
     }
     if !dir_writable(dest_dir) {
-        return IccOutcome::NotDeployed(format!("{conn}.icc={icc} (not deployed — needs root icc dir)"));
+        return IccOutcome::NotDeployed(format!(
+            "{conn}.icc={icc} (not deployed — needs root icc dir)"
+        ));
     }
-    let file_name = Path::new(icc).file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
+    let file_name = Path::new(icc)
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default();
     let dest = dest_dir.join(file_name);
     match std::fs::read(icc).and_then(|bytes| std::fs::write(&dest, bytes).map(|_| dest)) {
         Ok(dest) => IccOutcome::Deployed(format!("{conn}.icc={}", dest.display())),
@@ -153,7 +174,11 @@ mod tests {
     fn loads_clamped_scaling_and_projects_kwin_data() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("scaling.toml");
-        std::fs::write(&path, "[outputs.\"DP-1\"]\nscale = 4\nicc = \"/tmp/display.icc\"\n").unwrap();
+        std::fs::write(
+            &path,
+            "[outputs.\"DP-1\"]\nscale = 4\nicc = \"/tmp/display.icc\"\n",
+        )
+        .unwrap();
         let config = load(&path);
         assert_eq!(config["DP-1"].scale, 3.0);
         assert_eq!(kwin_config(&config)["outputs"][0]["name"], "DP-1");
@@ -164,7 +189,10 @@ mod tests {
         assert_eq!(scale_arg(1.25), "1.25");
         assert_eq!(scale_arg(2.0), "2");
         assert_eq!(scale_arg(1.5), "1.5");
-        assert_eq!(scale_argv("DP-1", "1.25"), vec!["kscreen-doctor", "output.DP-1.scale.1.25"]);
+        assert_eq!(
+            scale_argv("DP-1", "1.25"),
+            vec!["kscreen-doctor", "output.DP-1.scale.1.25"]
+        );
         assert!(is_output_name_valid("DP-1"));
         assert!(!is_output_name_valid("DP 1"));
     }
@@ -175,10 +203,15 @@ mod tests {
         let profile = dir.path().join("display.icc");
         std::fs::write(&profile, b"icc-bytes").unwrap();
         let profile = profile.to_string_lossy().into_owned();
-        assert_eq!(icc_outcome("DP-1", "  ", Path::new("/nonexistent")), IccOutcome::Skipped);
+        assert_eq!(
+            icc_outcome("DP-1", "  ", Path::new("/nonexistent")),
+            IccOutcome::Skipped
+        );
         assert_eq!(
             icc_outcome("DP-1", &profile, Path::new("/nonexistent-icc-dir")),
-            IccOutcome::NotDeployed(format!("DP-1.icc={profile} (not deployed — needs root icc dir)"))
+            IccOutcome::NotDeployed(format!(
+                "DP-1.icc={profile} (not deployed — needs root icc dir)"
+            ))
         );
         let dest_dir = dir.path().join("icc");
         std::fs::create_dir(&dest_dir).unwrap();
@@ -193,8 +226,20 @@ mod tests {
         let directory = tempdir().unwrap();
         let path = directory.path().join("nested/scaling.toml");
         let config = ScalingConfig::from([
-            ("HDMI-1".into(), ScalingOutput { scale: 1.25, icc: String::new() }),
-            ("DP-1".into(), ScalingOutput { scale: 2.0, icc: "/tmp/a.icc".into() }),
+            (
+                "HDMI-1".into(),
+                ScalingOutput {
+                    scale: 1.25,
+                    icc: String::new(),
+                },
+            ),
+            (
+                "DP-1".into(),
+                ScalingOutput {
+                    scale: 2.0,
+                    icc: "/tmp/a.icc".into(),
+                },
+            ),
         ]);
         save(&path, &config).unwrap();
         let loaded = load(&path);

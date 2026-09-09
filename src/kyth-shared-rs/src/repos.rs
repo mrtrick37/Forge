@@ -23,8 +23,12 @@ pub struct RepoSpec {
     pub gpgkey: String,
 }
 
-fn default_true() -> bool { true }
-fn default_repo_type() -> String { "rpm".into() }
+fn default_true() -> bool {
+    true
+}
+fn default_repo_type() -> String {
+    "rpm".into()
+}
 
 impl RepoSpec {
     pub fn render_yum_repo(&self) -> String {
@@ -72,14 +76,20 @@ mod tests {
         assert!(spec.enabled);
         assert_eq!(spec.repo_type, "rpm");
         assert!(spec.render_yum_repo().contains("repo_gpgcheck=1"));
-        assert!(spec.render_yum_repo().ends_with("gpgkey=https://example.test/key\n"));
+        assert!(spec
+            .render_yum_repo()
+            .ends_with("gpgkey=https://example.test/key\n"));
     }
 
     #[test]
     fn loads_json_specs() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("repos.json");
-        std::fs::write(&path, r#"[{"name":"demo","description":"Demo","baseurl":"https://example.test"}]"#).unwrap();
+        std::fs::write(
+            &path,
+            r#"[{"name":"demo","description":"Demo","baseurl":"https://example.test"}]"#,
+        )
+        .unwrap();
         assert_eq!(load_repo_specs(&path).unwrap()[0].name, "demo");
     }
 }

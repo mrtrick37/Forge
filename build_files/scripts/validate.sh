@@ -81,6 +81,15 @@ for file in "${js_files[@]}"; do
 done
 echo "Checked ${#js_files[@]} JavaScript files"
 
+echo "==> Rust formatting"
+if ! command -v cargo >/dev/null 2>&1; then
+	echo "cargo is required for the Rust formatting gate" >&2
+	exit 1
+fi
+while IFS= read -r -d '' manifest; do
+	cargo fmt --manifest-path "${manifest}" --all -- --check
+done < <(git ls-files -z '*Cargo.toml')
+
 echo "==> Committed-secret patterns"
 python3 build_files/scripts/check-committed-secrets.py
 

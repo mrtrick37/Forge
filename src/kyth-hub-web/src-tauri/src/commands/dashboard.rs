@@ -17,11 +17,16 @@ pub(crate) async fn probe_backend(section: String) -> ProbeResponse {
         let data = match section.as_str() {
             "bootc-status-data" => kyth_shared::system::probe::read_section(&section)
                 .or_else(kyth_shared::system::bootc_query::fetch_status_data),
-            "bootc-branch" => kyth_shared::system::probe::read_section(&section)
-                .or_else(|| kyth_shared::system::bootc::current_branch().map(serde_json::Value::String)),
+            "bootc-branch" => kyth_shared::system::probe::read_section(&section).or_else(|| {
+                kyth_shared::system::bootc::current_branch().map(serde_json::Value::String)
+            }),
             _ => kyth_shared::system::probe::read_section(&section),
         };
-        ProbeResponse { key: section, data, error: None }
+        ProbeResponse {
+            key: section,
+            data,
+            error: None,
+        }
     })
     .await
     .unwrap_or_else(|_| ProbeResponse {
@@ -38,7 +43,11 @@ pub(crate) struct HardwareResponse {
 
 #[tauri::command]
 pub(crate) fn hardware_snapshot() -> HardwareResponse {
-    HardwareResponse { gpu_line: kyth_shared::system::gpu::lspci_gpu_lines().into_iter().next() }
+    HardwareResponse {
+        gpu_line: kyth_shared::system::gpu::lspci_gpu_lines()
+            .into_iter()
+            .next(),
+    }
 }
 
 #[derive(Serialize)]
@@ -50,8 +59,14 @@ pub(crate) struct StorageResponse {
 #[tauri::command]
 pub(crate) fn storage_snapshot() -> StorageResponse {
     match kyth_shared::system::storage::primary_disk_usage() {
-        Some(usage) => StorageResponse { free_bytes: Some(usage.free_bytes), total_bytes: Some(usage.total_bytes) },
-        None => StorageResponse { free_bytes: None, total_bytes: None },
+        Some(usage) => StorageResponse {
+            free_bytes: Some(usage.free_bytes),
+            total_bytes: Some(usage.total_bytes),
+        },
+        None => StorageResponse {
+            free_bytes: None,
+            total_bytes: None,
+        },
     }
 }
 
@@ -71,7 +86,11 @@ pub(crate) struct BootRuntimeCheckResponse {
 pub(crate) fn boot_runtime_checks() -> Vec<BootRuntimeCheckResponse> {
     kyth_shared::system::boot_runtime::boot_runtime_checks()
         .into_iter()
-        .map(|check| BootRuntimeCheckResponse { name: check.name, passed: check.passed, detail: check.detail })
+        .map(|check| BootRuntimeCheckResponse {
+            name: check.name,
+            passed: check.passed,
+            detail: check.detail,
+        })
         .collect()
 }
 

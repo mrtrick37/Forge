@@ -43,7 +43,11 @@ fn parse_args(args: &[String]) -> (bool, Vec<String>) {
         }
     }
     let _ = profile;
-    let cmd = if cmd_start < args.len() { args[cmd_start..].to_vec() } else { Vec::new() };
+    let cmd = if cmd_start < args.len() {
+        args[cmd_start..].to_vec()
+    } else {
+        Vec::new()
+    };
     (use_gamemode, cmd)
 }
 
@@ -55,7 +59,10 @@ fn mark_gaming_hint() {
         return;
     }
     if on_path("kyth-readahead-hint") {
-        let _ = run_bounded(&["kyth-readahead-hint".into(), "apply".into()], Duration::from_secs(2));
+        let _ = run_bounded(
+            &["kyth-readahead-hint".into(), "apply".into()],
+            Duration::from_secs(2),
+        );
     }
 }
 
@@ -81,11 +88,21 @@ fn launch(args: &[String]) -> i32 {
         run_cmd.insert(0, "gamemoderun".to_string());
     }
     if on_path("systemd-run") {
-        let user_scope = unsafe { libc::geteuid() } != 0 && Path::new("/run/systemd/system").exists();
+        let user_scope =
+            unsafe { libc::geteuid() } != 0 && Path::new("/run/systemd/system").exists();
         let mut scoped = if user_scope {
-            vec!["systemd-run".to_string(), "--user".to_string(), "--scope".to_string(), "--slice=gaming.slice".to_string()]
+            vec![
+                "systemd-run".to_string(),
+                "--user".to_string(),
+                "--scope".to_string(),
+                "--slice=gaming.slice".to_string(),
+            ]
         } else {
-            vec!["systemd-run".to_string(), "--scope".to_string(), "--slice=gaming.slice".to_string()]
+            vec![
+                "systemd-run".to_string(),
+                "--scope".to_string(),
+                "--slice=gaming.slice".to_string(),
+            ]
         };
         scoped.push("--".to_string());
         scoped.extend(run_cmd.clone());

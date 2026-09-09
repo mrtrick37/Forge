@@ -301,6 +301,16 @@ format:
     fi
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'
 
+# Format every tracked Rust project using its Cargo manifest.
+[group('Quality')]
+format-rust:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v cargo >/dev/null 2>&1 || { echo "cargo could not be found. Please install Rust." >&2; exit 1; }
+    while IFS= read -r -d '' manifest; do
+        cargo fmt --manifest-path "${manifest}" --all
+    done < <(git ls-files -z '*Cargo.toml')
+
 # Set up the React/Tauri Hub's frontend dependencies for local development.
 [group('Utility')]
 setup-hub:

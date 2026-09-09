@@ -38,10 +38,17 @@ fn main() -> std::process::ExitCode {
     }
     match kyth_shared::system::probe::update_sections(&sections, None, system) {
         Ok(path) => {
-            eprintln!("INFO: Wrote probe cache to {} ({} sections)", path.display(), sections.len());
+            eprintln!(
+                "INFO: Wrote probe cache to {} ({} sections)",
+                path.display(),
+                sections.len()
+            );
             if print_json {
                 let value = serde_json::json!({"path": path, "sections": sections});
-                println!("{}", serde_json::to_string_pretty(&value).unwrap_or_else(|_| "{}".into()));
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&value).unwrap_or_else(|_| "{}".into())
+                );
             }
             std::process::ExitCode::SUCCESS
         }

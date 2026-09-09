@@ -21,8 +21,12 @@ pub fn max_file_size(sizes: impl IntoIterator<Item = u64>) -> u64 {
 /// Count `ProbeCollector(` entries in the default collector block, matching
 /// the build script's deliberately simple source-level metric.
 pub fn probe_collector_count(source: &str) -> u64 {
-    let Some((_, remainder)) = source.split_once("def default_collectors()") else { return 0; };
-    let body = remainder.split_once("def _run_collector").map_or(remainder, |(body, _)| body);
+    let Some((_, remainder)) = source.split_once("def default_collectors()") else {
+        return 0;
+    };
+    let body = remainder
+        .split_once("def _run_collector")
+        .map_or(remainder, |(body, _)| body);
     body.matches("ProbeCollector(").count() as u64
 }
 
@@ -68,8 +72,14 @@ pub fn report_with_runtime(
 ) -> Value {
     let mut report = serde_json::Map::from_iter([
         ("schema_version".into(), Value::from(1)),
-        ("source_revision".into(), Value::String(source_revision.into())),
-        ("static".into(), serde_json::to_value(static_metrics).unwrap_or_default()),
+        (
+            "source_revision".into(),
+            Value::String(source_revision.into()),
+        ),
+        (
+            "static".into(),
+            serde_json::to_value(static_metrics).unwrap_or_default(),
+        ),
         ("budgets".into(), budgets.clone()),
         ("artifacts".into(), artifacts.clone()),
     ]);
@@ -79,7 +89,12 @@ pub fn report_with_runtime(
     Value::Object(report)
 }
 
-pub fn report(source_revision: &str, static_metrics: &StaticMetrics, budgets: &Value, artifacts: &Value) -> Value {
+pub fn report(
+    source_revision: &str,
+    static_metrics: &StaticMetrics,
+    budgets: &Value,
+    artifacts: &Value,
+) -> Value {
     report_with_runtime(source_revision, static_metrics, budgets, artifacts, None)
 }
 
@@ -97,7 +112,12 @@ mod tests {
 
     #[test]
     fn static_report_has_optimization_contract_shape() {
-        let metrics = static_metrics([4, 9, 2], "def default_collectors(): ProbeCollector(x)", 3, 8);
+        let metrics = static_metrics(
+            [4, 9, 2],
+            "def default_collectors(): ProbeCollector(x)",
+            3,
+            8,
+        );
         assert_eq!(metrics.installer_js_max_file_bytes, 9);
         let value = report("local", &metrics, &json!({"x": 10}), &json!({}));
         assert_eq!(value["schema_version"], 1);
@@ -107,10 +127,25 @@ mod tests {
 
     #[test]
     fn projects_budget_failures_and_optional_runtime_metrics() {
-        let metrics = static_metrics([4, 9, 2], "def default_collectors(): ProbeCollector(x)", 3, 8);
-        let budgets = json!({"installer_js_max_file_bytes": 8, "probe_collector_count": 1, "unknown": 0});
-        assert_eq!(budget_failures(&metrics, &budgets), vec!["installer_js_max_file_bytes: 9 exceeds budget 8"]);
-        let report = report_with_runtime("local", &metrics, &budgets, &json!({}), Some(&json!({"probe_duration_ms": 12.5})));
+        let metrics = static_metrics(
+            [4, 9, 2],
+            "def default_collectors(): ProbeCollector(x)",
+            3,
+            8,
+        );
+        let budgets =
+            json!({"installer_js_max_file_bytes": 8, "probe_collector_count": 1, "unknown": 0});
+        assert_eq!(
+            budget_failures(&metrics, &budgets),
+            vec!["installer_js_max_file_bytes: 9 exceeds budget 8"]
+        );
+        let report = report_with_runtime(
+            "local",
+            &metrics,
+            &budgets,
+            &json!({}),
+            Some(&json!({"probe_duration_ms": 12.5})),
+        );
         assert_eq!(report["runtime"]["probe_duration_ms"], 12.5);
         assert_eq!(report["static"]["system_hub_source_files"], 8);
     }

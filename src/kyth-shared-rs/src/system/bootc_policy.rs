@@ -26,19 +26,38 @@ pub fn parse_update_phase(line: &str, mode: &str) -> Option<String> {
         return Some("Fetching image manifest…".to_string());
     }
     if (lo.contains("pulling") || lo.contains("copying") || lo.contains("fetching"))
-        && (lo.contains("sha256") || lo.contains("blob") || lo.contains("layer") || lo.contains("ghcr.io") || lo.contains("registry"))
+        && (lo.contains("sha256")
+            || lo.contains("blob")
+            || lo.contains("layer")
+            || lo.contains("ghcr.io")
+            || lo.contains("registry"))
     {
         return Some("Downloading image layers…".to_string());
     }
     let rules: &[(&[&str], &str)] = &[
-        (&["layers already present", "layers needed"], "Checking for new image layers…"),
+        (
+            &["layers already present", "layers needed"],
+            "Checking for new image layers…",
+        ),
         (&["unpacking", "extracting"], "Unpacking image layers…"),
-        (&["checking out", "checkout", "importing"], "Importing image into system storage…"),
-        (&["writing manifest", "manifest to image destination"], "Storing image manifest…"),
+        (
+            &["checking out", "checkout", "importing"],
+            "Importing image into system storage…",
+        ),
+        (
+            &["writing manifest", "manifest to image destination"],
+            "Storing image manifest…",
+        ),
         (&["rpmdb"], "Updating package database in the new image…"),
-        (&["initramfs", "kernel"], "Preparing boot files for the new image…"),
+        (
+            &["initramfs", "kernel"],
+            "Preparing boot files for the new image…",
+        ),
         (&["deploying"], "Deploying new OS image…"),
-        (&["no update available", "already booted"], "Already on the latest image — nothing to download."),
+        (
+            &["no update available", "already booted"],
+            "Already on the latest image — nothing to download.",
+        ),
     ];
     for (needles, msg) in rules {
         if needles.iter().any(|n| lo.contains(n)) {
@@ -129,7 +148,11 @@ pub fn branch_display_name(tag: Option<&str>) -> String {
 }
 
 pub fn image_tag_for_channel(channel: &str, flavor: &str) -> String {
-    let base = if channel == "testing" { "testing" } else { "latest" };
+    let base = if channel == "testing" {
+        "testing"
+    } else {
+        "latest"
+    };
     if flavor == "cachy" {
         format!("{}-cachy", base)
     } else {
@@ -161,7 +184,9 @@ pub struct BranchesView {
 }
 
 pub fn branches_view(tag: Option<&str>, booted_ts: Option<&str>) -> BranchesView {
-    let build_text = booted_ts.map(|ts| format!("Running: built {}", ts)).unwrap_or_default();
+    let build_text = booted_ts
+        .map(|ts| format!("Running: built {}", ts))
+        .unwrap_or_default();
     let has_ts = booted_ts.is_some();
     let mut stable = BranchCardView {
         object_name: "branch-inactive".to_string(),
@@ -223,10 +248,19 @@ pub fn update_availability_view(
         String::new()
     };
     if staged {
-        let built_staged = staged_ts.map(|t| format!("  ·  built {}", t)).unwrap_or_default();
+        let built_staged = staged_ts
+            .map(|t| format!("  ·  built {}", t))
+            .unwrap_or_default();
         let apps = if flatpak_count > 0 {
-            let noun = if flatpak_count == 1 { "update" } else { "updates" };
-            format!(" Additionally, {} Flatpak {} can be installed.", flatpak_count, noun)
+            let noun = if flatpak_count == 1 {
+                "update"
+            } else {
+                "updates"
+            };
+            format!(
+                " Additionally, {} Flatpak {} can be installed.",
+                flatpak_count, noun
+            )
         } else {
             String::new()
         };
@@ -245,7 +279,11 @@ pub fn update_availability_view(
     }
     if check_state == "available" {
         let apps = if flatpak_count > 0 {
-            let noun = if flatpak_count == 1 { "update" } else { "updates" };
+            let noun = if flatpak_count == 1 {
+                "update"
+            } else {
+                "updates"
+            };
             format!(" and {} Flatpak {} are pending", flatpak_count, noun)
         } else {
             String::new()
@@ -264,7 +302,11 @@ pub fn update_availability_view(
         };
     }
     if flatpak_count > 0 {
-        let noun = if flatpak_count == 1 { "update is" } else { "updates are" };
+        let noun = if flatpak_count == 1 {
+            "update is"
+        } else {
+            "updates are"
+        };
         return UpdateAvailabilityView {
             card_style: "card-accent-warn".to_string(),
             icon_text: "↓".to_string(),
@@ -296,7 +338,10 @@ pub fn update_availability_view(
             icon_text: "↻".to_string(),
             icon_style: "avail-icon-warn".to_string(),
             title: "Update failed — Retry available".to_string(),
-            body: format!("{}{} Click Update Now to retry the download.", detail, ts_hint),
+            body: format!(
+                "{}{} Click Update Now to retry the download.",
+                detail, ts_hint
+            ),
             update_btn_visible: true,
             restart_btn_visible: false,
         };
@@ -326,8 +371,14 @@ mod tests {
 
     #[test]
     fn branch_from_ref_basic() {
-        assert_eq!(branch_from_ref(Some("ghcr.io/kyth-os/kyth:latest")), Some("latest".to_string()));
-        assert_eq!(branch_from_ref(Some("ghcr.io/kyth-os/kyth:testing-cachy@sha256:abc")), Some("testing-cachy".to_string()));
+        assert_eq!(
+            branch_from_ref(Some("ghcr.io/kyth-os/kyth:latest")),
+            Some("latest".to_string())
+        );
+        assert_eq!(
+            branch_from_ref(Some("ghcr.io/kyth-os/kyth:testing-cachy@sha256:abc")),
+            Some("testing-cachy".to_string())
+        );
         assert_eq!(branch_from_ref(Some("  ")), None);
         assert_eq!(branch_from_ref(None), None);
         assert_eq!(branch_from_ref(Some("no-colon")), None);
@@ -336,7 +387,10 @@ mod tests {
     #[test]
     fn branch_display() {
         assert_eq!(branch_display_name(Some("latest")), "Stable (latest)");
-        assert_eq!(branch_display_name(Some("testing-cachy")), "Testing + CachyOS kernel");
+        assert_eq!(
+            branch_display_name(Some("testing-cachy")),
+            "Testing + CachyOS kernel"
+        );
         assert_eq!(branch_display_name(Some("custom")), "custom");
         assert_eq!(branch_display_name(None), "unknown");
     }
@@ -345,13 +399,26 @@ mod tests {
     fn image_tags() {
         assert_eq!(image_tag_for_channel("testing", "cachy"), "testing-cachy");
         assert_eq!(image_tag_for_channel("stable", "fedora"), "latest");
-        assert_eq!(image_tag_for_kernel("cachy", Some("testing")), "testing-cachy");
-        assert_eq!(image_tag_for_kernel("fedora", Some("latest-cachy")), "latest");
+        assert_eq!(
+            image_tag_for_kernel("cachy", Some("testing")),
+            "testing-cachy"
+        );
+        assert_eq!(
+            image_tag_for_kernel("fedora", Some("latest-cachy")),
+            "latest"
+        );
     }
 
     #[test]
     fn availability_staged() {
-        let v = update_availability_view(true, "available", 2, "12:00", "2024-01-01", Some("2024-01-02"));
+        let v = update_availability_view(
+            true,
+            "available",
+            2,
+            "12:00",
+            "2024-01-01",
+            Some("2024-01-02"),
+        );
         assert_eq!(v.title, "Restart required");
         assert!(v.restart_btn_visible);
     }
@@ -365,8 +432,14 @@ mod tests {
 
     #[test]
     fn parse_phase_download() {
-        assert_eq!(parse_update_phase("Copying blob sha256:abc", "update"), Some("Downloading image layers…".to_string()));
-        assert_eq!(parse_update_phase("Writing manifest", "update"), Some("Storing image manifest…".to_string()));
+        assert_eq!(
+            parse_update_phase("Copying blob sha256:abc", "update"),
+            Some("Downloading image layers…".to_string())
+        );
+        assert_eq!(
+            parse_update_phase("Writing manifest", "update"),
+            Some("Storing image manifest…".to_string())
+        );
         assert_eq!(parse_update_phase("unknown line xyz", "update"), None);
     }
 }
@@ -411,13 +484,23 @@ mod switch_channel_tests {
     #[test]
     fn rejects_kernel_flavors_which_belong_to_switch_kernel() {
         for flavor in ["next", "cachyos", "cachy", "fedora"] {
-            assert_eq!(switch_channel_arg(flavor), None, "{flavor} is not a channel");
+            assert_eq!(
+                switch_channel_arg(flavor),
+                None,
+                "{flavor} is not a channel"
+            );
         }
     }
 
     #[test]
     fn rejects_empty_and_injection_shaped_input() {
-        for bad in ["", "   ", "testing; rm -rf /", "stable && reboot", "../../etc"] {
+        for bad in [
+            "",
+            "   ",
+            "testing; rm -rf /",
+            "stable && reboot",
+            "../../etc",
+        ] {
             assert_eq!(switch_channel_arg(bad), None, "{bad:?} must not pass");
         }
     }

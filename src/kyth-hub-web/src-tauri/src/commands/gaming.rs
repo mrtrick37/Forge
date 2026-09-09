@@ -24,7 +24,11 @@ pub(crate) struct GamingToolResponse {
     installed: bool,
 }
 #[derive(Serialize)]
-pub(crate) struct GamingActionLaunch { pub(crate) job: String, pub(crate) state: String, pub(crate) detail: String }
+pub(crate) struct GamingActionLaunch {
+    pub(crate) job: String,
+    pub(crate) state: String,
+    pub(crate) detail: String,
+}
 
 #[tauri::command]
 pub(crate) fn gaming_tools() -> Vec<GamingToolResponse> {
@@ -56,12 +60,29 @@ pub(crate) fn gaming_tool_install(flatpak_id: String) -> Result<GamingActionLaun
         ),
     ];
     let job = start_job("gaming-install", &format!("Installing {name}…"))?;
-    spawn_argv_job(job.clone(), argv, Duration::from_secs(600), move |result| match result {
-        Ok(output) if output.status.success() => ("complete".to_string(), format!("{name} installed.")),
-        Ok(output) => ("failed".to_string(), failure_detail("Installation", &output)),
-        Err(err) => ("failed".to_string(), format!("Could not start installation: {err}")),
-    });
-    Ok(GamingActionLaunch { job, state: "running".into(), detail: launch_detail })
+    spawn_argv_job(
+        job.clone(),
+        argv,
+        Duration::from_secs(600),
+        move |result| match result {
+            Ok(output) if output.status.success() => {
+                ("complete".to_string(), format!("{name} installed."))
+            }
+            Ok(output) => (
+                "failed".to_string(),
+                failure_detail("Installation", &output),
+            ),
+            Err(err) => (
+                "failed".to_string(),
+                format!("Could not start installation: {err}"),
+            ),
+        },
+    );
+    Ok(GamingActionLaunch {
+        job,
+        state: "running".into(),
+        detail: launch_detail,
+    })
 }
 
 #[tauri::command]
@@ -69,14 +90,33 @@ pub(crate) fn gaming_tool_uninstall(flatpak_id: String) -> Result<GamingActionLa
     let tool = validated_gaming_tool(&flatpak_id)?;
     let name = tool.name.to_string();
     let launch_detail = format!("Uninstalling {name}…");
-    let argv = vec!["flatpak".to_string(), "uninstall".to_string(), "-y".to_string(), flatpak_id];
+    let argv = vec![
+        "flatpak".to_string(),
+        "uninstall".to_string(),
+        "-y".to_string(),
+        flatpak_id,
+    ];
     let job = start_job("gaming-uninstall", &format!("Uninstalling {name}…"))?;
-    spawn_argv_job(job.clone(), argv, Duration::from_secs(120), move |result| match result {
-        Ok(output) if output.status.success() => ("complete".to_string(), format!("{name} uninstalled.")),
-        Ok(output) => ("failed".to_string(), failure_detail("Uninstall", &output)),
-        Err(err) => ("failed".to_string(), format!("Could not start uninstall: {err}")),
-    });
-    Ok(GamingActionLaunch { job, state: "running".into(), detail: launch_detail })
+    spawn_argv_job(
+        job.clone(),
+        argv,
+        Duration::from_secs(120),
+        move |result| match result {
+            Ok(output) if output.status.success() => {
+                ("complete".to_string(), format!("{name} uninstalled."))
+            }
+            Ok(output) => ("failed".to_string(), failure_detail("Uninstall", &output)),
+            Err(err) => (
+                "failed".to_string(),
+                format!("Could not start uninstall: {err}"),
+            ),
+        },
+    );
+    Ok(GamingActionLaunch {
+        job,
+        state: "running".into(),
+        detail: launch_detail,
+    })
 }
 
 #[tauri::command]
@@ -101,7 +141,9 @@ fn run_capture_fix(action: &str, argv: Vec<String>) -> Result<String, String> {
     let mut command = Command::new(&argv[0]);
     command.args(&argv[1..]);
     match kyth_shared::system::process::run_bounded_command(command, Duration::from_secs(10)) {
-        Ok(output) if output.status.success() => Ok(format!("{action} applied. Restart the app to take effect.")),
+        Ok(output) if output.status.success() => {
+            Ok(format!("{action} applied. Restart the app to take effect."))
+        }
         Ok(output) => Err(failure_detail(action, &output)),
         Err(err) => Err(format!("Could not run {action}: {err}")),
     }
@@ -109,12 +151,18 @@ fn run_capture_fix(action: &str, argv: Vec<String>) -> Result<String, String> {
 
 #[tauri::command]
 pub(crate) fn fix_discord_screenshare() -> Result<String, String> {
-    run_capture_fix("Discord screen share repair", gaming_tools::discord_screenshare_fix_command())
+    run_capture_fix(
+        "Discord screen share repair",
+        gaming_tools::discord_screenshare_fix_command(),
+    )
 }
 
 #[tauri::command]
 pub(crate) fn fix_obs_pipewire() -> Result<String, String> {
-    run_capture_fix("OBS capture repair", gaming_tools::obs_pipewire_fix_command())
+    run_capture_fix(
+        "OBS capture repair",
+        gaming_tools::obs_pipewire_fix_command(),
+    )
 }
 
 /// Opens one of the two well-known game-data folders in the desktop file
@@ -163,7 +211,10 @@ pub(crate) struct ScxStatusResponse {
 
 #[tauri::command]
 pub(crate) fn scx_status() -> Option<ScxStatusResponse> {
-    gaming_perf::scx_status().map(|status| ScxStatusResponse { active: status.active, configured: status.configured })
+    gaming_perf::scx_status().map(|status| ScxStatusResponse {
+        active: status.active,
+        configured: status.configured,
+    })
 }
 
 /// Only the two schedulers the Hub's buttons actually offer ("Use
@@ -176,16 +227,32 @@ pub(crate) fn scx_set_scheduler(scheduler: String) -> Result<String, String> {
     }
     let argv = gaming_perf::scx_scheduler_command(&scheduler);
     let job = start_job("scx", &format!("Setting scheduler: {scheduler}…"))?;
-    spawn_argv_job(job.clone(), argv, Duration::from_secs(30), |result| match result {
-        Ok(output) if output.status.success() => ("complete".to_string(), "sched-ext updated.".to_string()),
-        Ok(output) => ("failed".to_string(), failure_detail("sched-ext update", &output)),
-        Err(err) => ("failed".to_string(), format!("Could not start sched-ext update: {err}")),
-    });
+    spawn_argv_job(
+        job.clone(),
+        argv,
+        Duration::from_secs(30),
+        |result| match result {
+            Ok(output) if output.status.success() => {
+                ("complete".to_string(), "sched-ext updated.".to_string())
+            }
+            Ok(output) => (
+                "failed".to_string(),
+                failure_detail("sched-ext update", &output),
+            ),
+            Err(err) => (
+                "failed".to_string(),
+                format!("Could not start sched-ext update: {err}"),
+            ),
+        },
+    );
     Ok(job)
 }
 
 fn valid_appid(appid: &str) -> bool {
-    !appid.is_empty() && appid.len() <= 64 && !appid.contains('"') && !appid.chars().any(char::is_control)
+    !appid.is_empty()
+        && appid.len() <= 64
+        && !appid.contains('"')
+        && !appid.chars().any(char::is_control)
 }
 
 #[derive(Serialize)]
@@ -199,19 +266,34 @@ pub(crate) fn per_game_profile(appid: String) -> Result<GameProfileResponse, Str
     if !valid_appid(&appid) {
         return Err("invalid Steam app id".to_string());
     }
-    let profile = gaming_per_game::get_profile_for_appid(&appid, gaming_per_game::per_game_config_path(None::<&str>));
-    Ok(GameProfileResponse { profile: profile.profile, hdr: profile.hdr })
+    let profile = gaming_per_game::get_profile_for_appid(
+        &appid,
+        gaming_per_game::per_game_config_path(None::<&str>),
+    );
+    Ok(GameProfileResponse {
+        profile: profile.profile,
+        hdr: profile.hdr,
+    })
 }
 
 #[tauri::command]
-pub(crate) fn save_per_game_profile(appid: String, profile: String, hdr: bool) -> Result<String, String> {
+pub(crate) fn save_per_game_profile(
+    appid: String,
+    profile: String,
+    hdr: bool,
+) -> Result<String, String> {
     if !valid_appid(&appid) {
         return Err("invalid Steam app id".to_string());
     }
     if ProfileGoal::parse(&profile).is_none() {
         return Err("unknown profile".to_string());
     }
-    gaming_per_game::set_profile_for_appid(&appid, &profile, hdr, gaming_per_game::per_game_config_path(None::<&str>))
-        .map_err(|err| format!("Could not save profile: {err}"))?;
+    gaming_per_game::set_profile_for_appid(
+        &appid,
+        &profile,
+        hdr,
+        gaming_per_game::per_game_config_path(None::<&str>),
+    )
+    .map_err(|err| format!("Could not save profile: {err}"))?;
     Ok(format!("Saved {profile} (HDR: {hdr}) for {appid}."))
 }

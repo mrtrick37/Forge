@@ -9,7 +9,10 @@
 use std::time::Duration;
 
 pub fn lspci_gpu_lines() -> Vec<String> {
-    let argv = ["lspci", "-nn"].into_iter().map(str::to_string).collect::<Vec<_>>();
+    let argv = ["lspci", "-nn"]
+        .into_iter()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
     let Ok(output) = super::process::run_bounded(&argv, Duration::from_secs(5)) else {
         return Vec::new();
     };

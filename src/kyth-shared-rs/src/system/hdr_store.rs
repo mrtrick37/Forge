@@ -9,31 +9,52 @@ pub struct HdrStoreConfig {
 }
 
 impl Default for HdrStoreConfig {
-    fn default() -> Self { Self { preserve: true } }
+    fn default() -> Self {
+        Self { preserve: true }
+    }
 }
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
-    if let Some(path) = path { return path.as_ref().to_path_buf(); }
+    if let Some(path) = path {
+        return path.as_ref().to_path_buf();
+    }
     if std::env::var("KYTH_TEST_MODE").ok().as_deref() == Some("1") {
-        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") { return PathBuf::from(config).join("kyth/hdr-store.toml"); }
+        if let Some(config) = std::env::var_os("XDG_CONFIG_HOME") {
+            return PathBuf::from(config).join("kyth/hdr-store.toml");
+        }
     }
     PathBuf::from("/etc/kyth/hdr-store.toml")
 }
 
 pub fn load(path: impl AsRef<Path>) -> HdrStoreConfig {
-    let Ok(raw) = std::fs::read_to_string(path) else { return HdrStoreConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return HdrStoreConfig::default(); };
-    HdrStoreConfig { preserve: value.get("preserve").and_then(toml::Value::as_bool).unwrap_or(true) }
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return HdrStoreConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return HdrStoreConfig::default();
+    };
+    HdrStoreConfig {
+        preserve: value
+            .get("preserve")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(true),
+    }
 }
 
 pub fn save(path: impl AsRef<Path>, config: HdrStoreConfig) -> std::io::Result<()> {
-    let text = format!("# Kyth HDR store — offline\npreserve = {}\n", config.preserve);
+    let text = format!(
+        "# Kyth HDR store — offline\npreserve = {}\n",
+        config.preserve
+    );
     crate::atomic_io::atomic_write_text(path, &text, Some(0o600))
 }
 
 /// Produce the small audit shape consumed by settings/status pages.
 pub fn audit(path: impl AsRef<Path>) -> BTreeMap<String, i64> {
-    super::hdr::load(path).into_iter().map(|(name, display)| (name, display.peak_nits)).collect()
+    super::hdr::load(path)
+        .into_iter()
+        .map(|(name, display)| (name, display.peak_nits))
+        .collect()
 }
 
 #[cfg(test)]

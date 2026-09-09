@@ -98,8 +98,8 @@ and 7.
 
 | Reference | Current role | Classification | Retirement action |
 |---|---|---|---|
-| `src/kyth-welcome/kyth-welcome-launch` | Starts Tauri only | Stable compatibility-named launcher | Retain while desktop/notification callers migrate to a neutral name |
-| `build_files/scripts/branding/23-kyth-helper-ctx-installs.sh` and `Dockerfile` | Package Python Hub, desktop metadata, and Tauri binary | Obsolete UI packaging plus transitional metadata generation | Stop installing the UI; move route/search generation to React/Rust-owned data |
+| `src/kyth-shared-rs/src/hub_launcher_bin.rs` (`kyth-welcome-launch`) | Starts the Tauri shell and records launch failures | Native Rust compatibility-named launcher | Retain the stable executable name while desktop/notification callers migrate to a neutral name |
+| `build_files/scripts/branding/23-kyth-helper-ctx-installs.sh` and `Dockerfile` | Package native Hub binaries, desktop metadata, and route entries | Rust/React-owned Hub packaging | Keep the launcher, metadata, and route/search generation on the Rust/React source path; do not copy the retired Python tree |
 | `Justfile` `setup-hub`/`run-hub` and former PySide6 smoke job | Developer/test entry points | Tauri tooling; old smoke removed | Keep Tauri dev/test commands |
 | `src/kyth-shared-rs/src/update_watcher_bin.rs` and `kyth-update-watcher.service` | Root update scheduling, registry comparison, staging, status, firmware staging, and notifications | Native Rust service authority | Keep service packaging; installed-image acceptance remains waived |
 | `build_files/just/kyth/dualboot.just` | Opens Hub from a recipe | Legacy launch reference | Call `kyth-welcome-launch --page ...` or a typed Tauri route |
@@ -248,8 +248,10 @@ VPN/SAML, the privileged socket daemon, and network-share execution are
 Rust-owned at their action boundaries; the former standalone Python/Qt VPN and
 root-boundary fixtures were removed in P2.
 The retained `src/kyth-welcome` service package is source-only compatibility
-material and is not installed in the supported image; its active privilege
-boundary is the native Rust service and Tauri command layer.
+material and is not copied into the Hub builder or installed in the supported
+image; its active privilege boundary is the native Rust service and Tauri
+command layer. The Hub launcher, desktop metadata, embedded catalog, and all
+normal launch paths are now owned by Rust/React source trees.
 
 - [x] Port the live probe collector and cache writer behind `kyth-probe.service`
   to the shared Rust crate, with bounded commands, atomic writes, and null-on-
@@ -391,7 +393,7 @@ paths.
 | Priority | Open item | Blocking phase |
 |---|---|---|
 | P0 | Complete installed-image Hub acceptance on testing and stable images. | 2 (local install-only pass; testing/stable and lifecycle coverage remain open) |
-| P0 | Remove or isolate the `kyth-welcome-launch` Python fallback. | 3 (complete 2026-09-02) |
+| P0 | Keep the native Rust `kyth-welcome-launch` compatibility boundary free of Python fallback behavior. | 3 (complete 2026-09-08) |
 | P0 | Replace update-notification launches of `kyth-welcome --page updates` (normal path now uses the wrapper). | 3 (complete 2026-09-02; image verification waived) |
 | P0 | Prove second-launch focus and page forwarding in a real session. | 2 (local pass; promoted-image repeat remains open) |
 | P0 | Validate privileged actions, secret redaction, and bounded failures on the image. | 2, 6 (local pass; promoted-image repeat remains open) |

@@ -21,21 +21,59 @@ pub const SCHEMA_VERSION: u32 = 1;
 pub const NOTIFY_THROTTLE_S: f64 = 6.0 * 3600.0;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ModelDecision { pub recipe_id: String, pub confidence: f64, pub explanation: String, pub probe_id: Option<String> }
+pub struct ModelDecision {
+    pub recipe_id: String,
+    pub confidence: f64,
+    pub explanation: String,
+    pub probe_id: Option<String>,
+}
 
 /// Strict, read-only parser for a local-model Guardian suggestion. Callers
 /// still own model invocation and must apply the normal eligibility gate.
-pub fn parse_model_decision(output: &str, allowed: &[&str], probes: &[&str]) -> Option<ModelDecision> {
-    let raw = output.rsplit('{').next()?.trim_end_matches(|c: char| c.is_whitespace() || c == '}');
-    let value: Value = serde_json::from_str(&format!("{{{raw}}}" )).ok()?;
+pub fn parse_model_decision(
+    output: &str,
+    allowed: &[&str],
+    probes: &[&str],
+) -> Option<ModelDecision> {
+    let raw = output
+        .rsplit('{')
+        .next()?
+        .trim_end_matches(|c: char| c.is_whitespace() || c == '}');
+    let value: Value = serde_json::from_str(&format!("{{{raw}}}")).ok()?;
     let object = value.as_object()?;
-    if object.len() != 4 || !["recipe_id", "confidence", "explanation", "probe_id"].iter().all(|key| object.contains_key(*key)) { return None; }
+    if object.len() != 4
+        || !["recipe_id", "confidence", "explanation", "probe_id"]
+            .iter()
+            .all(|key| object.contains_key(*key))
+    {
+        return None;
+    }
     let recipe_id = object.get("recipe_id")?.as_str()?.to_string();
     let confidence = object.get("confidence")?.as_f64()?;
-    let explanation = object.get("explanation")?.as_str()?.chars().filter(|c| !c.is_control()).take(400).collect::<String>();
+    let explanation = object
+        .get("explanation")?
+        .as_str()?
+        .chars()
+        .filter(|c| !c.is_control())
+        .take(400)
+        .collect::<String>();
     let probe_id = object.get("probe_id")?.as_str().map(str::to_string);
-    if !allowed.contains(&recipe_id.as_str()) || !recipes().iter().any(|recipe| recipe.id == recipe_id) || !(0.0..=1.0).contains(&confidence) || explanation.len() > 400 || probe_id.as_deref().is_some_and(|probe| !probes.contains(&probe)) { return None; }
-    Some(ModelDecision { recipe_id, confidence, explanation, probe_id })
+    if !allowed.contains(&recipe_id.as_str())
+        || !recipes().iter().any(|recipe| recipe.id == recipe_id)
+        || !(0.0..=1.0).contains(&confidence)
+        || explanation.len() > 400
+        || probe_id
+            .as_deref()
+            .is_some_and(|probe| !probes.contains(&probe))
+    {
+        return None;
+    }
+    Some(ModelDecision {
+        recipe_id,
+        confidence,
+        explanation,
+        probe_id,
+    })
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -88,11 +126,17 @@ pub fn recipes() -> &'static [Recipe] {
 }
 
 pub fn recipe_title(recipe_id: &str) -> String {
-    recipes().iter().find(|r| r.id == recipe_id).map_or_else(|| recipe_id.to_string(), |r| r.title.to_string())
+    recipes()
+        .iter()
+        .find(|r| r.id == recipe_id)
+        .map_or_else(|| recipe_id.to_string(), |r| r.title.to_string())
 }
 
 pub fn recipe_risk(recipe_id: &str) -> String {
-    recipes().iter().find(|r| r.id == recipe_id).map_or_else(|| "unknown".to_string(), |r| r.risk.to_string())
+    recipes()
+        .iter()
+        .find(|r| r.id == recipe_id)
+        .map_or_else(|| "unknown".to_string(), |r| r.risk.to_string())
 }
 
 /// Recipe ids whose real work lives in `guardian_actions.py`'s
@@ -122,21 +166,33 @@ fn run_command(argv: &[&str], timeout: Duration) -> Result<String, String> {
     // Same shape as `system::printing::run_with_timeout`, but keeping stderr
     // too — `guardian.py:_run` reports stderr first, and a failed systemctl
     // says nothing on stdout.
-    let argv = argv.iter().map(|arg| (*arg).to_string()).collect::<Vec<_>>();
-    let out = crate::system::process::run_bounded(&argv, timeout)
-        .map_err(|error| if error.kind() == std::io::ErrorKind::TimedOut {
+    let argv = argv
+        .iter()
+        .map(|arg| (*arg).to_string())
+        .collect::<Vec<_>>();
+    let out = crate::system::process::run_bounded(&argv, timeout).map_err(|error| {
+        if error.kind() == std::io::ErrorKind::TimedOut {
             "repair timed out".to_string()
         } else {
             "repair failed to start".to_string()
-        })?;
+        }
+    })?;
     let stderr = String::from_utf8_lossy(&out.stderr).trim().to_string();
     let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
     let mut detail = if stderr.is_empty() { stdout } else { stderr };
     detail.truncate(400);
     if out.status.success() {
-        Ok(if detail.is_empty() { "done".to_string() } else { detail })
+        Ok(if detail.is_empty() {
+            "done".to_string()
+        } else {
+            detail
+        })
     } else {
-        Err(if detail.is_empty() { "repair failed".to_string() } else { detail })
+        Err(if detail.is_empty() {
+            "repair failed".to_string()
+        } else {
+            detail
+        })
     }
 }
 
@@ -149,61 +205,126 @@ fn run_ok(argv: &[&str], timeout: Duration) -> Result<(), String> {
 fn run_executor(id: &str) -> Result<String, String> {
     match id {
         "display.reconfigure" => {
-            let _ = run_ok(&["systemctl", "--user", "restart", "plasma-kscreen.service"], Duration::from_secs(10));
-            run_ok(&["kscreen-doctor", "-o"], Duration::from_secs(8)).map(|_| "display outputs refreshed".to_string())
+            let _ = run_ok(
+                &["systemctl", "--user", "restart", "plasma-kscreen.service"],
+                Duration::from_secs(10),
+            );
+            run_ok(&["kscreen-doctor", "-o"], Duration::from_secs(8))
+                .map(|_| "display outputs refreshed".to_string())
         }
         "audio.sink-fallback" => {
             let output = run_command(&["pactl", "list", "short", "sinks"], Duration::from_secs(6))?;
-            let sink = output.lines().filter_map(|line| line.split_whitespace().nth(1))
+            let sink = output
+                .lines()
+                .filter_map(|line| line.split_whitespace().nth(1))
                 .find(|name| !name.contains("auto_null") && *name != "@DEFAULT_SINK@");
-            let Some(sink) = sink else { return Err("no usable audio sink".to_string()); };
+            let Some(sink) = sink else {
+                return Err("no usable audio sink".to_string());
+            };
             run_ok(&["pactl", "set-default-sink", sink], Duration::from_secs(6))?;
             Ok(format!("default sink set to {sink}"))
         }
         "power.profile-fix" => {
-            run_ok(&["powerprofilesctl", "set", "balanced"], Duration::from_secs(6))?;
+            run_ok(
+                &["powerprofilesctl", "set", "balanced"],
+                Duration::from_secs(6),
+            )?;
             Ok("power profile set to balanced".to_string())
         }
         "network.dns-flush" => {
             if run_ok(&["resolvectl", "flush-caches"], Duration::from_secs(6)).is_ok()
-                || run_ok(&["systemd-resolve", "--flush-caches"], Duration::from_secs(6)).is_ok() {
+                || run_ok(
+                    &["systemd-resolve", "--flush-caches"],
+                    Duration::from_secs(6),
+                )
+                .is_ok()
+            {
                 Ok("flushed DNS caches".to_string())
-            } else { Err("DNS cache flush unavailable".to_string()) }
+            } else {
+                Err("DNS cache flush unavailable".to_string())
+            }
         }
         "network.captive-fix" => {
             run_ok(&["nmcli", "networking", "off"], Duration::from_secs(8))?;
             std::thread::sleep(Duration::from_secs(2));
             let result = run_ok(&["nmcli", "networking", "on"], Duration::from_secs(8));
-            if result.is_ok() { Ok("networking re-toggled".to_string()) } else {
+            if result.is_ok() {
+                Ok("networking re-toggled".to_string())
+            } else {
                 let _ = run_ok(&["nmcli", "networking", "on"], Duration::from_secs(8));
                 Err("failed to re-enable networking".to_string())
             }
         }
         "network.vpn-fix" => {
-            let listed = run_command(&["nmcli", "-t", "-f", "NAME,TYPE,AUTOCONNECT", "connection", "show"], Duration::from_secs(6))?;
+            let listed = run_command(
+                &[
+                    "nmcli",
+                    "-t",
+                    "-f",
+                    "NAME,TYPE,AUTOCONNECT",
+                    "connection",
+                    "show",
+                ],
+                Duration::from_secs(6),
+            )?;
             for line in listed.lines() {
                 let mut parts = line.rsplitn(3, ':');
                 let auto = parts.next().unwrap_or("");
                 let kind = parts.next().unwrap_or("");
                 let name = parts.next().unwrap_or("");
                 if kind == "vpn" && auto == "yes" && !name.is_empty() {
-                    run_ok(&["nmcli", "connection", "up", name], Duration::from_secs(15))?;
+                    run_ok(
+                        &["nmcli", "connection", "up", name],
+                        Duration::from_secs(15),
+                    )?;
                     return Ok(format!("brought up VPN {name}"));
                 }
             }
             Err("no always-on VPN needed reconnecting".to_string())
         }
         "controller.repair" => {
-            run_ok(&["sudo", "-A", "systemctl", "restart", "joycond.service"], Duration::from_secs(20))?;
+            run_ok(
+                &["sudo", "-A", "systemctl", "restart", "joycond.service"],
+                Duration::from_secs(20),
+            )?;
             Ok("joycond restarted".to_string())
         }
         "portal.restart-user" => {
-            run_ok(&["systemctl", "--user", "restart", "xdg-desktop-portal.service"], Duration::from_secs(15))?;
-            let _ = run_ok(&["systemctl", "--user", "restart", "plasma-xdg-desktop-portal-kde.service"], Duration::from_secs(15));
+            run_ok(
+                &[
+                    "systemctl",
+                    "--user",
+                    "restart",
+                    "xdg-desktop-portal.service",
+                ],
+                Duration::from_secs(15),
+            )?;
+            let _ = run_ok(
+                &[
+                    "systemctl",
+                    "--user",
+                    "restart",
+                    "plasma-xdg-desktop-portal-kde.service",
+                ],
+                Duration::from_secs(15),
+            );
             Ok("desktop portals restarted".to_string())
         }
         "firmware.refresh" => {
-            if run_ok(&["flock", "-w", "10", "/run/kyth-fwupd.lock", "fwupdmgr", "refresh", "--force"], Duration::from_secs(30)).is_err() {
+            if run_ok(
+                &[
+                    "flock",
+                    "-w",
+                    "10",
+                    "/run/kyth-fwupd.lock",
+                    "fwupdmgr",
+                    "refresh",
+                    "--force",
+                ],
+                Duration::from_secs(30),
+            )
+            .is_err()
+            {
                 run_ok(&["fwupdmgr", "refresh", "--force"], Duration::from_secs(30))?;
             }
             Ok("firmware metadata refreshed".to_string())
@@ -218,9 +339,19 @@ fn run_executor(id: &str) -> Result<String, String> {
 
 #[cfg(test)]
 fn executor_supported(id: &str) -> bool {
-    matches!(id, "display.reconfigure" | "audio.sink-fallback" | "power.profile-fix"
-        | "network.dns-flush" | "network.captive-fix" | "network.vpn-fix"
-        | "controller.repair" | "portal.restart-user" | "firmware.refresh" | "storage.maint")
+    matches!(
+        id,
+        "display.reconfigure"
+            | "audio.sink-fallback"
+            | "power.profile-fix"
+            | "network.dns-flush"
+            | "network.captive-fix"
+            | "network.vpn-fix"
+            | "controller.repair"
+            | "portal.restart-user"
+            | "firmware.refresh"
+            | "storage.maint"
+    )
 }
 
 /// Persist Guardian state for the native service and the Tauri command path.
@@ -228,20 +359,24 @@ fn executor_supported(id: &str) -> bool {
 /// state or the complete new state.
 pub fn save_state(state: &Value) -> Result<(), String> {
     let path = state_path();
-    let parent = path.parent().ok_or_else(|| "invalid Guardian state path".to_string())?;
-    std::fs::create_dir_all(parent).map_err(|_| "could not create Guardian state directory".to_string())?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| "invalid Guardian state path".to_string())?;
+    std::fs::create_dir_all(parent)
+        .map_err(|_| "could not create Guardian state directory".to_string())?;
     let temp = path.with_extension("json.tmp");
-    std::fs::write(&temp, serde_json::to_vec_pretty(state).map_err(|_| "could not encode Guardian state".to_string())?)
-        .map_err(|_| "could not write Guardian state".to_string())?;
+    std::fs::write(
+        &temp,
+        serde_json::to_vec_pretty(state)
+            .map_err(|_| "could not encode Guardian state".to_string())?,
+    )
+    .map_err(|_| "could not write Guardian state".to_string())?;
     std::fs::rename(temp, path).map_err(|_| "could not commit Guardian state".to_string())
 }
 
 /// Record a native service check using the same history shape consumed by the
 /// Hub's pending-recommendation projection.
-pub fn record_service_check(
-    symptoms: &[Value],
-    decisions: &[Value],
-) -> Result<Value, String> {
+pub fn record_service_check(symptoms: &[Value], decisions: &[Value]) -> Result<Value, String> {
     let mut state = load_state();
     let occurrences = state
         .get_mut("occurrences")
@@ -279,12 +414,18 @@ pub fn record_service_check(
 
 fn cooldown_active(state: &Value, recipe: &Recipe) -> bool {
     let now = now_unix();
-    state.get("history").and_then(Value::as_array).is_some_and(|history| history.iter().any(|item| {
-        item.get("recipe_id").and_then(Value::as_str) == Some(recipe.id)
-            && item.get("action").and_then(Value::as_str) == Some("executed")
-            && item.get("verified").and_then(Value::as_bool) != Some(false)
-            && now - item.get("timestamp").and_then(Value::as_f64).unwrap_or(0.0) < recipe.cooldown as f64
-    }))
+    state
+        .get("history")
+        .and_then(Value::as_array)
+        .is_some_and(|history| {
+            history.iter().any(|item| {
+                item.get("recipe_id").and_then(Value::as_str) == Some(recipe.id)
+                    && item.get("action").and_then(Value::as_str) == Some("executed")
+                    && item.get("verified").and_then(Value::as_bool) != Some(false)
+                    && now - item.get("timestamp").and_then(Value::as_f64).unwrap_or(0.0)
+                        < recipe.cooldown as f64
+            })
+        })
 }
 
 /// Run a repair the user asked for, porting the `user_initiated=True` path
@@ -305,7 +446,9 @@ pub fn execute_recipe(recipe_id: &str) -> Result<String, String> {
         return Err(NOT_ELIGIBLE.to_string());
     }
     let state = load_state();
-    if cooldown_active(&state, recipe) { return Err("repair cooldown is active".to_string()); }
+    if cooldown_active(&state, recipe) {
+        return Err("repair cooldown is active".to_string());
+    }
     if recipe.requires_auth && std::env::var_os("SUDO_ASKPASS").is_none() {
         // The command is `sudo -A …`; with no askpass helper in the session
         // it can only fail, and it would fail with sudo's wording rather
@@ -320,28 +463,70 @@ pub fn execute_recipe(recipe_id: &str) -> Result<String, String> {
     } else {
         run_command(recipe.command, Duration::from_secs(30))
     };
-    let (ok, detail) = match result { Ok(detail) => (true, detail), Err(detail) => (false, detail) };
+    let (ok, detail) = match result {
+        Ok(detail) => (true, detail),
+        Err(detail) => (false, detail),
+    };
     let verified = ok && verify_recipe(recipe.id);
     let mut next = state;
     if let Some(history) = next.get_mut("history").and_then(Value::as_array_mut) {
         history.push(serde_json::json!({"timestamp": now_unix(), "recipe_id": recipe.id, "source": "hub", "action": "executed", "verified": verified, "detail": detail}));
-        if history.len() > 200 { let keep_from = history.len() - 200; history.drain(0..keep_from); }
+        if history.len() > 200 {
+            let keep_from = history.len() - 200;
+            history.drain(0..keep_from);
+        }
     }
     let _ = save_state(&next);
-    if ok && verified { Ok(detail) } else if ok { Err(format!("{detail}; post-repair verification failed")) } else { Err(detail) }
+    if ok && verified {
+        Ok(detail)
+    } else if ok {
+        Err(format!("{detail}; post-repair verification failed"))
+    } else {
+        Err(detail)
+    }
 }
 
 fn verify_recipe(recipe_id: &str) -> bool {
     match recipe_id {
-        "audio.sink-fallback" => run_ok(&["pactl", "get-default-sink"], Duration::from_secs(4)).is_ok(),
-        "network.captive-fix" | "network.vpn-fix" | "network.dns-flush" => run_ok(&["nmcli", "-t", "-f", "STATE", "general"], Duration::from_secs(5)).is_ok(),
-        "controller.repair" => run_ok(&["systemctl", "is-active", "--quiet", "joycond.service"], Duration::from_secs(5)).is_ok(),
-        "portal.restart-user" => run_ok(&["systemctl", "--user", "is-active", "--quiet", "xdg-desktop-portal.service"], Duration::from_secs(5)).is_ok(),
+        "audio.sink-fallback" => {
+            run_ok(&["pactl", "get-default-sink"], Duration::from_secs(4)).is_ok()
+        }
+        "network.captive-fix" | "network.vpn-fix" | "network.dns-flush" => run_ok(
+            &["nmcli", "-t", "-f", "STATE", "general"],
+            Duration::from_secs(5),
+        )
+        .is_ok(),
+        "controller.repair" => run_ok(
+            &["systemctl", "is-active", "--quiet", "joycond.service"],
+            Duration::from_secs(5),
+        )
+        .is_ok(),
+        "portal.restart-user" => run_ok(
+            &[
+                "systemctl",
+                "--user",
+                "is-active",
+                "--quiet",
+                "xdg-desktop-portal.service",
+            ],
+            Duration::from_secs(5),
+        )
+        .is_ok(),
         "firmware.refresh" => run_ok(&["fwupdmgr", "get-updates"], Duration::from_secs(8)).is_ok(),
         "power.profile-fix" => run_ok(&["powerprofilesctl", "get"], Duration::from_secs(4)).is_ok(),
         "display.reconfigure" => run_ok(&["kscreen-doctor", "-o"], Duration::from_secs(5)).is_ok(),
         "storage.maint" => true,
-        _ => run_ok(&["systemctl", "--user", "is-active", "--quiet", "pipewire.service"], Duration::from_secs(5)).is_ok(),
+        _ => run_ok(
+            &[
+                "systemctl",
+                "--user",
+                "is-active",
+                "--quiet",
+                "pipewire.service",
+            ],
+            Duration::from_secs(5),
+        )
+        .is_ok(),
     }
 }
 
@@ -365,8 +550,12 @@ fn empty_state() -> Value {
 /// overrides `state_path()`, same "explicit path for tests" shape as
 /// `system::probe::read_section_in`.
 pub fn load_state_from(path: &Path) -> Value {
-    let Ok(raw) = std::fs::read_to_string(path) else { return empty_state() };
-    let Ok(value) = serde_json::from_str::<Value>(&raw) else { return empty_state() };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return empty_state();
+    };
+    let Ok(value) = serde_json::from_str::<Value>(&raw) else {
+        return empty_state();
+    };
     if !value.is_object() {
         return empty_state();
     }
@@ -383,7 +572,10 @@ pub fn load_state() -> Value {
 }
 
 fn now_unix() -> f64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs_f64()).unwrap_or(0.0)
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs_f64())
+        .unwrap_or(0.0)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
@@ -398,21 +590,30 @@ pub struct PendingItem {
 /// exact same list Hub's own mission bar / sidebar badge is built from.
 pub fn pending_recommendations(state: &Value) -> Vec<PendingItem> {
     let now = now_unix();
-    let mut latest: std::collections::HashMap<String, (f64, Value)> = std::collections::HashMap::new();
+    let mut latest: std::collections::HashMap<String, (f64, Value)> =
+        std::collections::HashMap::new();
     let Some(history) = state.get("history").and_then(Value::as_array) else {
         return Vec::new();
     };
     for item in history {
-        let Some(obj) = item.as_object() else { continue };
-        let Some(recipe_id) = obj.get("recipe_id").and_then(Value::as_str) else { continue };
-        let Some(timestamp) = obj.get("timestamp").and_then(Value::as_f64) else { continue };
+        let Some(obj) = item.as_object() else {
+            continue;
+        };
+        let Some(recipe_id) = obj.get("recipe_id").and_then(Value::as_str) else {
+            continue;
+        };
+        let Some(timestamp) = obj.get("timestamp").and_then(Value::as_f64) else {
+            continue;
+        };
         // No `age < 0` guard here — matches guardian.py exactly, which
         // only skips entries *older* than the window, not future-dated
         // ones (clock skew), unlike system::probe::read_section_in.
         if now - timestamp > NOTIFY_THROTTLE_S {
             continue;
         }
-        let replace = latest.get(recipe_id).is_none_or(|(prev_ts, _)| timestamp >= *prev_ts);
+        let replace = latest
+            .get(recipe_id)
+            .is_none_or(|(prev_ts, _)| timestamp >= *prev_ts);
         if replace {
             latest.insert(recipe_id.to_string(), (timestamp, item.clone()));
         }
@@ -421,8 +622,16 @@ pub fn pending_recommendations(state: &Value) -> Vec<PendingItem> {
         .into_values()
         .filter(|(_, item)| item.get("action").and_then(Value::as_str) == Some("recommended"))
         .map(|(_, item)| PendingItem {
-            recipe_id: item.get("recipe_id").and_then(Value::as_str).unwrap_or_default().to_string(),
-            detail: item.get("detail").and_then(Value::as_str).unwrap_or_default().to_string(),
+            recipe_id: item
+                .get("recipe_id")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string(),
+            detail: item
+                .get("detail")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string(),
         })
         .collect()
 }
@@ -450,14 +659,29 @@ pub fn recent_history(state: &Value, limit: usize) -> Vec<HistoryItem> {
             let timestamp = obj.get("timestamp").and_then(Value::as_f64)?;
             Some(HistoryItem {
                 timestamp,
-                recipe_id: obj.get("recipe_id").and_then(Value::as_str).map(str::to_string),
-                detail: obj.get("detail").and_then(Value::as_str).unwrap_or_default().to_string(),
-                action: obj.get("action").and_then(Value::as_str).unwrap_or("executed").to_string(),
+                recipe_id: obj
+                    .get("recipe_id")
+                    .and_then(Value::as_str)
+                    .map(str::to_string),
+                detail: obj
+                    .get("detail")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default()
+                    .to_string(),
+                action: obj
+                    .get("action")
+                    .and_then(Value::as_str)
+                    .unwrap_or("executed")
+                    .to_string(),
                 verified: obj.get("verified").and_then(Value::as_bool),
             })
         })
         .collect();
-    items.sort_by(|a, b| b.timestamp.partial_cmp(&a.timestamp).unwrap_or(std::cmp::Ordering::Equal));
+    items.sort_by(|a, b| {
+        b.timestamp
+            .partial_cmp(&a.timestamp)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     items.truncate(limit);
     items
 }
@@ -471,8 +695,18 @@ mod tests {
         let allowed = ["audio.restart"];
         let probes = ["audio"];
         let valid = r#"note {"recipe_id":"audio.restart","confidence":0.8,"explanation":"restart audio","probe_id":"audio"}"#;
-        assert_eq!(parse_model_decision(valid, &allowed, &probes).unwrap().recipe_id, "audio.restart");
-        assert!(parse_model_decision(r#"{"recipe_id":"bad","confidence":1.0,"explanation":"x","probe_id":"audio"}"#, &allowed, &probes).is_none());
+        assert_eq!(
+            parse_model_decision(valid, &allowed, &probes)
+                .unwrap()
+                .recipe_id,
+            "audio.restart"
+        );
+        assert!(parse_model_decision(
+            r#"{"recipe_id":"bad","confidence":1.0,"explanation":"x","probe_id":"audio"}"#,
+            &allowed,
+            &probes
+        )
+        .is_none());
         assert!(parse_model_decision("not json", &allowed, &probes).is_none());
     }
     use serde_json::json;
@@ -489,14 +723,23 @@ mod tests {
     /// handed the id straight to `just_run` and reported "launched".
     #[test]
     fn advisory_recipes_never_execute() {
-        for id in ["thermal.notify", "storage.smart-warn", "memory.pressure-relief", "disk.review", "update.review-health"] {
+        for id in [
+            "thermal.notify",
+            "storage.smart-warn",
+            "memory.pressure-relief",
+            "disk.review",
+            "update.review-health",
+        ] {
             assert_eq!(execute_recipe(id), Err(NOT_ELIGIBLE.to_string()), "{id}");
         }
     }
 
     #[test]
     fn unknown_recipe_ids_never_execute() {
-        assert_eq!(execute_recipe("not.a.real.recipe"), Err(NOT_ELIGIBLE.to_string()));
+        assert_eq!(
+            execute_recipe("not.a.real.recipe"),
+            Err(NOT_ELIGIBLE.to_string())
+        );
         assert_eq!(execute_recipe(""), Err(NOT_ELIGIBLE.to_string()));
     }
 
@@ -606,7 +849,9 @@ mod tests {
 /// explicit execution path applies this gate before dispatching a fixed
 /// recipe command.
 pub fn is_pending_recipe(state: &Value, recipe_id: &str) -> bool {
-    pending_recommendations(state).iter().any(|p| p.recipe_id == recipe_id)
+    pending_recommendations(state)
+        .iter()
+        .any(|p| p.recipe_id == recipe_id)
 }
 
 /// Dismiss a current recommendation without running its repair. Record the
@@ -650,7 +895,10 @@ mod pending_gate_tests {
 
     #[test]
     fn allows_a_currently_recommended_recipe() {
-        assert!(is_pending_recipe(&state_with("recommended"), "audio.restart"));
+        assert!(is_pending_recipe(
+            &state_with("recommended"),
+            "audio.restart"
+        ));
     }
 
     #[test]
@@ -662,7 +910,10 @@ mod pending_gate_tests {
     fn rejects_an_unknown_or_empty_recipe_id() {
         let state = state_with("recommended");
         for id in ["", "network.reset", "audio.restart\n", "../../etc/passwd"] {
-            assert!(!is_pending_recipe(&state, id), "{id:?} must not pass the gate");
+            assert!(
+                !is_pending_recipe(&state, id),
+                "{id:?} must not pass the gate"
+            );
         }
     }
 

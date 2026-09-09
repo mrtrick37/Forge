@@ -29,7 +29,10 @@ pub struct StackCheck {
 }
 
 fn run_text(args: &[&str], timeout: Duration) -> Option<(bool, String)> {
-    let argv = args.iter().map(|arg| (*arg).to_string()).collect::<Vec<_>>();
+    let argv = args
+        .iter()
+        .map(|arg| (*arg).to_string())
+        .collect::<Vec<_>>();
     let output = super::process::run_bounded(&argv, timeout).ok()?;
     Some((
         output.status.success(),

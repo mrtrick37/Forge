@@ -94,7 +94,9 @@ impl BootHealthState {
     }
 
     pub fn newest_quarantine(&self) -> Option<&QuarantineRecord> {
-        self.quarantined.values().max_by_key(|record| record.last_failed_at)
+        self.quarantined
+            .values()
+            .max_by_key(|record| record.last_failed_at)
     }
 }
 
@@ -127,9 +129,15 @@ pub fn state_from_json(text: &str) -> BootHealthState {
                 continue;
             };
             if record_object.len() != 5
-                || !["digest", "failures", "reason", "first_failed_at", "last_failed_at"]
-                    .iter()
-                    .all(|key| record_object.contains_key(*key))
+                || ![
+                    "digest",
+                    "failures",
+                    "reason",
+                    "first_failed_at",
+                    "last_failed_at",
+                ]
+                .iter()
+                .all(|key| record_object.contains_key(*key))
             {
                 continue;
             }
@@ -142,7 +150,8 @@ pub fn state_from_json(text: &str) -> BootHealthState {
         }
     }
     object.remove("quarantined");
-    let Ok(mut state) = serde_json::from_value::<BootHealthState>(Value::Object(object.clone())) else {
+    let Ok(mut state) = serde_json::from_value::<BootHealthState>(Value::Object(object.clone()))
+    else {
         return BootHealthState::default();
     };
     state.quarantined = quarantined;
@@ -169,7 +178,12 @@ pub fn quarantine_reason(state: &BootHealthState, digest: &str) -> Option<String
 }
 
 /// Record that an image was staged without performing any persistence.
-pub fn record_staged(state: &BootHealthState, digest: &str, rollout_ring: &str, now: i64) -> BootHealthState {
+pub fn record_staged(
+    state: &BootHealthState,
+    digest: &str,
+    rollout_ring: &str,
+    now: i64,
+) -> BootHealthState {
     let mut updated = state.clone();
     updated.pending_digest = digest.into();
     updated.rollout_ring = rollout_ring.into();
@@ -192,18 +206,25 @@ pub fn record_failure(
 ) -> BootHealthState {
     let same_deployment = state.current_digest == digest;
     let mut failures = if same_deployment { state.failures } else { 0 };
-    if !(same_deployment && state.last_failure_boot_id == boot_id) { failures += 1; }
+    if !(same_deployment && state.last_failure_boot_id == boot_id) {
+        failures += 1;
+    }
 
     let mut quarantined = state.quarantined.clone();
     if failures >= threshold {
-        let first_failed_at = quarantined.get(digest).map_or(now, |record| record.first_failed_at);
-        quarantined.insert(digest.into(), QuarantineRecord {
-            digest: digest.into(),
-            failures,
-            reason: reason.into(),
-            first_failed_at,
-            last_failed_at: now,
-        });
+        let first_failed_at = quarantined
+            .get(digest)
+            .map_or(now, |record| record.first_failed_at);
+        quarantined.insert(
+            digest.into(),
+            QuarantineRecord {
+                digest: digest.into(),
+                failures,
+                reason: reason.into(),
+                first_failed_at,
+                last_failed_at: now,
+            },
+        );
     }
     // Keep the field-by-field shape aligned with the Python constructor. In
     // particular, rollback_attempted_for must survive unrelated failures so
@@ -211,8 +232,17 @@ pub fn record_failure(
     BootHealthState {
         current_digest: digest.into(),
         last_healthy_digest: state.last_healthy_digest.clone(),
-        pending_digest: if state.pending_digest == digest { String::new() } else { state.pending_digest.clone() },
-        status: if quarantined.contains_key(digest) { "quarantined" } else { "unhealthy" }.into(),
+        pending_digest: if state.pending_digest == digest {
+            String::new()
+        } else {
+            state.pending_digest.clone()
+        },
+        status: if quarantined.contains_key(digest) {
+            "quarantined"
+        } else {
+            "unhealthy"
+        }
+        .into(),
         failures,
         last_failure_boot_id: boot_id.into(),
         last_reason: reason.into(),
@@ -231,7 +261,9 @@ pub fn record_failure(
 pub fn mark_healthy(state: &BootHealthState, digest: &str, now: i64) -> BootHealthState {
     let mut quarantined = state.quarantined.clone();
     quarantined.remove(digest);
-    let recovered_digest = if state.current_digest != digest && state.quarantined.contains_key(&state.current_digest) {
+    let recovered_digest = if state.current_digest != digest
+        && state.quarantined.contains_key(&state.current_digest)
+    {
         state.current_digest.clone()
     } else {
         String::new()
@@ -239,13 +271,34 @@ pub fn mark_healthy(state: &BootHealthState, digest: &str, now: i64) -> BootHeal
     BootHealthState {
         current_digest: digest.into(),
         last_healthy_digest: digest.into(),
-        pending_digest: if state.pending_digest == digest { String::new() } else { state.pending_digest.clone() },
-        status: if recovered_digest.is_empty() { "healthy" } else { "recovered" }.into(),
+        pending_digest: if state.pending_digest == digest {
+            String::new()
+        } else {
+            state.pending_digest.clone()
+        },
+        status: if recovered_digest.is_empty() {
+            "healthy"
+        } else {
+            "recovered"
+        }
+        .into(),
         failures: 0,
         last_failure_boot_id: String::new(),
-        last_reason: if recovered_digest.is_empty() { state.last_reason.clone() } else { format!("Automatically recovered from quarantined digest {recovered_digest}") },
-        last_recovered_digest: if recovered_digest.is_empty() { state.last_recovered_digest.clone() } else { recovered_digest.clone() },
-        last_recovery_at: if recovered_digest.is_empty() { state.last_recovery_at } else { now },
+        last_reason: if recovered_digest.is_empty() {
+            state.last_reason.clone()
+        } else {
+            format!("Automatically recovered from quarantined digest {recovered_digest}")
+        },
+        last_recovered_digest: if recovered_digest.is_empty() {
+            state.last_recovered_digest.clone()
+        } else {
+            recovered_digest.clone()
+        },
+        last_recovery_at: if recovered_digest.is_empty() {
+            state.last_recovery_at
+        } else {
+            now
+        },
         rollout_ring: state.rollout_ring.clone(),
         updated_at: now,
         quarantined,
@@ -256,7 +309,12 @@ pub fn mark_healthy(state: &BootHealthState, digest: &str, now: i64) -> BootHeal
 }
 
 /// Record a one-shot rollback attempt without executing it.
-pub fn note_rollback_attempted(state: &BootHealthState, digest: &str, error: Option<&str>, now: i64) -> BootHealthState {
+pub fn note_rollback_attempted(
+    state: &BootHealthState,
+    digest: &str,
+    error: Option<&str>,
+    now: i64,
+) -> BootHealthState {
     let mut updated = state.clone();
     updated.rollback_attempted_for = digest.into();
     updated.last_rollback_error = error.unwrap_or_default().into();
@@ -269,7 +327,9 @@ pub fn note_rollback_attempted(state: &BootHealthState, digest: &str, error: Opt
 pub fn clear_quarantine(state: &BootHealthState, digest: &str, now: i64) -> BootHealthState {
     let mut updated = state.clone();
     updated.quarantined.remove(digest);
-    if updated.current_digest == digest && updated.status == "quarantined" { updated.status = "unhealthy".into(); }
+    if updated.current_digest == digest && updated.status == "quarantined" {
+        updated.status = "unhealthy".into();
+    }
     updated.updated_at = now;
     updated
 }
@@ -277,8 +337,13 @@ pub fn clear_quarantine(state: &BootHealthState, digest: &str, now: i64) -> Boot
 const VALID_ROLLOUT_RINGS: [&str; 4] = ["follow-image", "canary", "testing", "stable"];
 
 pub fn image_ring(reference: &str) -> Option<&'static str> {
-    let without_digest = reference.split_once('@').map_or(reference, |(prefix, _)| prefix);
-    let tag = without_digest.rsplit_once(':').map(|(_, tag)| tag).unwrap_or("");
+    let without_digest = reference
+        .split_once('@')
+        .map_or(reference, |(prefix, _)| prefix);
+    let tag = without_digest
+        .rsplit_once(':')
+        .map(|(_, tag)| tag)
+        .unwrap_or("");
     let tag = tag.strip_suffix("-cachy").unwrap_or(tag);
     match tag {
         "canary" => Some("canary"),
@@ -323,12 +388,18 @@ mod tests {
         assert_eq!(state.status, "quarantined");
         assert_eq!(state.quarantined.len(), 1);
         assert_eq!(state.newest_quarantine().unwrap().digest, "sha256:old");
-        assert_eq!(quarantine_reason(&state, "sha256:old").unwrap(), "digest sha256:old is quarantined after 3 unhealthy boots: failed");
+        assert_eq!(
+            quarantine_reason(&state, "sha256:old").unwrap(),
+            "digest sha256:old is quarantined after 3 unhealthy boots: failed"
+        );
     }
 
     #[test]
     fn invalid_schema_and_file_are_empty() {
-        assert_eq!(state_from_json(r#"{"schema_version": 2}"#), BootHealthState::default());
+        assert_eq!(
+            state_from_json(r#"{"schema_version": 2}"#),
+            BootHealthState::default()
+        );
         let directory = tempdir().unwrap();
         let path = directory.path().join("boot-health.json");
         fs::write(&path, "not json").unwrap();
@@ -380,10 +451,19 @@ mod tests {
 
     #[test]
     fn rollout_policy_matches_python() {
-        assert_eq!(image_ring("ghcr.io/kyth-os/kyth:latest-cachy@sha256:x"), Some("stable"));
+        assert_eq!(
+            image_ring("ghcr.io/kyth-os/kyth:latest-cachy@sha256:x"),
+            Some("stable")
+        );
         assert_eq!(image_ring("ghcr.io/kyth-os/kyth:testing"), Some("testing"));
-        assert_eq!(rollout_policy_reason("image:testing", "stable"), Some("booted image belongs to testing ring, configured for stable".to_string()));
+        assert_eq!(
+            rollout_policy_reason("image:testing", "stable"),
+            Some("booted image belongs to testing ring, configured for stable".to_string())
+        );
         assert_eq!(rollout_policy_reason("image:unknown", "follow-image"), None);
-        assert_eq!(rollout_policy_reason("image:unknown", "bogus"), Some("invalid rollout ring 'bogus'".to_string()));
+        assert_eq!(
+            rollout_policy_reason("image:unknown", "bogus"),
+            Some("invalid rollout ring 'bogus'".to_string())
+        );
     }
 }

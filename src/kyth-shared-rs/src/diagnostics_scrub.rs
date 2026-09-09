@@ -31,19 +31,23 @@ pub fn scrub_logs(text: &str) -> String {
         r#"(?i)(["']?(?:access[_-]?token|refresh[_-]?token|id[_-]?token|bearer|password|passwd|passphrase|client[_-]?secret|api[_-]?key|private[_-]?key|auth[_-]?cookie|session[_-]?cookie|cookie|secret)["']?\s*[:=]\s*)("[^"\r\n]*"|'[^'\r\n]*'|[^\s,;&]+)"#,
     )
     .expect("secret-value regex is valid");
-    let secret_flag = Regex::new(
-        r"(?i)(--(?:cookie|password|passwd|token|client-secret|api-key)(?:=|\s+))\S+",
-    )
-    .expect("secret-flag regex is valid");
+    let secret_flag =
+        Regex::new(r"(?i)(--(?:cookie|password|passwd|token|client-secret|api-key)(?:=|\s+))\S+")
+            .expect("secret-flag regex is valid");
     let secret_query = Regex::new(
         r"(?i)([?&](?:access_token|refresh_token|id_token|token|password|passwd|secret|cookie|api_key|client_secret)=)[^&#\s]+",
     )
     .expect("secret-query regex is valid");
-    let url_credentials = Regex::new(r"(?i)(\b[a-z][a-z0-9+.-]*://)[^/@\s:]+:[^/@\s]+@").expect("URL regex is valid");
+    let url_credentials =
+        Regex::new(r"(?i)(\b[a-z][a-z0-9+.-]*://)[^/@\s:]+:[^/@\s]+@").expect("URL regex is valid");
 
-    let mut text = private_key.replace_all(text, "[private key redacted]").into_owned();
+    let mut text = private_key
+        .replace_all(text, "[private key redacted]")
+        .into_owned();
     text = auth_value.replace_all(&text, "$1[redacted]").into_owned();
-    text = sensitive_header.replace_all(&text, "$1[redacted]").into_owned();
+    text = sensitive_header
+        .replace_all(&text, "$1[redacted]")
+        .into_owned();
     text = replace_with(&secret_value, text, |captures| {
         let value = captures.get(2).map_or("", |match_| match_.as_str());
         let replacement = if value.starts_with('"') {
@@ -86,11 +90,14 @@ pub fn scrub_logs(text: &str) -> String {
     // Rust's regex crate deliberately has no look-around. The broad match
     // still mirrors the Python candidate for normal IPv6 literals, and the
     // parser prevents ordinary colon-separated text from being redacted.
-    let ipv6_candidate = Regex::new(r"(?:[0-9A-Fa-f]*:){2,}[0-9A-Fa-f]*")
-        .expect("IPv6 regex is valid");
+    let ipv6_candidate =
+        Regex::new(r"(?:[0-9A-Fa-f]*:){2,}[0-9A-Fa-f]*").expect("IPv6 regex is valid");
     text = replace_with(&ipv6_candidate, text, |captures| {
         let candidate = captures.get(0).map_or("", |match_| match_.as_str());
-        if candidate.parse::<IpAddr>().is_ok_and(|address| address.is_ipv6()) {
+        if candidate
+            .parse::<IpAddr>()
+            .is_ok_and(|address| address.is_ipv6())
+        {
             "xxxx:xxxx:xxxx:xxxx::xxxx".to_string()
         } else {
             candidate.to_string()
@@ -100,10 +107,12 @@ pub fn scrub_logs(text: &str) -> String {
         .expect("email regex is valid")
         .replace_all(&text, "redacted@example.com")
         .into_owned();
-    text = Regex::new(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b")
-        .expect("UUID regex is valid")
-        .replace_all(&text, "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
-        .into_owned();
+    text = Regex::new(
+        r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b",
+    )
+    .expect("UUID regex is valid")
+    .replace_all(&text, "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+    .into_owned();
     text = Regex::new(r"/(var/home|home)/[^/\s:]+")
         .expect("home-path regex is valid")
         .replace_all(&text, "/$1/redacted")
@@ -147,8 +156,14 @@ mod tests {
         );
         let scrubbed = scrub_logs(&report);
         for secret in [
-            "bearer-secret", "browser-secret", "access-secret", "refresh-secret",
-            "hunter2", "api-secret", "cli-secret", "flag-secret",
+            "bearer-secret",
+            "browser-secret",
+            "access-secret",
+            "refresh-secret",
+            "hunter2",
+            "api-secret",
+            "cli-secret",
+            "flag-secret",
         ] {
             assert!(!scrubbed.contains(secret), "secret leaked: {secret}");
         }
@@ -166,8 +181,12 @@ mod tests {
         );
         let scrubbed = scrub_logs(&report);
         for secret in [
-            "private-material", "alice:password", "query-secret",
-            "2001:db8:85a3::8a2e:370:7334", "192.0.2.10", "/var/home/alice",
+            "private-material",
+            "alice:password",
+            "query-secret",
+            "2001:db8:85a3::8a2e:370:7334",
+            "192.0.2.10",
+            "/var/home/alice",
         ] {
             assert!(!scrubbed.contains(secret), "secret leaked: {secret}");
         }

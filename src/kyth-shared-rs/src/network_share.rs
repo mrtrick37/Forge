@@ -15,7 +15,12 @@ pub const UNIT_DIR: &str = "/etc/systemd/system";
 const MAX_PAYLOAD: usize = 64 * 1024;
 const SAFE_MOUNT_PREFIXES: &[&str] = &["/mnt/", "/media/", "/run/media/", "/home/"];
 
-fn plain<'a>(value: Option<&'a Value>, field: &str, allow_empty: bool, maximum: usize) -> Result<&'a str, String> {
+fn plain<'a>(
+    value: Option<&'a Value>,
+    field: &str,
+    allow_empty: bool,
+    maximum: usize,
+) -> Result<&'a str, String> {
     let value = value
         .and_then(Value::as_str)
         .ok_or_else(|| format!("{field} must be text"))?;
@@ -48,10 +53,12 @@ pub fn validate_mount_point(value: Option<&Value>) -> Result<String, String> {
     let raw = plain(value, "mount_point", false, 4096)?;
     let path = normalized_mount_point(raw);
     if path.is_empty()
-        || !path
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'/' | b' ' | b'-'))
-        || !SAFE_MOUNT_PREFIXES.iter().any(|prefix| path.starts_with(prefix))
+        || !path.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'/' | b' ' | b'-')
+        })
+        || !SAFE_MOUNT_PREFIXES
+            .iter()
+            .any(|prefix| path.starts_with(prefix))
     {
         return Err("mount_point is outside an approved prefix".into());
     }
@@ -180,7 +187,10 @@ fn ensure_no_symlink_in_path(path: &Path) -> Result<(), String> {
     loop {
         match fs::symlink_metadata(&current) {
             Ok(metadata) if metadata.file_type().is_symlink() => {
-                return Err(format!("mount_point traverses a symlink: {}", current.display()))
+                return Err(format!(
+                    "mount_point traverses a symlink: {}",
+                    current.display()
+                ))
             }
             Ok(_) => {}
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -208,9 +218,9 @@ fn mount_unit(mount_point: &str) -> Result<String, String> {
     let unit = String::from_utf8_lossy(&output.stdout).trim().to_string();
     if unit.is_empty()
         || !unit.ends_with(".mount")
-        || !unit
-            .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'@' | b'\\' | b'-'))
+        || !unit.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'@' | b'\\' | b'-')
+        })
     {
         return Err("systemd-escape returned an invalid mount unit".into());
     }
@@ -232,13 +242,23 @@ fn atomic_write(path: &Path, content: &str, mode: u32) -> Result<(), String> {
             }
         }
     }
-    crate::atomic_io::atomic_write_text(path, content, Some(mode)).map_err(|error| error.to_string())
+    crate::atomic_io::atomic_write_text(path, content, Some(mode))
+        .map_err(|error| error.to_string())
 }
 
 pub fn add_share(request: &ShareRequest) -> Result<String, String> {
-    let server = request.server.as_deref().ok_or_else(|| "server is required".to_string())?;
-    let share_path = request.share_path.as_deref().ok_or_else(|| "share_path is required".to_string())?;
-    let username = request.username.as_deref().ok_or_else(|| "username is required".to_string())?;
+    let server = request
+        .server
+        .as_deref()
+        .ok_or_else(|| "server is required".to_string())?;
+    let share_path = request
+        .share_path
+        .as_deref()
+        .ok_or_else(|| "share_path is required".to_string())?;
+    let username = request
+        .username
+        .as_deref()
+        .ok_or_else(|| "username is required".to_string())?;
     let password = request.password.as_deref().unwrap_or("");
     let domain = request.domain.as_deref().unwrap_or("");
     let unit = mount_unit(&request.mount_point)?;
@@ -255,7 +275,9 @@ pub fn add_share(request: &ShareRequest) -> Result<String, String> {
     let unc = format!("//{server}/{share_path}");
     let options = format!(
         "credentials={},uid={},gid={},iocharset=utf8,vers=3.0,nofail,_netdev",
-        credential_path.display(), request.uid, request.gid
+        credential_path.display(),
+        request.uid,
+        request.gid
     );
     let unit_text = format!(
         "[Unit]\nDescription=KythOS SMB Share {}\nAfter=network-online.target\nWants=network-online.target\n\n[Mount]\nWhat={unc}\nWhere={}\nType=cifs\nOptions={options}\nTimeoutSec=30\n\n[Install]\nWantedBy=multi-user.target\n\n",
@@ -285,7 +307,13 @@ pub fn remove_share(request: &ShareRequest) -> Result<String, String> {
     }
     let _ = fs::remove_file(unit_path);
     if credential_path.is_file() {
-        let argv = vec!["shred".into(), "-u".into(), "-n".into(), "3".into(), credential_path.display().to_string()];
+        let argv = vec![
+            "shred".into(),
+            "-u".into(),
+            "-n".into(),
+            "3".into(),
+            credential_path.display().to_string(),
+        ];
         let _ = crate::system::process::run_bounded(&argv, Duration::from_secs(5));
     }
     let _ = fs::remove_file(credential_path);
@@ -301,8 +329,16 @@ fn run_systemctl(args: &[&str], timeout: u64) -> Result<(), String> {
     if output.status.success() {
         Ok(())
     } else {
-        let detail = String::from_utf8_lossy(&output.stderr).trim().chars().take(400).collect::<String>();
-        Err(if detail.is_empty() { "systemctl operation failed".into() } else { detail })
+        let detail = String::from_utf8_lossy(&output.stderr)
+            .trim()
+            .chars()
+            .take(400)
+            .collect::<String>();
+        Err(if detail.is_empty() {
+            "systemctl operation failed".into()
+        } else {
+            detail
+        })
     }
 }
 
@@ -310,7 +346,8 @@ pub fn run_payload(action: &str, raw: &[u8]) -> Result<String, String> {
     if raw.len() > MAX_PAYLOAD {
         return Err("share payload is too large".into());
     }
-    let payload: Value = serde_json::from_slice(raw).map_err(|error| format!("invalid share payload: {error}"))?;
+    let payload: Value =
+        serde_json::from_slice(raw).map_err(|error| format!("invalid share payload: {error}"))?;
     let request = validate_request(&payload, action == "add")?;
     match action {
         "add" => add_share(&request),
@@ -345,7 +382,10 @@ mod tests {
         value["mount_point"] = json!("/etc/kyth");
         assert!(validate_request(&value, true).is_err());
         value["mount_point"] = json!("/mnt/../home/user/share");
-        assert_eq!(validate_request(&value, true).unwrap().mount_point, "/home/user/share");
+        assert_eq!(
+            validate_request(&value, true).unwrap().mount_point,
+            "/home/user/share"
+        );
     }
 
     #[test]

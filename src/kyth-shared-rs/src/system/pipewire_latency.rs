@@ -19,7 +19,9 @@ pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
         return PathBuf::from(xdg).join("kyth/pipewire-latency.toml");
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default();
     home.join(".config/kyth/pipewire-latency.toml")
 }
 
@@ -27,7 +29,9 @@ pub fn xdg_config() -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
         return PathBuf::from(xdg);
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default();
     home.join(".config")
 }
 
@@ -43,8 +47,12 @@ fn clamp_quantum(value: &toml::Value) -> Option<i64> {
 }
 
 pub fn load(path: impl AsRef<Path>) -> BTreeMap<String, i64> {
-    let Ok(raw) = std::fs::read_to_string(path) else { return BTreeMap::new(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return BTreeMap::new(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return BTreeMap::new();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return BTreeMap::new();
+    };
     value
         .get("apps")
         .and_then(toml::Value::as_table)
@@ -67,7 +75,8 @@ pub fn render_quantum_dropin(quantum: i64) -> String {
 }
 
 pub fn render_env_map(named: &BTreeMap<String, i64>, rate: i64) -> String {
-    let mut text = String::from("# Kyth PipeWire per-app latency — source or parse from launch helpers\n");
+    let mut text =
+        String::from("# Kyth PipeWire per-app latency — source or parse from launch helpers\n");
     text.push_str(&format!("# rate={rate}\n"));
     for (app, quantum) in named {
         text.push_str(&format!("{app}=PIPEWIRE_LATENCY={quantum}/{rate}\n"));
@@ -95,7 +104,10 @@ pub fn apply(xdg: &Path, apps: &BTreeMap<String, i64>, rate: i64) -> std::io::Re
         }
     }
     let mut ordered = BTreeMap::new();
-    for (name, quantum) in apps.iter().filter(|(name, _)| name.as_str() != "default" && name.as_str() != "*") {
+    for (name, quantum) in apps
+        .iter()
+        .filter(|(name, _)| name.as_str() != "default" && name.as_str() != "*")
+    {
         ordered.insert(name.clone(), *quantum);
     }
     crate::atomic_io::atomic_write_text(&env_path, &render_env_map(&ordered, rate), None)?;
@@ -112,7 +124,11 @@ mod tests {
     fn clamps_and_skips_bad_quantums() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("pipewire-latency.toml");
-        std::fs::write(&path, "[apps]\nok = 64\nbig = 99999\nbad = \"x\"\nstar = 128\n").unwrap();
+        std::fs::write(
+            &path,
+            "[apps]\nok = 64\nbig = 99999\nbad = \"x\"\nstar = 128\n",
+        )
+        .unwrap();
         let apps = load(&path);
         assert_eq!(apps.get("ok"), Some(&64));
         assert_eq!(apps.get("big"), Some(&2048));
@@ -153,7 +169,9 @@ mod tests {
         assert_eq!(notes.len(), 2);
         assert!(notes[0].starts_with("quantum=256 → "));
         assert!(notes[1].starts_with("1 apps → "));
-        let dropin = dir.path().join("pipewire/pipewire.conf.d/99-kyth-latency.conf");
+        let dropin = dir
+            .path()
+            .join("pipewire/pipewire.conf.d/99-kyth-latency.conf");
         assert!(dropin.is_file());
         let notes = apply(dir.path(), &BTreeMap::new(), DEFAULT_RATE).unwrap();
         assert!(!dropin.exists());

@@ -33,16 +33,23 @@ pub fn gamescope_session_path(uid: u32) -> String {
 
 pub fn gamemode_active(command_succeeded: bool, output: &str) -> bool {
     command_succeeded
-        && output.split_whitespace().last()
+        && output
+            .split_whitespace()
+            .last()
             .and_then(|value| value.parse::<i64>().ok())
             .is_some_and(|value| value > 0)
 }
 
 pub fn is_gaming_process(executable: &str) -> bool {
-    let Some(name) = Path::new(executable).file_name().and_then(|value| value.to_str()) else {
+    let Some(name) = Path::new(executable)
+        .file_name()
+        .and_then(|value| value.to_str())
+    else {
         return false;
     };
-    GAMING_PROCS.iter().any(|candidate| name.eq_ignore_ascii_case(candidate))
+    GAMING_PROCS
+        .iter()
+        .any(|candidate| name.eq_ignore_ascii_case(candidate))
 }
 
 /// Apply the Python service's gamescope → GameMode → process precedence to
@@ -56,7 +63,11 @@ pub fn gaming_reason(
     process_active: bool,
     current_uid: u32,
 ) -> Option<String> {
-    let mut uids = if check_all_uids { active_session_uids.to_vec() } else { Vec::new() };
+    let mut uids = if check_all_uids {
+        active_session_uids.to_vec()
+    } else {
+        Vec::new()
+    };
     if let Some(uid) = uid.filter(|value| !uids.contains(value)) {
         uids.push(uid);
     }
@@ -80,7 +91,10 @@ mod tests {
     fn parses_and_deduplicates_session_uids() {
         let output = "1 user 1000 seat0\n2 other 1001 seat1\n3 user 1000 seat0\n";
         assert_eq!(active_uids_from_loginctl(output), vec![1000, 1001]);
-        assert_eq!(gamescope_session_path(1000), "/run/user/1000/gamescope-session.lock");
+        assert_eq!(
+            gamescope_session_path(1000),
+            "/run/user/1000/gamescope-session.lock"
+        );
     }
 
     #[test]

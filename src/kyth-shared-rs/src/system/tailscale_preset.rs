@@ -10,7 +10,13 @@ pub struct TailscalePreset {
 }
 
 impl Default for TailscalePreset {
-    fn default() -> Self { Self { tailnet: String::new(), exit_node: String::new(), accept_routes: false } }
+    fn default() -> Self {
+        Self {
+            tailnet: String::new(),
+            exit_node: String::new(),
+            accept_routes: false,
+        }
+    }
 }
 
 pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
@@ -20,17 +26,34 @@ pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
         return PathBuf::from(xdg).join("kyth/tailscale.toml");
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default();
     home.join(".config/kyth/tailscale.toml")
 }
 
 pub fn load(path: impl AsRef<Path>) -> TailscalePreset {
-    let Ok(raw) = std::fs::read_to_string(path) else { return TailscalePreset::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return TailscalePreset::default(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return TailscalePreset::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return TailscalePreset::default();
+    };
     TailscalePreset {
-        tailnet: value.get("tailnet").and_then(toml::Value::as_str).unwrap_or_default().to_string(),
-        exit_node: value.get("exit_node").and_then(toml::Value::as_str).unwrap_or_default().to_string(),
-        accept_routes: value.get("accept_routes").and_then(toml::Value::as_bool).unwrap_or(false),
+        tailnet: value
+            .get("tailnet")
+            .and_then(toml::Value::as_str)
+            .unwrap_or_default()
+            .to_string(),
+        exit_node: value
+            .get("exit_node")
+            .and_then(toml::Value::as_str)
+            .unwrap_or_default()
+            .to_string(),
+        accept_routes: value
+            .get("accept_routes")
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(false),
     }
 }
 
@@ -55,15 +78,25 @@ mod tests {
     #[test]
     fn defaults_and_projects_up_argv() {
         let dir = tempdir().unwrap();
-        assert_eq!(load(dir.path().join("missing.toml")), TailscalePreset::default());
+        assert_eq!(
+            load(dir.path().join("missing.toml")),
+            TailscalePreset::default()
+        );
         let path = dir.path().join("tailscale.toml");
-        std::fs::write(&path, "tailnet = \"corp\"\nexit_node = \"node1\"\naccept_routes = true\n").unwrap();
+        std::fs::write(
+            &path,
+            "tailnet = \"corp\"\nexit_node = \"node1\"\naccept_routes = true\n",
+        )
+        .unwrap();
         let preset = load(&path);
         assert_eq!(preset.tailnet, "corp");
         assert_eq!(
             up_argv(&preset),
             vec!["tailscale", "up", "--exit-node", "node1", "--accept-routes"]
         );
-        assert_eq!(up_argv(&TailscalePreset::default()), vec!["tailscale", "up"]);
+        assert_eq!(
+            up_argv(&TailscalePreset::default()),
+            vec!["tailscale", "up"]
+        );
     }
 }

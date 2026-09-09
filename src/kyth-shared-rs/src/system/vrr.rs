@@ -17,7 +17,11 @@ pub struct VrrConfig {
 
 impl Default for VrrConfig {
     fn default() -> Self {
-        Self { outputs: BTreeMap::new(), night_enabled: false, night_temperature: 4500 }
+        Self {
+            outputs: BTreeMap::new(),
+            night_enabled: false,
+            night_temperature: 4500,
+        }
     }
 }
 
@@ -31,29 +35,42 @@ pub fn config_path(path: Option<impl AsRef<Path>>) -> PathBuf {
     if let Some(xdg) = std::env::var_os("XDG_CONFIG_HOME") {
         return PathBuf::from(xdg).join("kyth/vrr.toml");
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default();
     home.join(".config/kyth/vrr.toml")
 }
 
 fn validated_mode(value: Option<&toml::Value>) -> String {
     let mode = value.and_then(toml::Value::as_str).unwrap_or("adaptive");
-    matches!(mode, "never" | "adaptive" | "always").then(|| mode.to_string()).unwrap_or_else(|| "adaptive".into())
+    matches!(mode, "never" | "adaptive" | "always")
+        .then(|| mode.to_string())
+        .unwrap_or_else(|| "adaptive".into())
 }
 
 pub fn load(path: impl AsRef<Path>) -> VrrConfig {
-    let Ok(raw) = std::fs::read_to_string(path) else { return VrrConfig::default(); };
-    let Ok(value) = raw.parse::<toml::Value>() else { return VrrConfig::default(); };
+    let Ok(raw) = std::fs::read_to_string(path) else {
+        return VrrConfig::default();
+    };
+    let Ok(value) = raw.parse::<toml::Value>() else {
+        return VrrConfig::default();
+    };
     let mut outputs = BTreeMap::new();
     if let Some(table) = value.get("outputs").and_then(toml::Value::as_table) {
         for (conn, entry) in table {
-            let Some(entry) = entry.as_table() else { continue };
+            let Some(entry) = entry.as_table() else {
+                continue;
+            };
             outputs.insert(conn.clone(), validated_mode(entry.get("vrr")));
         }
     }
     let night = value.get("night").and_then(toml::Value::as_table);
     VrrConfig {
         outputs,
-        night_enabled: night.and_then(|n| n.get("enabled")).and_then(toml::Value::as_bool).unwrap_or(false),
+        night_enabled: night
+            .and_then(|n| n.get("enabled"))
+            .and_then(toml::Value::as_bool)
+            .unwrap_or(false),
         night_temperature: night
             .and_then(|n| n.get("temperature"))
             .and_then(|t| t.as_integer().or_else(|| t.as_float().map(|v| v as i64)))
@@ -91,9 +108,22 @@ pub fn global_policy(outputs: &BTreeMap<String, String>) -> &'static str {
     "0"
 }
 
-pub fn kwin_argv(binary: &str, group: &str, key: &str, value: &str, value_type: Option<&str>) -> Vec<String> {
-    let mut argv =
-        vec![binary.to_string(), "--file".to_string(), "kwinrc".to_string(), "--group".to_string(), group.to_string(), "--key".to_string(), key.to_string()];
+pub fn kwin_argv(
+    binary: &str,
+    group: &str,
+    key: &str,
+    value: &str,
+    value_type: Option<&str>,
+) -> Vec<String> {
+    let mut argv = vec![
+        binary.to_string(),
+        "--file".to_string(),
+        "kwinrc".to_string(),
+        "--group".to_string(),
+        group.to_string(),
+        "--key".to_string(),
+        key.to_string(),
+    ];
     if let Some(value_type) = value_type {
         argv.extend(["--type".to_string(), value_type.to_string()]);
     }
@@ -112,11 +142,17 @@ pub fn doctor_mode(mode: &str) -> &str {
 }
 
 pub fn per_output_argv(conn: &str, mode: &str) -> Vec<String> {
-    vec!["kscreen-doctor".to_string(), format!("output.{conn}.vrrpolicy.{}", doctor_mode(mode))]
+    vec![
+        "kscreen-doctor".to_string(),
+        format!("output.{conn}.vrrpolicy.{}", doctor_mode(mode)),
+    ]
 }
 
 pub fn is_output_name_valid(name: &str) -> bool {
-    !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
 }
 
 #[cfg(test)]
@@ -140,13 +176,22 @@ mod tests {
     #[test]
     fn picks_global_policy_like_python() {
         assert_eq!(global_policy(&BTreeMap::new()), "1");
-        assert_eq!(global_policy(&BTreeMap::from([("a".to_string(), "never".to_string())])), "0");
         assert_eq!(
-            global_policy(&BTreeMap::from([("a".to_string(), "adaptive".to_string()), ("b".to_string(), "never".to_string())])),
+            global_policy(&BTreeMap::from([("a".to_string(), "never".to_string())])),
+            "0"
+        );
+        assert_eq!(
+            global_policy(&BTreeMap::from([
+                ("a".to_string(), "adaptive".to_string()),
+                ("b".to_string(), "never".to_string())
+            ])),
             "1"
         );
         assert_eq!(
-            global_policy(&BTreeMap::from([("a".to_string(), "always".to_string()), ("b".to_string(), "never".to_string())])),
+            global_policy(&BTreeMap::from([
+                ("a".to_string(), "always".to_string()),
+                ("b".to_string(), "never".to_string())
+            ])),
             "2"
         );
     }
@@ -155,9 +200,24 @@ mod tests {
     fn projects_kwin_and_doctor_argv() {
         assert_eq!(
             kwin_argv("kwriteconfig6", "Wayland", "VrrPolicy", "1", None),
-            vec!["kwriteconfig6", "--file", "kwinrc", "--group", "Wayland", "--key", "VrrPolicy", "1"]
+            vec![
+                "kwriteconfig6",
+                "--file",
+                "kwinrc",
+                "--group",
+                "Wayland",
+                "--key",
+                "VrrPolicy",
+                "1"
+            ]
         );
-        assert_eq!(per_output_argv("DP-1", "adaptive"), vec!["kscreen-doctor", "output.DP-1.vrrpolicy.automatic"]);
-        assert_eq!(per_output_argv("DP-1", "bogus"), vec!["kscreen-doctor", "output.DP-1.vrrpolicy.automatic"]);
+        assert_eq!(
+            per_output_argv("DP-1", "adaptive"),
+            vec!["kscreen-doctor", "output.DP-1.vrrpolicy.automatic"]
+        );
+        assert_eq!(
+            per_output_argv("DP-1", "bogus"),
+            vec!["kscreen-doctor", "output.DP-1.vrrpolicy.automatic"]
+        );
     }
 }

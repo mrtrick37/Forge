@@ -1,9 +1,9 @@
 # kyth-hub-web
 
 The Hub shell is Tauri/React. Its UI lives in `src/` and its native Rust
-bridge is under `src-tauri/`. The launcher falls back to the older Python Hub
-only on images that predate the Tauri shell; this project does not build or
-ship a second UI toolkit.
+bridge and compatibility-named launcher are under `src-tauri/` and the shared
+Rust crate. The launcher has no Python fallback; this project does not build
+or ship a second UI toolkit.
 
 React + TypeScript frontend for the Kyth Hub web/Tauri rewrite (see
 `src-tauri/` for the Rust shell — its bridge commands call straight into

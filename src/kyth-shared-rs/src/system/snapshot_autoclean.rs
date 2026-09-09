@@ -26,9 +26,25 @@ pub struct CleanupPlan {
 pub fn plan(home: impl AsRef<Path>, limit_percent: i64) -> CleanupPlan {
     let home = home.as_ref().to_path_buf();
     CleanupPlan {
-        filesystem_check: vec!["btrfs".into(), "filesystem".into(), "show".into(), home.display().to_string()],
-        quota_enable: vec!["btrfs".into(), "quota".into(), "enable".into(), home.display().to_string()],
-        quota_limit: vec!["btrfs".into(), "qgroup".into(), "limit".into(), format!("{limit_percent}%"), home.display().to_string()],
+        filesystem_check: vec![
+            "btrfs".into(),
+            "filesystem".into(),
+            "show".into(),
+            home.display().to_string(),
+        ],
+        quota_enable: vec![
+            "btrfs".into(),
+            "quota".into(),
+            "enable".into(),
+            home.display().to_string(),
+        ],
+        quota_limit: vec![
+            "btrfs".into(),
+            "qgroup".into(),
+            "limit".into(),
+            format!("{limit_percent}%"),
+            home.display().to_string(),
+        ],
         snapper_config: ["snapper", "-c", "root", "set-config"]
             .into_iter()
             .map(String::from)
@@ -65,7 +81,10 @@ mod tests {
         assert_eq!(value.limit_percent, 120);
         assert_eq!(value.filesystem_check[..3], ["btrfs", "filesystem", "show"]);
         assert_eq!(value.quota_limit[3], "120%");
-        assert_eq!(value.snapper_config.last().unwrap(), "TIMELINE_LIMIT_MONTHLY=2");
+        assert_eq!(
+            value.snapper_config.last().unwrap(),
+            "TIMELINE_LIMIT_MONTHLY=2"
+        );
         assert_eq!(value.snapper_cleanup, ["snapper", "cleanup", "timeline"]);
     }
 

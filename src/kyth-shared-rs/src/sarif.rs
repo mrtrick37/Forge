@@ -25,8 +25,18 @@ pub fn changed_file_findings(
 ) -> Vec<SarifFinding> {
     let root = normalize_absolute(root.as_ref());
     let mut findings = Vec::new();
-    for run in payload.get("runs").and_then(Value::as_array).into_iter().flatten() {
-        for result in run.get("results").and_then(Value::as_array).into_iter().flatten() {
+    for run in payload
+        .get("runs")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        for result in run
+            .get("results")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+        {
             let suppressed = result
                 .get("suppressions")
                 .and_then(Value::as_array)
@@ -36,14 +46,22 @@ pub fn changed_file_findings(
             if suppressed {
                 continue;
             }
-            let Some(location) = result.get("locations").and_then(Value::as_array).and_then(|locations| locations.first()) else { continue; };
+            let Some(location) = result
+                .get("locations")
+                .and_then(Value::as_array)
+                .and_then(|locations| locations.first())
+            else {
+                continue;
+            };
             let uri = location
                 .get("physicalLocation")
                 .and_then(|location| location.get("artifactLocation"))
                 .and_then(|location| location.get("uri"))
                 .and_then(Value::as_str)
                 .unwrap_or_default();
-            let Some(path) = sarif_path(&root, uri) else { continue; };
+            let Some(path) = sarif_path(&root, uri) else {
+                continue;
+            };
             if !changed_files.contains(&path) {
                 continue;
             }
@@ -55,12 +73,22 @@ pub fn changed_file_findings(
                     .and_then(|region| region.get("startLine"))
                     .and_then(Value::as_u64)
                     .unwrap_or(1),
-                rule: result.get("ruleId").and_then(Value::as_str).unwrap_or("unknown").into(),
+                rule: result
+                    .get("ruleId")
+                    .and_then(Value::as_str)
+                    .unwrap_or("unknown")
+                    .into(),
                 message: result
                     .get("message")
                     .and_then(|message| message.get("text"))
                     .and_then(Value::as_str)
-                    .unwrap_or_else(|| if label.is_empty() { "SARIF finding" } else { label })
+                    .unwrap_or_else(|| {
+                        if label.is_empty() {
+                            "SARIF finding"
+                        } else {
+                            label
+                        }
+                    })
                     .into(),
             });
         }
@@ -69,7 +97,9 @@ pub fn changed_file_findings(
 }
 
 fn sarif_path(root: &Path, uri: &str) -> Option<String> {
-    let (is_file_uri, raw) = uri.strip_prefix("file://").map_or((false, uri), |value| (true, value));
+    let (is_file_uri, raw) = uri
+        .strip_prefix("file://")
+        .map_or((false, uri), |value| (true, value));
     let decoded = percent_decode(raw)?;
     let candidate = PathBuf::from(decoded);
     if is_file_uri || candidate.is_absolute() {
@@ -89,14 +119,18 @@ fn normalize_absolute(path: &Path) -> PathBuf {
     let path = if path.is_absolute() {
         path.to_path_buf()
     } else {
-        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("/")).join(path)
+        std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("/"))
+            .join(path)
     };
     let mut normalized = PathBuf::new();
     for component in path.components() {
         match component {
             Component::RootDir | Component::Prefix(_) => normalized.push(component.as_os_str()),
             Component::CurDir => {}
-            Component::ParentDir => { normalized.pop(); }
+            Component::ParentDir => {
+                normalized.pop();
+            }
             Component::Normal(value) => normalized.push(value),
         }
     }
@@ -157,7 +191,10 @@ mod tests {
     fn decodes_file_uri_and_rejects_paths_outside_root() {
         let changed = BTreeSet::from(["src/main file.rs".to_string()]);
         let inside = serde_json::json!({"runs":[{"results":[{"locations":[{"physicalLocation":{"artifactLocation":{"uri":"file:///repo/src/main%20file.rs"}}}]}]}]});
-        assert_eq!(changed_file_findings("/repo", &changed, &inside, "").len(), 1);
+        assert_eq!(
+            changed_file_findings("/repo", &changed, &inside, "").len(),
+            1
+        );
         let outside = serde_json::json!({"runs":[{"results":[{"locations":[{"physicalLocation":{"artifactLocation":{"uri":"file:///other/src/main%20file.rs"}}}]}]}]});
         assert!(changed_file_findings("/repo", &changed, &outside, "x").is_empty());
     }

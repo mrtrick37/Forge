@@ -16,19 +16,35 @@ pub const DEFAULT_APP_DB_PATH: &str = "/usr/share/kyth/exe-handler-apps.json";
 /// strips only well-known wrapper, platform, and release suffixes.
 pub fn normalise_filename(filename: &str) -> String {
     let path = PathBuf::from(filename);
-    let basename = path.file_name().and_then(|name| name.to_str()).unwrap_or(filename);
-    let stem = Path::new(basename).file_stem().and_then(|name| name.to_str()).unwrap_or(basename).to_ascii_lowercase();
-    let separator = RegexBuilder::new(r"[\s.]+").build().expect("valid filename separator regex");
+    let basename = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or(filename);
+    let stem = Path::new(basename)
+        .file_stem()
+        .and_then(|name| name.to_str())
+        .unwrap_or(basename)
+        .to_ascii_lowercase();
+    let separator = RegexBuilder::new(r"[\s.]+")
+        .build()
+        .expect("valid filename separator regex");
     let mut stem = separator.replace_all(&stem, "-").into_owned();
-    let wrapper = RegexBuilder::new(r"(?i)^(setup|install|installer|update|updater|launcher)[-_]+").build().expect("valid wrapper regex");
-    let wrapper_suffix = RegexBuilder::new(r"(?i)[-_]+(setup|install|installer|update|updater|launcher)$").build().expect("valid wrapper suffix regex");
+    let wrapper = RegexBuilder::new(r"(?i)^(setup|install|installer|update|updater|launcher)[-_]+")
+        .build()
+        .expect("valid wrapper regex");
+    let wrapper_suffix =
+        RegexBuilder::new(r"(?i)[-_]+(setup|install|installer|update|updater|launcher)$")
+            .build()
+            .expect("valid wrapper suffix regex");
     let token = RegexBuilder::new(r"(?i)[-_]+(x64|x86|x86_64|amd64|win64|win32|windows|pc|arm64|online|offline|stable|v?\d[\d.]*)$").build().expect("valid installer token regex");
     for _ in 0..4 {
         let old = stem.clone();
         stem = wrapper.replace(&stem, "").into_owned();
         stem = wrapper_suffix.replace(&stem, "").into_owned();
         stem = token.replace(&stem, "").into_owned();
-        if stem == old { break; }
+        if stem == old {
+            break;
+        }
     }
     stem
 }
@@ -48,11 +64,21 @@ pub struct AppSuggestion {
 }
 
 fn parse_db(text: &str) -> Option<Vec<AppSuggestion>> {
-    let entries = serde_json::from_str::<Vec<(String, String, String, Option<String>)>>(text).ok()?;
-    Some(entries
-        .into_iter()
-        .map(|(pattern, app_name, suggestion, flatpak_id)| AppSuggestion { pattern, app_name, suggestion, flatpak_id })
-        .collect())
+    let entries =
+        serde_json::from_str::<Vec<(String, String, String, Option<String>)>>(text).ok()?;
+    Some(
+        entries
+            .into_iter()
+            .map(
+                |(pattern, app_name, suggestion, flatpak_id)| AppSuggestion {
+                    pattern,
+                    app_name,
+                    suggestion,
+                    flatpak_id,
+                },
+            )
+            .collect(),
+    )
 }
 
 fn embedded_app_db() -> Vec<AppSuggestion> {
@@ -60,7 +86,10 @@ fn embedded_app_db() -> Vec<AppSuggestion> {
 }
 
 pub fn load_app_db(path: impl AsRef<Path>) -> Vec<AppSuggestion> {
-    std::fs::read_to_string(path).ok().and_then(|text| parse_db(&text)).unwrap_or_else(embedded_app_db)
+    std::fs::read_to_string(path)
+        .ok()
+        .and_then(|text| parse_db(&text))
+        .unwrap_or_else(embedded_app_db)
 }
 
 fn matches_pattern(pattern: &str, stem: &str) -> bool {
@@ -72,16 +101,23 @@ fn matches_pattern(pattern: &str, stem: &str) -> bool {
     // `visual.?studio(?!.*code)`. Preserve that rule explicitly because the
     // Rust regex engine intentionally rejects look-around syntax.
     if pattern == r"visual.?studio(?!.*code)" {
-        let Ok(prefix) = RegexBuilder::new(r"visual.?studio").case_insensitive(true).build() else { return false; };
-        return prefix.find_iter(stem).any(|matched| {
-            !stem[matched.end()..].to_ascii_lowercase().contains("code")
-        });
+        let Ok(prefix) = RegexBuilder::new(r"visual.?studio")
+            .case_insensitive(true)
+            .build()
+        else {
+            return false;
+        };
+        return prefix
+            .find_iter(stem)
+            .any(|matched| !stem[matched.end()..].to_ascii_lowercase().contains("code"));
     }
     false
 }
 
 pub fn suggest_app(stem: &str, path: impl AsRef<Path>) -> Option<AppSuggestion> {
-    load_app_db(path).into_iter().find(|entry| matches_pattern(&entry.pattern, stem))
+    load_app_db(path)
+        .into_iter()
+        .find(|entry| matches_pattern(&entry.pattern, stem))
 }
 
 pub fn suggest_default(stem: &str) -> Option<AppSuggestion> {
@@ -98,7 +134,10 @@ mod tests {
     fn loads_packaged_fallback_and_matches_case_insensitively() {
         let result = suggest_app("WINWORD", "/no/such/apps.json").unwrap();
         assert_eq!(result.app_name, "Microsoft Word");
-        assert_eq!(result.flatpak_id.as_deref(), Some("org.libreoffice.LibreOffice"));
+        assert_eq!(
+            result.flatpak_id.as_deref(),
+            Some("org.libreoffice.LibreOffice")
+        );
     }
 
     #[test]
@@ -122,7 +161,11 @@ mod tests {
     fn preserves_database_order() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("apps.json");
-        fs::write(&path, r#"[["game", "First", "first", null], ["game", "Second", "second", null]]"#).unwrap();
+        fs::write(
+            &path,
+            r#"[["game", "First", "first", null], ["game", "Second", "second", null]]"#,
+        )
+        .unwrap();
         assert_eq!(suggest_app("game", &path).unwrap().app_name, "First");
     }
 

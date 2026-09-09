@@ -31,13 +31,23 @@ fn latency_ledger_path() -> PathBuf {
 fn load_latency_map() -> std::collections::HashMap<i64, (f64, f64)> {
     let mut m = std::collections::HashMap::new();
     let p = latency_ledger_path();
-    let Ok(text) = std::fs::read_to_string(&p) else { return m; };
+    let Ok(text) = std::fs::read_to_string(&p) else {
+        return m;
+    };
     for line in text.lines() {
         let line = line.trim();
-        if line.is_empty() { continue; }
-        let Ok(obj) = serde_json::from_str::<serde_json::Value>(line) else { continue; };
-        let Some(sa) = obj.get("started_at").and_then(|v| v.as_f64()) else { continue; };
-        if sa == 0.0 { continue; }
+        if line.is_empty() {
+            continue;
+        }
+        let Ok(obj) = serde_json::from_str::<serde_json::Value>(line) else {
+            continue;
+        };
+        let Some(sa) = obj.get("started_at").and_then(|v| v.as_f64()) else {
+            continue;
+        };
+        if sa == 0.0 {
+            continue;
+        }
         let avg = obj.get("avg_ms").and_then(|v| v.as_f64()).unwrap_or(0.0);
         let p99 = obj.get("p99_ms").and_then(|v| v.as_f64()).unwrap_or(0.0);
         m.insert(sa as i64, (avg, p99));
@@ -49,7 +59,9 @@ fn load_latency_map() -> std::collections::HashMap<i64, (f64, f64)> {
 /// `limit` bounds the query; `telemetry_db_path()` respects `$HOME` like Python's `Path.home()`.
 pub fn recent_sessions(limit: usize) -> Vec<SessionRow> {
     let db_path = telemetry_db_path();
-    if !db_path.exists() { return vec![]; }
+    if !db_path.exists() {
+        return vec![];
+    }
     let latency_map = load_latency_map();
     // Use `rusqlite` if available, else fall back to empty — we keep this crate
     // dependency-free when sqlite isn't linked. The Tauri shell enables the
@@ -72,14 +84,19 @@ fn recent_sessions_with_rusqlite(
     latency_map: &std::collections::HashMap<i64, (f64, f64)>,
 ) -> Vec<SessionRow> {
     use rusqlite::Connection;
-    let Ok(conn) = Connection::open_with_flags(db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY) else { return vec![]; };
+    let Ok(conn) = Connection::open_with_flags(db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+    else {
+        return vec![];
+    };
     // Try extended schema first
     let mut rows: Vec<SessionRow> = Vec::new();
     let extended = conn.prepare("SELECT game_name, started_at, duration_s, avg_fps, p1_low_fps, stutter_count, scheduler, avg_latency_ms, p99_latency_ms FROM sessions ORDER BY started_at DESC LIMIT ?1");
     if let Ok(mut stmt) = extended {
         if let Ok(mapped) = stmt.query_map([limit as i64], |row| {
             Ok(SessionRow {
-                game_name: row.get::<_, Option<String>>(0)?.unwrap_or_else(|| "Unknown".to_string()),
+                game_name: row
+                    .get::<_, Option<String>>(0)?
+                    .unwrap_or_else(|| "Unknown".to_string()),
                 started_at: row.get::<_, Option<f64>>(1)?,
                 duration_s: row.get::<_, Option<f64>>(2)?,
                 avg_fps: row.get::<_, Option<f64>>(3)?,
@@ -90,17 +107,25 @@ fn recent_sessions_with_rusqlite(
                 p99_latency_ms: row.get::<_, Option<f64>>(8)?,
             })
         }) {
-            for item in mapped.flatten() { rows.push(item); }
-            if !rows.is_empty() { return rows; }
+            for item in mapped.flatten() {
+                rows.push(item);
+            }
+            if !rows.is_empty() {
+                return rows;
+            }
         }
         // If extended failed due to missing columns, fall through to legacy
-        if !rows.is_empty() { return rows; }
+        if !rows.is_empty() {
+            return rows;
+        }
     }
     // Legacy schema
     let Ok(mut stmt) = conn.prepare("SELECT game_name, started_at, duration_s, avg_fps, p1_low_fps, stutter_count, scheduler FROM sessions ORDER BY started_at DESC LIMIT ?1") else { return vec![]; };
     let Ok(mapped) = stmt.query_map([limit as i64], |row| {
         Ok(SessionRow {
-            game_name: row.get::<_, Option<String>>(0)?.unwrap_or_else(|| "Unknown".to_string()),
+            game_name: row
+                .get::<_, Option<String>>(0)?
+                .unwrap_or_else(|| "Unknown".to_string()),
             started_at: row.get::<_, Option<f64>>(1)?,
             duration_s: row.get::<_, Option<f64>>(2)?,
             avg_fps: row.get::<_, Option<f64>>(3)?,
@@ -110,7 +135,9 @@ fn recent_sessions_with_rusqlite(
             avg_latency_ms: None,
             p99_latency_ms: None,
         })
-    }) else { return vec![]; };
+    }) else {
+        return vec![];
+    };
     for mut item in mapped.flatten() {
         if let Some(sa) = item.started_at {
             if let Some((avg, p99)) = latency_map.get(&(sa as i64)) {

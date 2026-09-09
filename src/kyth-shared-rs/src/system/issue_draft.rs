@@ -19,7 +19,9 @@ pub fn draft_dir() -> PathBuf {
     if let Some(state) = std::env::var_os("XDG_STATE_HOME") {
         return PathBuf::from(state).join("kyth");
     }
-    let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/root"));
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("/root"));
     home.join(".local/state/kyth")
 }
 
@@ -64,7 +66,9 @@ pub fn quote_plus(text: &str) -> String {
     let mut encoded = String::new();
     for byte in text.bytes() {
         match byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => encoded.push(byte as char),
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                encoded.push(byte as char)
+            }
             b' ' => encoded.push('+'),
             _ => encoded.push_str(&format!("%{byte:02X}")),
         }
@@ -73,7 +77,12 @@ pub fn quote_plus(text: &str) -> String {
 }
 
 pub fn issue_url(repo_url: &str, title: &str, body: &str, label: &str) -> String {
-    let mut url = format!("{}/issues/new?title={}&body={}", repo_url.trim_end_matches('/'), quote_plus(title), quote_plus(&url_body(body)));
+    let mut url = format!(
+        "{}/issues/new?title={}&body={}",
+        repo_url.trim_end_matches('/'),
+        quote_plus(title),
+        quote_plus(&url_body(body))
+    );
     if !label.is_empty() {
         url.push_str(&format!("&labels={}", quote_plus(label)));
     }
@@ -91,7 +100,8 @@ pub fn resolve_body(body: &str, body_file: Option<&str>) -> Result<String, Strin
         if !readable {
             return Err(format!("Body file is not readable: {path}"));
         }
-        let text = std::fs::read_to_string(path).map_err(|_| format!("Body file is not readable: {path}"))?;
+        let text = std::fs::read_to_string(path)
+            .map_err(|_| format!("Body file is not readable: {path}"))?;
         return Ok(text);
     }
     if body.is_empty() {
@@ -111,7 +121,10 @@ mod tests {
         assert_eq!(quote_plus("a b+c~d"), "a+b%2Bc~d");
         assert_eq!(quote_plus("x/y?z"), "x%2Fy%3Fz");
         let url = issue_url("https://github.com/kyth-os/kyth/", "T wine", "b", "bug");
-        assert_eq!(url, "https://github.com/kyth-os/kyth/issues/new?title=T+wine&body=b&labels=bug");
+        assert_eq!(
+            url,
+            "https://github.com/kyth-os/kyth/issues/new?title=T+wine&body=b&labels=bug"
+        );
         let unlabeled = issue_url(DEFAULT_REPO_URL, "T", "b", "");
         assert!(!unlabeled.contains("labels="));
     }
@@ -132,7 +145,10 @@ mod tests {
         let dir = tempdir().unwrap();
         let file = dir.path().join("body.md");
         std::fs::write(&file, "from file").unwrap();
-        assert_eq!(resolve_body("", Some(file.to_str().unwrap())).unwrap(), "from file");
+        assert_eq!(
+            resolve_body("", Some(file.to_str().unwrap())).unwrap(),
+            "from file"
+        );
     }
 
     #[test]

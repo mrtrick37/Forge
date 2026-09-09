@@ -24,6 +24,9 @@ mod tests {
         assert!(wrapper.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(wrapper.contains("box=\"${KYTH_AI_DEV_BOX:-kyth-ai-dev}\""));
         assert!(wrapper.contains("distrobox enter \"${box}\" -- \"${tool}\" \"$@\""));
-        assert_eq!(wrapper, render_distrobox_wrapper("ollama", "Ollama", "kyth-ai-dev"));
+        assert_eq!(
+            wrapper,
+            render_distrobox_wrapper("ollama", "Ollama", "kyth-ai-dev")
+        );
     }
 }

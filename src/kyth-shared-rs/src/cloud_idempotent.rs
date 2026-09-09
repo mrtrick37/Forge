@@ -36,7 +36,10 @@ mod tests {
     #[test]
     fn builds_stable_sync_key_and_preview() {
         assert_eq!(sync_key("nas:games"), "rclone-sync:nas:games");
-        assert_eq!(dry_run_message("nas:games"), "rclone-sync:nas:games dry-run");
+        assert_eq!(
+            dry_run_message("nas:games"),
+            "rclone-sync:nas:games dry-run"
+        );
     }
 
     #[test]
@@ -44,7 +47,8 @@ mod tests {
         let directory = tempdir().unwrap();
         let path = directory.path().join("manifest.json");
         write_manifest(&path, "nas:\"games\"").unwrap();
-        let value: serde_json::Value = serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap();
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap();
         assert_eq!(value["remote"], "nas:\"games\"");
         assert_eq!(value["key"], "rclone-sync:nas:\"games\"");
     }

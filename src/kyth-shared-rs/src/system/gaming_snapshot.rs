@@ -21,11 +21,18 @@ pub fn plan(description: impl Into<String>) -> SnapshotPlan {
     let description = description.into();
     SnapshotPlan {
         snapper_command: vec![
-            "snapper".into(), "create".into(), "--description".into(), description.clone(),
+            "snapper".into(),
+            "create".into(),
+            "--description".into(),
+            description.clone(),
             "--print-number".into(),
         ],
         btrfs_command: vec![
-            "btrfs".into(), "subvolume".into(), "snapshot".into(), "-r".into(), "/".into(),
+            "btrfs".into(),
+            "subvolume".into(),
+            "snapshot".into(),
+            "-r".into(),
+            "/".into(),
             format!("/.snapshots/pre-gaming-{description}"),
         ],
         description,
@@ -39,11 +46,21 @@ pub fn evaluate(
 ) -> SnapshotResult {
     if let Some((exit_code, output)) = snapper {
         if exit_code == 0 {
-            return SnapshotResult { ok: true, id: output.trim().into(), tool: "snapper".into(), error: None };
+            return SnapshotResult {
+                ok: true,
+                id: output.trim().into(),
+                tool: "snapper".into(),
+                error: None,
+            };
         }
     }
     if btrfs_exit == Some(0) {
-        return SnapshotResult { ok: true, id: description.into(), tool: "btrfs".into(), error: None };
+        return SnapshotResult {
+            ok: true,
+            id: description.into(),
+            tool: "btrfs".into(),
+            error: None,
+        };
     }
     SnapshotResult {
         ok: false,
@@ -66,7 +83,10 @@ mod tests {
         let value = plan("pre-gaming-master");
         assert_eq!(value.snapper_command[0], "snapper");
         assert_eq!(value.btrfs_command[0], "btrfs");
-        assert_eq!(snapshot_path("pre-gaming-master"), std::path::Path::new("/.snapshots/pre-gaming-pre-gaming-master"));
+        assert_eq!(
+            snapshot_path("pre-gaming-master"),
+            std::path::Path::new("/.snapshots/pre-gaming-pre-gaming-master")
+        );
         assert_eq!(evaluate("x", Some((0, "17\n")), Some(1)).id, "17");
         assert_eq!(evaluate("x", Some((1, "")), Some(0)).tool, "btrfs");
     }

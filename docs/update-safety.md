@@ -17,6 +17,16 @@ enough.
    quarantined; `retryable: bootc upgrade timed out` in
    `/var/lib/kyth/update-watcher-status.json` surfaces as "Retry available"
    in System Hub.
+
+   The Hub's guarded manual-update helper uses a short independent `skopeo`
+   manifest probe for early quarantine and exact-digest checks. A timeout,
+   DNS failure, or malformed remote manifest is treated as a degraded
+   preflight rather than a reason to block `bootc upgrade`, because bootc has
+   its own registry client and is authoritative for the image it stages. When
+   the probe succeeds, the staged digest must still exactly match it. When the
+   probe is unavailable, the helper validates bootc's staged digest, checks it
+   against locally recorded quarantine state, and reports that degraded mode
+   explicitly.
 4. On the next boot, greenboot runs KythOS checks from
    `/etc/greenboot/check/required.d`.
 5. A healthy boot records the exact digest as known-good. A failed boot records

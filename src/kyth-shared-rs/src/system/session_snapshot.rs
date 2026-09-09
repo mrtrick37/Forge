@@ -15,12 +15,25 @@ pub const SYSTEM_COMMANDS: &[&[&str]] = &[
 ];
 pub const DESKTOP_COMMANDS: &[&[&str]] = &[
     &["xdg-user-dir"],
-    &["xdg-mime", "query", "default", "application/x-ms-dos-executable"],
+    &[
+        "xdg-mime",
+        "query",
+        "default",
+        "application/x-ms-dos-executable",
+    ],
     &["xdg-mime", "query", "default", "application/x-msi"],
 ];
-pub const FLATPAK_COMMANDS: &[&[&str]] =
-    &[&["flatpak", "list", "--app", "--columns=application,name,version,branch"]];
-pub const KYTH_COMMANDS: &[&str] = &["kyth-controller-check", "kyth-resume-check", "kyth-nvidia-status"];
+pub const FLATPAK_COMMANDS: &[&[&str]] = &[&[
+    "flatpak",
+    "list",
+    "--app",
+    "--columns=application,name,version,branch",
+]];
+pub const KYTH_COMMANDS: &[&str] = &[
+    "kyth-controller-check",
+    "kyth-resume-check",
+    "kyth-nvidia-status",
+];
 
 pub const RESTORE_NOTES: &str = "- Reinstall Flatpaks with: flatpak install flathub APP_ID\n- Keep source code, saves, and documents in /home or synced storage.\n- System image changes are handled through KythOS updates and bootc rollback.\n- Do not paste this file publicly without reviewing paths and usernames.\n";
 
@@ -54,7 +67,11 @@ pub fn gaming_paths(home: &Path) -> Vec<PathBuf> {
 
 fn append(out: &Path, text: &str) {
     use std::io::Write;
-    if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(out) {
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(out)
+    {
         let _ = file.write_all(text.as_bytes());
     }
 }
@@ -72,7 +89,9 @@ pub fn snapshot(
     runner: &dyn Fn(&[String]) -> Result<(String, String), String>,
     on_path: &dyn Fn(&str) -> bool,
 ) -> PathBuf {
-    let out_dir = out_dir.map(Path::to_path_buf).unwrap_or_else(|| default_out_dir(home));
+    let out_dir = out_dir
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| default_out_dir(home));
     let _ = std::fs::create_dir_all(&out_dir);
     let out = out_dir.join(snapshot_name(timestamp));
     let _ = std::fs::write(&out, render_header(now_iso, user, host));
@@ -127,7 +146,10 @@ pub fn snapshot(
 /// Local ISO-8601 timestamp with microseconds and colon offset, mirroring
 /// `datetime.now().astimezone().isoformat()`.
 pub fn now_iso() -> String {
-    let mut tv = libc::timeval { tv_sec: 0, tv_usec: 0 };
+    let mut tv = libc::timeval {
+        tv_sec: 0,
+        tv_usec: 0,
+    };
     unsafe { libc::gettimeofday(&mut tv, std::ptr::null_mut()) };
     let mut broken = unsafe { std::mem::zeroed::<libc::tm>() };
     unsafe { libc::localtime_r(&tv.tv_sec, &mut broken) };
@@ -170,7 +192,9 @@ pub fn current_user() -> String {
         )
     };
     if found == 0 && !result.is_null() {
-        let name = unsafe { std::ffi::CStr::from_ptr((*result).pw_name) }.to_string_lossy().into_owned();
+        let name = unsafe { std::ffi::CStr::from_ptr((*result).pw_name) }
+            .to_string_lossy()
+            .into_owned();
         if !name.is_empty() {
             return name;
         }
@@ -181,7 +205,10 @@ pub fn current_user() -> String {
 pub fn current_host() -> String {
     let mut buffer = vec![0u8; 256];
     if unsafe { libc::gethostname(buffer.as_mut_ptr() as *mut libc::c_char, buffer.len()) } == 0 {
-        let end = buffer.iter().position(|&byte| byte == 0).unwrap_or(buffer.len());
+        let end = buffer
+            .iter()
+            .position(|&byte| byte == 0)
+            .unwrap_or(buffer.len());
         let host = String::from_utf8_lossy(&buffer[..end]).into_owned();
         if !host.is_empty() {
             return host;
@@ -210,10 +237,20 @@ mod tests {
             &|argv| Ok((format!("out:{}\n", argv.join(" ")), String::new())),
             &|_| false,
         );
-        assert_eq!(out.file_name().unwrap(), "kyth-session-snapshot-20240101-000000.txt");
+        assert_eq!(
+            out.file_name().unwrap(),
+            "kyth-session-snapshot-20240101-000000.txt"
+        );
         let text = std::fs::read_to_string(&out).unwrap();
         assert!(text.starts_with("KythOS Session Snapshot\nGenerated: 2024-01-01T00:00:00.000000+00:00\nUser: tester\nHost: testhost\n"));
-        for section in ["System", "Desktop", "Installed Flatpaks", "Gaming Paths", "KythOS Checks", "Restore Notes"] {
+        for section in [
+            "System",
+            "Desktop",
+            "Installed Flatpaks",
+            "Gaming Paths",
+            "KythOS Checks",
+            "Restore Notes",
+        ] {
             assert!(text.contains(&format!("\n== {section} ==\n")), "{section}");
         }
         assert!(text.contains("Games\n"));

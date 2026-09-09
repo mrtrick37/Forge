@@ -24,7 +24,10 @@ mod tests {
 
     #[test]
     fn encodes_query_delimiters_and_utf8_bytes() {
-        assert_eq!(percent_encode("title & body/# ✓"), "title%20%26%20body%2F%23%20%E2%9C%93");
+        assert_eq!(
+            percent_encode("title & body/# ✓"),
+            "title%20%26%20body%2F%23%20%E2%9C%93"
+        );
         assert_eq!(percent_encode("safe-_.~chars"), "safe-_.~chars");
     }
 }

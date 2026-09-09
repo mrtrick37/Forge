@@ -88,7 +88,11 @@ fn parse_just_list(stdout: &str) -> Vec<JustRecipe> {
             Some((before, after)) => (before.trim().to_string(), after.trim().to_string()),
             None => (rest.to_string(), String::new()),
         };
-        out.push(JustRecipe { name, params, comment });
+        out.push(JustRecipe {
+            name,
+            params,
+            comment,
+        });
         if out.len() >= 500 {
             break;
         }
@@ -100,7 +104,9 @@ fn parse_just_list(stdout: &str) -> Vec<JustRecipe> {
 /// Split out from `configure` so a test can pin the behaviour against a
 /// temporary path instead of the real `/usr` one, which is absent off-image.
 fn justfile_env_for(justfile: &Path) -> Option<String> {
-    justfile.is_file().then(|| justfile.to_string_lossy().into_owned())
+    justfile
+        .is_file()
+        .then(|| justfile.to_string_lossy().into_owned())
 }
 
 pub fn configure_command(cmd: &mut Command) {
@@ -119,7 +125,9 @@ pub fn configure_command(cmd: &mut Command) {
 fn is_bare_token(token: &str) -> bool {
     !token.is_empty()
         && !token.starts_with('-')
-        && token.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
+        && token
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
 }
 
 /// Build the argv for a captured, in-app launch. Recipe names and arguments
@@ -139,7 +147,9 @@ pub fn command_for(recipe: &str, args: &[&str]) -> Option<Vec<String>> {
 /// callers must still choose the exact values rather than forwarding UI text.
 pub fn command_for_fixed_assignments(recipe: &str, args: &[(&str, &str)]) -> Option<Vec<String>> {
     if !is_bare_token(recipe)
-        || !args.iter().all(|(key, value)| is_bare_token(key) && is_bare_token(value))
+        || !args
+            .iter()
+            .all(|(key, value)| is_bare_token(key) && is_bare_token(value))
     {
         return None;
     }
@@ -256,7 +266,10 @@ mod tests {
         let _ = std::fs::create_dir_all(&dir);
         let justfile = dir.join("justfile");
         std::fs::write(&justfile, "default:\n    @true\n").expect("write justfile");
-        assert_eq!(justfile_env_for(&justfile).as_deref(), Some(justfile.to_string_lossy().as_ref()));
+        assert_eq!(
+            justfile_env_for(&justfile).as_deref(),
+            Some(justfile.to_string_lossy().as_ref())
+        );
         assert_eq!(justfile_env_for(&dir.join("absent")), None);
         let _ = std::fs::remove_file(&justfile);
     }
@@ -265,7 +278,12 @@ mod tests {
     fn command_for_uses_just_directly_without_a_terminal_wrapper() {
         assert_eq!(
             command_for("switch-channel", &["stable"]),
-            Some(vec!["/usr/bin/just", "switch-channel", "stable"].into_iter().map(String::from).collect()),
+            Some(
+                vec!["/usr/bin/just", "switch-channel", "stable"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect()
+            ),
         );
     }
 
@@ -273,9 +291,17 @@ mod tests {
     fn fixed_assignments_are_separate_and_validated() {
         assert_eq!(
             command_for_fixed_assignments("switch-kernel", &[("flavor", "cachy")]),
-            Some(vec!["/usr/bin/just", "switch-kernel", "flavor=cachy"].into_iter().map(String::from).collect()),
+            Some(
+                vec!["/usr/bin/just", "switch-kernel", "flavor=cachy"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect()
+            ),
         );
-        assert!(command_for_fixed_assignments("switch-kernel", &[("flavor", "cachy; reboot")]).is_none());
+        assert!(
+            command_for_fixed_assignments("switch-kernel", &[("flavor", "cachy; reboot")])
+                .is_none()
+        );
         assert!(command_for_fixed_assignments("switch-kernel", &[("--flavor", "cachy")]).is_none());
     }
 
@@ -311,7 +337,15 @@ mod tests {
         );
         let v = parse_just_list(out);
         let names: Vec<&str> = v.iter().map(|r| r.name.as_str()).collect();
-        assert_eq!(names, ["ai-dev-enter", "gaming-audit", "retry-quarantined-update", "switch-kernel"]);
+        assert_eq!(
+            names,
+            [
+                "ai-dev-enter",
+                "gaming-audit",
+                "retry-quarantined-update",
+                "switch-kernel"
+            ]
+        );
         assert_eq!(v[0].params, "");
         assert_eq!(v[1].params, "mode=\"\"");
         assert_eq!(v[2].params, "digest");

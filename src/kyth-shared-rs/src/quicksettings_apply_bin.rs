@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use kyth_shared::atomic_io::atomic_write_text;
 use kyth_shared::system::process::run_bounded;
-use kyth_shared::system::quicksettings::{TTL_PATH, TTL_SECS, brightness_argv, config_path, load};
+use kyth_shared::system::quicksettings::{brightness_argv, config_path, load, TTL_PATH, TTL_SECS};
 
 fn main() -> std::process::ExitCode {
     let config = load(config_path(None::<&Path>));

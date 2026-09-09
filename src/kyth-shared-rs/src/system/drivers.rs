@@ -21,7 +21,10 @@ pub fn is_module_loaded(module: &str) -> bool {
 }
 
 pub fn get_pci_devices_by_class(class: &str) -> Vec<String> {
-    let argv = ["lspci", "-nn"].into_iter().map(str::to_string).collect::<Vec<_>>();
+    let argv = ["lspci", "-nn"]
+        .into_iter()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
     let out = super::process::run_bounded(&argv, Duration::from_secs(5));
     if let Ok(o) = out {
         if o.status.success() {

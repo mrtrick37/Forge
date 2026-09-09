@@ -26,13 +26,26 @@ fn main() -> std::process::ExitCode {
         run(&["restic", "init", "--repo", &repo.to_string_lossy()], 10);
     }
     for compat in compat_drive_cs(&home) {
-        run(&["restic", "--repo", &repo.to_string_lossy(), "backup", &compat.to_string_lossy()], 60);
+        run(
+            &[
+                "restic",
+                "--repo",
+                &repo.to_string_lossy(),
+                "backup",
+                &compat.to_string_lossy(),
+            ],
+            60,
+        );
     }
     let remote = config.remote.clone();
     if !remote.is_empty() && home.join(".config/rclone/rclone.conf").exists() {
         run(&["rclone", "sync", &repo.to_string_lossy(), &remote], 120);
     }
-    let remote = if remote.is_empty() { "none".to_string() } else { remote };
+    let remote = if remote.is_empty() {
+        "none".to_string()
+    } else {
+        remote
+    };
     println!("kyth-save-sync: repo {} remote {remote}", repo.display());
     std::process::ExitCode::SUCCESS
 }

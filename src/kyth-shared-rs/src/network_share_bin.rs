@@ -16,7 +16,10 @@ fn main() -> std::process::ExitCode {
         return std::process::ExitCode::from(64);
     }
     let mut payload = Vec::new();
-    if let Err(error) = std::io::stdin().take(64 * 1024 + 1).read_to_end(&mut payload) {
+    if let Err(error) = std::io::stdin()
+        .take(64 * 1024 + 1)
+        .read_to_end(&mut payload)
+    {
         eprintln!("Network share {action} failed: {error}");
         return std::process::ExitCode::from(1);
     }
