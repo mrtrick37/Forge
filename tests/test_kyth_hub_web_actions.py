@@ -110,7 +110,9 @@ class HubWebActionTests(unittest.TestCase):
         # It must delegate, not just format a reassuring string. The guarded
         # native command keeps the channel mapping fixed and auditable.
         self.assertIn("kyth-bootc-guard", text)
-        self.assertIn('format!("switch-{}"', text)
+        # Rustfmt is free to place the format string on the next line; the
+        # contract is the fixed operation template, not its source layout.
+        self.assertRegex(text, r'format!\(\s*"switch-\{\}"')
         self.assertNotIn("start_just_job", text)
         self.assertNotIn('Command::new("just")', text)
         self.assertIn("switch_channel_arg", text)
