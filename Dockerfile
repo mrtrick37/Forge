@@ -77,6 +77,7 @@ RUN --mount=type=cache,id=kyth-hub-shell-cargo-registry,target=/root/.cargo/regi
     cp /build/kyth-shared-rs/target/release/kyth-firstboot-app-status /build/kyth-firstboot-app-status && \
     cp /build/kyth-shared-rs/target/release/kyth-steam-game-export /build/kyth-steam-game-export && \
     cp /build/kyth-shared-rs/target/release/kyth-hub-desktop-entries /build/kyth-hub-desktop-entries && \
+    cp /build/kyth-shared-rs/target/release/kyth-welcome-launch /build/kyth-welcome-launch && \
     cp /build/kyth-shared-rs/target/release/kyth-safe-upgrade /build/kyth-safe-upgrade && \
     cp /build/kyth-shared-rs/target/release/kyth-bootc-guard /build/kyth-bootc-guard && \
     cp /build/kyth-shared-rs/target/release/kyth-finalize-staged /build/kyth-finalize-staged && \
