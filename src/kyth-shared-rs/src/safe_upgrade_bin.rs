@@ -89,45 +89,17 @@ fn upgrade() -> Result<String, String> {
     {
         return Err(format!("Update blocked by rollout policy: {reason}"));
     }
-    let branch = kyth_shared::system::bootc_policy::branch_from_ref(Some(&reference))
-        .unwrap_or_else(|| "latest".into());
-    let check = kyth_shared::system::registry::check_registry_update_with_timeout(
-        &status,
-        &branch,
-        kyth_shared::system::bootc_policy::REGISTRY,
-        Duration::from_secs(30),
-    );
-    let remote = kyth_shared::system::safe_upgrade_policy::remote_digest_for_safe_upgrade(
-        &check.state,
-        &check.detail,
-        check.remote_probe_failed,
-        &check.manifest_raw,
-    )?;
+    // Do not make staging depend on a second registry client. GHCR metadata
+    // probes can time out while bootc itself can still reach the image; bootc
+    // is the authoritative fetcher for the mutating update path.
     let state = kyth_shared::system::boot_health::read_default_state();
-    if let Some(remote) = remote.as_deref() {
-        if let Some(reason) = kyth_shared::system::boot_health::quarantine_reason(&state, remote) {
-            return Err(format!("Update blocked: {reason}"));
-        }
-    }
     let booted = kyth_shared::system::bootc_query::image_digest_from_status(&status, "booted");
     let staged = kyth_shared::system::bootc_query::image_digest_from_status(&status, "staged");
-    if remote
+    if let Some(reason) = staged
         .as_deref()
-        .is_some_and(|digest| booted.as_deref() == Some(digest))
+        .and_then(|digest| kyth_shared::system::boot_health::quarantine_reason(&state, digest))
     {
-        return Ok("KythOS is already running the latest allowed digest.".into());
-    }
-    if remote
-        .as_deref()
-        .is_some_and(|digest| staged.as_deref() == Some(digest))
-    {
-        return kyth_shared::system::boot_finalize::finalize_staged(false).map(|detail| {
-            if detail.is_empty() {
-                "Latest digest was promoted to the next boot.".into()
-            } else {
-                detail
-            }
-        });
+        return Err(format!("Update blocked: {reason}"));
     }
     if kyth_shared::system::bootc_query::active_operation().is_some() {
         return Err("Another bootc upgrade is in progress; retry later".into());
@@ -141,18 +113,24 @@ fn upgrade() -> Result<String, String> {
         let state = kyth_shared::system::boot_health::read_default_state();
         kyth_shared::system::boot_health::quarantine_reason(&state, digest)
     });
-    let staged_digest = kyth_shared::system::safe_upgrade_policy::validate_staged_digest(
-        remote.as_deref(),
+    let post_upgrade = kyth_shared::system::safe_upgrade_policy::validate_post_upgrade_state(
+        booted.as_deref(),
+        after
+            .as_ref()
+            .and_then(|data| {
+                kyth_shared::system::bootc_query::image_digest_from_status(data, "booted")
+            })
+            .as_deref(),
         staged_after.as_deref(),
         staged_quarantine_reason.as_deref(),
-    )
-    .map_err(|error| {
-        if detail.is_empty() || error.starts_with("Update blocked:") {
-            error
+    )?;
+    let Some(staged_digest) = post_upgrade else {
+        return Ok(if detail.is_empty() {
+            "KythOS is already running the latest allowed digest.".into()
         } else {
-            detail.clone()
-        }
-    })?;
+            detail
+        });
+    };
     let coordinator = kyth_shared::system::update_coordinator::UpdateCoordinator::new(
         kyth_shared::system::boot_health::DEFAULT_STATE_PATH,
     );
@@ -164,23 +142,14 @@ fn upgrade() -> Result<String, String> {
         )
         .map_err(|error| format!("Could not persist staged update state: {error}"))?;
     let finalized = kyth_shared::system::boot_finalize::finalize_staged(false)?;
-    let degraded_note = if remote.is_none() {
-        format!("Remote manifest preflight unavailable; bootc staged digest {staged_digest}.")
-    } else {
-        String::new()
-    };
     Ok(if finalized.is_empty() {
-        if !degraded_note.is_empty() {
-            degraded_note
-        } else if detail.is_empty() {
+        if detail.is_empty() {
             "Update staged and promoted to the next boot.".into()
         } else {
             detail
         }
-    } else if degraded_note.is_empty() {
-        finalized
     } else {
-        format!("{finalized} {degraded_note}")
+        finalized
     })
 }
 

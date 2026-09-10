@@ -88,6 +88,28 @@ pub fn validate_staged_digest(
     Ok(staged.to_string())
 }
 
+/// Validate the state reported by bootc after an upgrade attempt.
+///
+/// `bootc upgrade` is the authoritative registry client for the mutating
+/// path. A successful no-op has no staged digest, so it is represented as
+/// `Ok(None)` when the booted digest is unchanged. Any other missing digest
+/// is treated as a failed stage. A staged digest is always checked against
+/// the local quarantine state before it is handed to the finalizer.
+pub fn validate_post_upgrade_state(
+    booted_before: Option<&str>,
+    booted_after: Option<&str>,
+    staged_after: Option<&str>,
+    quarantine_reason: Option<&str>,
+) -> Result<Option<String>, String> {
+    if let Some(staged) = staged_after.filter(|digest| !digest.is_empty()) {
+        return validate_staged_digest(None, Some(staged), quarantine_reason).map(Some);
+    }
+    if booted_before.is_some() && booted_after == booted_before {
+        return Ok(None);
+    }
+    Err("bootc did not stage an image".into())
+}
+
 /// Convert a registry check into the digest gate used by safe-upgrade.
 ///
 /// A local status failure remains fail-closed. A remote probe failure is
@@ -199,6 +221,44 @@ mod tests {
         assert_eq!(
             validate_staged_digest(None, None, None),
             Err("bootc did not stage an image".into())
+        );
+    }
+
+    #[test]
+    fn post_upgrade_accepts_bootc_staged_digest() {
+        assert_eq!(
+            validate_post_upgrade_state(
+                Some("sha256:old"),
+                Some("sha256:old"),
+                Some("sha256:new"),
+                None,
+            ),
+            Ok(Some("sha256:new".into()))
+        );
+    }
+
+    #[test]
+    fn post_upgrade_accepts_a_successful_noop() {
+        assert_eq!(
+            validate_post_upgrade_state(Some("sha256:same"), Some("sha256:same"), None, None,),
+            Ok(None)
+        );
+    }
+
+    #[test]
+    fn post_upgrade_rejects_missing_digests_and_quarantine() {
+        assert_eq!(
+            validate_post_upgrade_state(None, None, None, None),
+            Err("bootc did not stage an image".into())
+        );
+        assert_eq!(
+            validate_post_upgrade_state(
+                Some("sha256:old"),
+                Some("sha256:old"),
+                Some("sha256:bad"),
+                Some("sha256:bad is quarantined"),
+            ),
+            Err("Update blocked: sha256:bad is quarantined".into())
         );
     }
 
